@@ -1,6 +1,8 @@
 # BACKEND
 backend/.env
+!backend/.env.example
 backend/node_modules/
 
 # FRONTEND
 frontend/.env
+!frontend/.env.example
