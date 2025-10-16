@@ -33,3 +33,7 @@ const alunoSchema = mongoose.Schema({
     trim: true
   }
 })
+
+const Aluno = mongoose.model("Aluno", alunoSchema)
+
+module.exports = Aluno
