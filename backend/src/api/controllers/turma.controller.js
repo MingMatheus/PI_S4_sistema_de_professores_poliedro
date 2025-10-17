@@ -14,6 +14,8 @@ exports.cadastraTurma = async (req, res) => {
     })
 
     await turma.save()
+
+    res.status(201).end()
   }
   catch(error)
   {

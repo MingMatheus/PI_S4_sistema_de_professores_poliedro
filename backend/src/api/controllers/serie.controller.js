@@ -12,6 +12,8 @@ exports.cadastraSerie = async (req, res) => {
     })
 
     await serie.save()
+
+    res.status(201).end()
   }
   catch(error)
   {
