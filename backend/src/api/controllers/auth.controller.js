@@ -5,7 +5,7 @@ const Professor = require("../../models/Professor.model")
 
 const codigoDeErroDeDuplicidade = 11000
 
-exports.registraAluno = async (req, res) => {
+exports.cadastraAluno = async (req, res) => {
   try
   {
     const email = req.body.email
