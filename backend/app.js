@@ -1,0 +1,21 @@
+require('dotenv').config()
+
+const express = require("express")
+
+const conectaAoBancoDeDados = require("./src/config/database")
+const configuraExpress = require("./src/config/express")
+
+const authRoutes = require("./src/api/routes/auth.routes")
+
+const app = express()
+
+conectaAoBancoDeDados()
+configuraExpress(app)
+
+app.use("/auth", authRoutes)
+
+const PORT = process.env.API_PORT
+
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`)
+})
