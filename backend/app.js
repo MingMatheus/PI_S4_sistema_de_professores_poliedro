@@ -6,6 +6,7 @@ const conectaAoBancoDeDados = require("./src/config/database")
 const configuraExpress = require("./src/config/express")
 
 const authRoutes = require("./src/api/routes/auth.routes")
+const turmaRoutes = require("./src/api/routes/turma.routes")
 
 const app = express()
 
@@ -13,6 +14,7 @@ conectaAoBancoDeDados()
 configuraExpress(app)
 
 app.use("/auth", authRoutes)
+app.use("/turmas", turmaRoutes)
 
 const PORT = process.env.API_PORT
 
