@@ -30,6 +30,7 @@ const alunoSchema = mongoose.Schema({
   ra: {
     type: String,
     required: [true, "O RA é obrigatório"],
+    unique: true,
     trim: true
   }
 })
