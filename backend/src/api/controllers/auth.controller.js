@@ -24,7 +24,7 @@ exports.cadastraAluno = async (req, res) => {
       ra: ra
     })
 
-    const respostaDoMongo = await aluno.save()
+    await aluno.save()
 
     res.status(201).end()
   }
