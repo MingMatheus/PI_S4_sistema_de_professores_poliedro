@@ -17,7 +17,7 @@ Esse projeto tem como objetivo ser um sistema para professores e alunos do colé
 
   Visualização e download de materiais.
 
-  Recebimento de avisos os professores.
+  Leitura dos avisos mandados pelo professores
 
   Consulta de notas.
 
