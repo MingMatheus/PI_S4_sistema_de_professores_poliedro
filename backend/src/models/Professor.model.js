@@ -15,7 +15,6 @@ const professorSchema = mongoose.Schema({
   senha: {
     type: String,
     required: [true, "A senha é obrigatória"],
-    minlength: 8,
     select: false
   },
   nome: {
