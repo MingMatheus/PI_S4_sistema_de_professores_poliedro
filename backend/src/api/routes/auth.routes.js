@@ -5,5 +5,6 @@ const authController = require("../controllers/auth.controller")
 
 router.post("/cadastro/alunos", authController.cadastraAluno)
 router.post("/cadastro/professores", authController.cadastraProfessor)
+router.post("/login", authController.login)
 
 module.exports = router
