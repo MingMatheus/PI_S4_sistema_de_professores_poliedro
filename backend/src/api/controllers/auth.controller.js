@@ -55,3 +55,41 @@ exports.cadastraAluno = async (req, res) => {
     return res.status(500).json({mensagem: "Ocorreu um erro no servidor, tente novamente mais tarde"}) // código 500, internal server error
   }
 }
+
+exports.cadastraProfessor = async (req, res) => {
+  try
+  {
+    const email = req.body.email
+    const senha = req.body.senha
+    const nome = req.body.nome
+
+    const senhaHasheada = await bcrypt.hash(senha, 10)
+
+    const professor = new Professor({
+      email: email,
+      senha: senhaHasheada,
+      nome: nome
+    })
+
+    await professor.save()
+
+    res.status(201).end()
+  }
+  catch(error)
+  {
+    if(error.code == codigoDeErroDeDuplicidade)  // Retorna um código 409, que indica conflito (de unicidade nesse caso)
+    {
+      return res.status(409).json({mensagem: "Já existe um professor cadastrado com esse email"});
+    }
+
+    if(error.name == "ValidationError")  // código 400 significa bad request
+    {
+      return res.status(400).json({
+        mensagem: "Dados inválidos. Por favor, verifique os campos obrigatórios e formatos",
+        erros: error.errors
+      })
+    }
+
+    return res.status(500).json({mensagem: "Ocorreu um erro no servidor, tente novamente mais tarde"}) // código 500, internal server error
+  }
+}

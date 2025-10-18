@@ -4,5 +4,6 @@ const router = express.Router()
 const authController = require("../controllers/auth.controller")
 
 router.post("/cadastro/alunos", authController.cadastraAluno)
+router.post("/cadastro/professores", authController.cadastraProfessor)
 
 module.exports = router
