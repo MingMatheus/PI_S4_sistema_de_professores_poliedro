@@ -93,3 +93,7 @@ exports.cadastraProfessor = async (req, res) => {
     return res.status(500).json({mensagem: "Ocorreu um erro no servidor, tente novamente mais tarde"}) // código 500, internal server error
   }
 }
+
+exports.login = async (req, res) => {
+  
+}
