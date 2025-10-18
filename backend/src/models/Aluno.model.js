@@ -25,7 +25,8 @@ const alunoSchema = mongoose.Schema({
   },
   turma: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Turma"
+    ref: "Turma",
+    default: null
   },
   ra: {
     type: String,
