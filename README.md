@@ -9,7 +9,7 @@ Esse projeto tem como objetivo ser um sistema para professores e alunos do colé
 
   Compartilhamento de materiais de estudo.
 
-  Envio de mensagens e avisos para alunos ou turmas.
+  Envio de avisos para os alunos.
 
   Registro e atualização de notas.
 
@@ -17,7 +17,7 @@ Esse projeto tem como objetivo ser um sistema para professores e alunos do colé
 
   Visualização e download de materiais.
 
-  Recebimento de mensagens e avisos.
+  Recebimento de avisos os professores.
 
   Consulta de notas.
 
