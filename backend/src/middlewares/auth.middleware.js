@@ -4,12 +4,12 @@ const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization
 
   if(!authHeader) {
-    return res.status(401).json({message: "Acesso negado. O token de autenticação não foi fornecido." });
+    return res.status(401).json({message: "Acesso negado. O token de autenticação não foi fornecido."});
   }
 
   const parts = authHeader.split(" ");
   if(parts.length !== 2 || parts[0] !== "Bearer") {
-    return res.status(401).json({message: "Erro no formato do token. O formato esperado é \"Bearer <token>\"." });
+    return res.status(401).json({message: "Erro no formato do token. O formato esperado é \"Bearer <token>\"."});
   }
   const token = parts[1];
 
