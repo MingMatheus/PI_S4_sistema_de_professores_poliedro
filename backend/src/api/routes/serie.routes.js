@@ -2,7 +2,18 @@ const express = require("express")
 const router = express.Router()
 
 const serieController = require("../controllers/serie.controller")
+const authMiddleware = require("../../middlewares/auth.middleware")
 
-router.post("/", serieController.cadastraSerie)
+// Rotas públicas
+
+// Rotas protegidas
+
+// Rotas restritas
+router.post(
+  "/",
+  authMiddleware,
+  checkRole(["professor"]),
+  serieController.cadastraSerie
+)
 
 module.exports = router
