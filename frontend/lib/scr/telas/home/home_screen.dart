@@ -51,8 +51,8 @@ class _HomeScreenState extends State<HomeScreen> {
               selectedIconTheme: const IconThemeData(color: Colors.white),
               destinations: const <NavigationRailDestination>[
                 NavigationRailDestination(
-                  icon: Icon(Icons.dashboard_outlined),
-                  selectedIcon: Icon(Icons.dashboard),
+                  icon: Icon(Icons.menu_book_outlined),
+                  selectedIcon: Icon(Icons.menu_book),
                   label: Text('Início'),
                 ),
                 NavigationRailDestination(
@@ -116,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
+            icon: Icon(Icons.menu_book_outlined),
             label: 'Início',
           ),
           BottomNavigationBarItem(
