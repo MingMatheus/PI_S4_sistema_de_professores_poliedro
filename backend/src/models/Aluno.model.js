@@ -1,4 +1,6 @@
 const mongoose = require("mongoose")
+const bcrypt = require("bcrypt")
+const {validaEmailAluno, validaSenha} = require("../utils/validators.utils")
 
 const alunoSchema = mongoose.Schema({
   email: {
@@ -7,10 +9,10 @@ const alunoSchema = mongoose.Schema({
     unique: true,
     trim: true,
     lowercase: true,
-    match: [
-      /^\S+@\S+\.\S+$/,
-      "Email inválido"
-    ]
+    validate: {
+      validator: validaEmailAluno,
+      message: "Por favor insira um email de aluno válido"
+    }
   },
   senha: {
     type: String,
@@ -32,6 +34,29 @@ const alunoSchema = mongoose.Schema({
     required: [true, "O RA é obrigatório"],
     unique: true,
     trim: true
+  }
+})
+
+alunoSchema.pre("save", async function(next) {
+  const aluno = this
+
+  if (!aluno.isModified("senha"))
+    return next();
+
+  // 1. Valida a senha
+  if(!validaSenha(aluno.senha))
+    return next(new Error("A senha está inválida"))
+
+  // 2. Faz o hashing
+  try
+  {
+    const senhaHasheada = await bcrypt.hash(aluno.senha, 10)
+    aluno.senha = senhaHasheada
+    next()
+  }
+  catch(error)
+  {
+    next(error);
   }
 })
 
