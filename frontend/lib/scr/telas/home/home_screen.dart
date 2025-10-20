@@ -24,9 +24,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width >= 720;
 
-    // Lista de telas para o conteúdo principal
     final List<Widget> pages = [
-      const DesktopDashboardView(), // Tela de Início
+      const DesktopDashboardView(),
       const Center(child: Text('Página de Materiais')),
       const Center(child: Text('Página de Notas')),
       const Center(child: Text('Página de Mensagens')),
@@ -75,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book_outlined),
+            icon: Icon(Icons.home_outlined),
             label: 'Início',
           ),
           BottomNavigationBarItem(

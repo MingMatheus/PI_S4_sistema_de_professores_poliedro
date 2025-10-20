@@ -31,9 +31,8 @@ class MainLayout extends StatelessWidget {
           ),
         ],
       ),
-      // Adicionado crossAxisAlignment aqui
       body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start, // <<<<<< CORREÇÃO APLICADA AQUI
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           NavigationRail(
             selectedIndex: selectedIndex,
@@ -47,8 +46,8 @@ class MainLayout extends StatelessWidget {
             groupAlignment: -1,
             destinations: const <NavigationRailDestination>[
               NavigationRailDestination(
-                icon: Icon(Icons.menu_book_outlined),
-                selectedIcon: Icon(Icons.menu_book),
+                icon: Icon(Icons.home_outlined),
+                selectedIcon: Icon(Icons.home),
                 label: Text('Início'),
               ),
               NavigationRailDestination(
@@ -75,7 +74,7 @@ class MainLayout extends StatelessWidget {
           ),
           const VerticalDivider(thickness: 1, width: 1),
           Expanded(
-            child: child, // O child (DesktopDashboardView) já está alinhado ao topo
+            child: child,
           ),
         ],
       ),
