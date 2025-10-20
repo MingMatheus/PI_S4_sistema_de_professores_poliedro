@@ -11,7 +11,6 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // Alterado de _raController para _emailController
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
   bool _isLoading = false;
@@ -31,48 +30,37 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Para criar um layout que se adapta ao tamanho da tela
     final isSmallScreen = MediaQuery.of(context).size.width < 800;
 
     return Scaffold(
-      // Usamos a cor de fundo do seu tema aqui
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Center(
         child: isSmallScreen
-            ? _buildLoginForm(context) // Mostra só o formulário em telas pequenas
+            ? _buildLoginForm(context)
             : Row(
                 children: [
-                  // Coluna da Esquerda (Azul com a Logo)
                   Expanded(
-                    flex: 1, // Ocupa 1/3 da tela
+                    flex: 7, // Proporção do Figma: 672px -> flex 7
                     child: Container(
-                      color: poliedroBlue, // Cor definida em app_colors.dart
+                      color: poliedroBlue,
                       child: Center(
-                        child: Container(
-                          padding: const EdgeInsets.all(32.0),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
+                        // Usando ClipRRect para arredondar a imagem diretamente
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            return ClipRRect(
+                              borderRadius: BorderRadius.circular(8), // Corner radius de 8
+                              child: Image.asset(
+                                'assets/images/logo.jpg',
+                                width: constraints.maxWidth * 0.45, // 45% da largura da coluna azul
                               ),
-                            ],
-                          ),
-                          // CORRIGIDO: Adicionado a extensão .jpg
-                          child: Image.asset(
-                            'assets/images/logo.jpg',
-                            width: 180, // Tamanho da imagem
-                          ),
+                            );
+                          },
                         ),
                       ),
                     ),
                   ),
-                  // Coluna da Direita (Branca com o Formulário)
                   Expanded(
-                    flex: 2, // Ocupa 2/3 da tela
+                    flex: 13, // Proporção do Figma: 1248px (resto) -> flex 13
                     child: Center(
                       child: SingleChildScrollView(
                         child: _buildLoginForm(context),
@@ -85,12 +73,14 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Widget separado para o formulário, para reutilização e organização
   Widget _buildLoginForm(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(maxWidth: 400),
-      margin: const EdgeInsets.all(24.0), // Margem para telas pequenas
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+      // ##### DIMENSÕES DO FIGMA APLICADAS AQUI #####
+      width: 600,   // LARGURA FIXA DE 600
+      height: 500,  // ALTURA FIXA DE 500
+      // ##### FIM DA MUDANÇA #####
+      margin: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0), // Padding ajustado
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16.0),
@@ -103,7 +93,8 @@ class _LoginScreenState extends State<LoginScreen> {
         ],
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        // Alinha o conteúdo no centro verticalmente dentro da caixa de 500px
+        mainAxisAlignment: MainAxisAlignment.center, 
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Icon(
@@ -122,8 +113,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           const SizedBox(height: 32),
-
-          // ALTERADO: Campo de RA para E-mail
           CustomTextField(
             controller: _emailController,
             label: 'E-mail',
@@ -156,12 +145,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _handleLogin,
                   child: const Text('Entrar'),
                 ),
-          const SizedBox(height: 32),
-          Text(
-            '© 2025 Colégio Poliedro – Todos os direitos reservados',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey[500], fontSize: 12),
-          ),
+          // O copyright foi removido daqui para não ficar preso no meio
+          // Se quiser, podemos adicioná-lo fora da caixa
         ],
       ),
     );
