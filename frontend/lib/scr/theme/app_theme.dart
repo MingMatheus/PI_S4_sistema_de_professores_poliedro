@@ -1,24 +1,22 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart'; 
+import '../constants/app_colors.dart';
 
 class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       primaryColor: poliedroBlue,
-      scaffoldBackgroundColor: lightGrey, // fundo do aplicativo
+      scaffoldBackgroundColor: const Color(0xFFF0F2F5),
       fontFamily: 'Roboto',
-      
       appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.white,
+        backgroundColor: poliedroBlue,
         elevation: 1,
-        iconTheme: IconThemeData(color: Colors.black54),
+        iconTheme: IconThemeData(color: Colors.white),
         titleTextStyle: TextStyle(
-          color: Colors.black87,
+          color: Colors.white,
           fontWeight: FontWeight.bold,
           fontSize: 20,
         ),
       ),
-
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: poliedroPink,
@@ -33,13 +31,20 @@ class AppTheme {
           ),
         ),
       ),
-
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: lightGrey,
+        fillColor: Colors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: poliedroBlue, width: 2),
         ),
         contentPadding: const EdgeInsets.all(16),
         hintStyle: TextStyle(color: Colors.grey[400]),
@@ -49,15 +54,15 @@ class AppTheme {
           color: Colors.grey[700],
         ),
       ),
-      
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         selectedItemColor: poliedroBlue,
         unselectedItemColor: Colors.grey[600],
         showUnselectedLabels: true,
+        type: BottomNavigationBarType.fixed,
       ),
-
       cardTheme: CardThemeData(
         elevation: 0.5,
+        color: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: EdgeInsets.zero,
       ),

@@ -145,8 +145,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _handleLogin,
                   child: const Text('Entrar'),
                 ),
-          // O copyright foi removido daqui para não ficar preso no meio
-          // Se quiser, podemos adicioná-lo fora da caixa
         ],
       ),
     );

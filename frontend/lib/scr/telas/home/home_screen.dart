@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import '../login/login_screen.dart'; // logout
-import '../../widgets/home_dashboard_view.dart'; // conteúdo da home
+import '../../constants/app_colors.dart';
+import '../../widgets/desktop_dashboard_view.dart';
+import '../login/login_screen.dart';
+import '../../widgets/home_dashboard_view.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,13 +14,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  static final List<Widget> _widgetOptions = <Widget>[
-    const HomeDashboardView(), // aba 1
-    const Center(child: Text('Página de Materiais')), // aba 2
-    const Center(child: Text('Página de Notas')), // aba 3
-    const Center(child: Text('Página de Mensagens')), // aba 4
-  ];
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -27,6 +22,82 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = MediaQuery.of(context).size.width >= 720;
+
+    if (isDesktop) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Portal Poliedro'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout_outlined),
+              onPressed: () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                );
+              },
+            ),
+          ],
+        ),
+        body: Row(
+          children: [
+            NavigationRail(
+              selectedIndex: _selectedIndex,
+              onDestinationSelected: _onItemTapped,
+              backgroundColor: poliedroBlue,
+              labelType: NavigationRailLabelType.none,
+              indicatorColor: Colors.white.withOpacity(0.2),
+              unselectedIconTheme: const IconThemeData(color: Colors.white),
+              selectedIconTheme: const IconThemeData(color: Colors.white),
+              destinations: const <NavigationRailDestination>[
+                NavigationRailDestination(
+                  icon: Icon(Icons.dashboard_outlined),
+                  selectedIcon: Icon(Icons.dashboard),
+                  label: Text('Início'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.folder_outlined),
+                  selectedIcon: Icon(Icons.folder),
+                  label: Text('Materiais'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.bar_chart_outlined),
+                  selectedIcon: Icon(Icons.bar_chart),
+                  label: Text('Notas'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.chat_bubble_outline),
+                  selectedIcon: Icon(Icons.chat_bubble),
+                  label: Text('Mensagens'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.notifications_none_outlined),
+                  selectedIcon: Icon(Icons.notifications),
+                  label: Text('Avisos'),
+                ),
+              ],
+            ),
+            const VerticalDivider(thickness: 1, width: 1),
+            const Expanded(
+              child: DesktopDashboardView(),
+            ),
+          ],
+        ),
+      );
+    } else {
+      return _buildMobileLayout();
+    }
+  }
+
+  Scaffold _buildMobileLayout() {
+    final List<Widget> mobileWidgetOptions = <Widget>[
+      const HomeDashboardView(),
+      const Center(child: Text('Página de Materiais')),
+      const Center(child: Text('Página de Notas')),
+      const Center(child: Text('Página de Mensagens')),
+      const Center(child: Text('Página de Avisos')),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Portal Poliedro'),
@@ -34,7 +105,6 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.logout_outlined),
             onPressed: () {
-              // logout **por enquanto só volta pro Login
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
               );
@@ -42,9 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: _widgetOptions.elementAt(_selectedIndex),
-
-      // menu inferior
+      body: mobileWidgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -60,8 +128,12 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Notas',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.mail_outline),
+            icon: Icon(Icons.chat_bubble_outline),
             label: 'Mensagens',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications_none_outlined),
+            label: 'Avisos',
           ),
         ],
         currentIndex: _selectedIndex,
