@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+// importa a tela de login (ajuste o caminho se o seu projeto for diferente)
+import '../telas/login/login_screen.dart';
 
 class MainLayout extends StatelessWidget {
   final Widget child;
@@ -13,6 +15,17 @@ class MainLayout extends StatelessWidget {
     required this.onDestinationSelected,
   });
 
+  void _handleLogout(BuildContext context) {
+    // se você tiver auth (ex.: FirebaseAuth), faça o signOut aqui antes de navegar:
+    // await FirebaseAuth.instance.signOut();
+
+    // navega para a tela de login e limpa todo o histórico (não permite voltar)
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,9 +38,8 @@ class MainLayout extends StatelessWidget {
           IconButton(
             iconSize: 30,
             icon: const Icon(Icons.logout_outlined),
-            onPressed: () {
-              // A lógica de logout pode ser adicionada aqui no futuro
-            },
+            onPressed: () => _handleLogout(context),
+            tooltip: 'Sair',
           ),
         ],
       ),
