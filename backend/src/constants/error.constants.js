@@ -8,6 +8,11 @@ const ERROR_CODES = {
   // Nomes de Erros do JWT
   JWT_EXPIRED_ERROR: 'TokenExpiredError',
   JWT_INVALID_ERROR: 'JsonWebTokenError',
+
+  API: {
+    TOKEN_EXPIRADO: "TOKEN_EXPIRADO",
+    TOKEN_INVALIDO: "TOKEN_INVALIDO"
+  }
 };
 
 // Congela o objeto para torná-lo imutável

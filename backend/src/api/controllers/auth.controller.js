@@ -20,7 +20,7 @@ const {
 const {
   AUTH,
   ERRO
-} = require("../../constants/reponseMessages.constants")
+} = require("../../constants/responseMessages.constants")
 
 exports.cadastraAluno = async (req, res) => {
   try

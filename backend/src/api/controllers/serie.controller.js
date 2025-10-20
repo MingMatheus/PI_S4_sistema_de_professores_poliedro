@@ -8,7 +8,7 @@ const {
 const {
   SERIE,
   ERRO
-} = require("../../constants/reponseMessages.constants")
+} = require("../../constants/responseMessages.constants")
 
 exports.cadastraSerie = async (req, res) => {
   try
