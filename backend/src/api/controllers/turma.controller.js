@@ -1,6 +1,9 @@
 const Turma = require("../../models/Turma.model")
 
-const codigoDeErroDeDuplicidade = 11000
+const {
+  MONGO_DUPLICATE_KEY,
+  MONGOOSE_VALIDATION_ERROR
+} = require("../../constants/error.constants")
 
 exports.cadastraTurma = async (req, res) => {
   try
@@ -13,14 +16,21 @@ exports.cadastraTurma = async (req, res) => {
   }
   catch(error)
   {
-    if(error.code == codigoDeErroDeDuplicidade)  // Retorna um código 409, que indica conflito (de unicidade nesse caso)
-      return res.status(409).json({mensagem: "Já existe uma turma cadastrada com esse nome"});
-
-    if(error.name == "ValidationError")  // código 400 significa bad request
+    if(error.code == MONGO_DUPLICATE_KEY)  // Retorna um código 409, que indica conflito (de unicidade nesse caso)
     {
+      if(error.keyValue.nome)
+        return res.status(409).json({mensagem: "Já existe uma turma cadastrada com esse nome"})
+
+      return res.status(409).json({mensagem: "Um campo único já existe"});
+    }
+
+    if(error.name == MONGOOSE_VALIDATION_ERROR)  // código 400 significa bad request
+    {
+      const errorMessages = Object.values(error.errors).map(err => err.message);
+
       return res.status(400).json({
         mensagem: "Dados inválidos. Por favor, verifique os campos obrigatórios e formatos",
-        erros: error.errors
+        erros: errorMessages
       })
     }
 
