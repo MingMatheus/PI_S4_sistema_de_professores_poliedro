@@ -31,7 +31,9 @@ class MainLayout extends StatelessWidget {
           ),
         ],
       ),
+      // Adicionado crossAxisAlignment aqui
       body: Row(
+        crossAxisAlignment: CrossAxisAlignment.start, // <<<<<< CORREÇÃO APLICADA AQUI
         children: [
           NavigationRail(
             selectedIndex: selectedIndex,
@@ -73,7 +75,7 @@ class MainLayout extends StatelessWidget {
           ),
           const VerticalDivider(thickness: 1, width: 1),
           Expanded(
-            child: child,
+            child: child, // O child (DesktopDashboardView) já está alinhado ao topo
           ),
         ],
       ),

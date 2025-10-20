@@ -11,36 +11,39 @@ class DesktopDashboardView extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column( // Layout principal agora é uma Coluna
         children: [
-          const Expanded(
-            flex: 3,
-            child: Column(
-              children: [
-                MensagensCard(),
-              ],
-            ),
+          // Linha de Cima
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Expanded(
+                flex: 5, // Proporção pode ser ajustada
+                child: MensagensCard(),
+              ),
+              const SizedBox(width: 24),
+              const Expanded(
+                flex: 3, // Proporção pode ser ajustada
+                child: NotasCard(),
+              ),
+            ],
           ),
-          const SizedBox(width: 24),
-          const Expanded(
-            flex: 2,
-            child: Column(
-              children: [
-                NotasCard(),
-                SizedBox(height: 24),
-                MateriaisCard(),
-              ],
-            ),
-          ),
-          const SizedBox(width: 24),
-          const Expanded(
-            flex: 3,
-            child: Column(
-              children: [
-                AvisosCard(),
-              ],
-            ),
+          const SizedBox(height: 24), // Espaço entre as linhas
+
+          // Linha de Baixo
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Expanded(
+                flex: 5, // Ocupa mais espaço
+                child: MateriaisCard(),
+              ),
+              const SizedBox(width: 24),
+              const Expanded(
+                flex: 3, // Ocupa menos espaço
+                child: AvisosCard(),
+              ),
+            ],
           ),
         ],
       ),
