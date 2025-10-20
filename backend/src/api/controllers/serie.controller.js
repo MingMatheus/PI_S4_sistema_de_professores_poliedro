@@ -5,15 +5,11 @@ const codigoDeErroDeDuplicidade = 11000
 exports.cadastraSerie = async (req, res) => {
   try
   {
-    const nome = req.body.nome
-
-    const serie = new Serie({
-      nome: nome
-    })
+    const serie = new Serie(req.body)
 
     await serie.save()
 
-    res.status(201).end()
+    res.status(201).json({mensagem: "Serie cadastrada com sucesso"})
   }
   catch(error)
   {

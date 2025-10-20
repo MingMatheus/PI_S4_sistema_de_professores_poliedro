@@ -5,17 +5,11 @@ const codigoDeErroDeDuplicidade = 11000
 exports.cadastraTurma = async (req, res) => {
   try
   {
-    const nome = req.body.nome
-    const serie = req.body.serie
-
-    const turma = new Turma({
-      nome: nome,
-      serie: serie
-    })
+    const turma = new Turma(req.body)
 
     await turma.save()
 
-    res.status(201).end()
+    res.status(201).json({mensagem: "Turma cadastrada com sucesso"})
   }
   catch(error)
   {
