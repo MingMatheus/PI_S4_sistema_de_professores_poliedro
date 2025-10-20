@@ -1,9 +1,13 @@
 const mongoose = require("mongoose")
 
+const {
+  VALIDACAO
+} = require("../constants/responseMessages.constants")
+
 const pastaSchema = mongoose.Schema({
   nome: {
     type: String,
-    required: [true, "O nome da pasta é obrigatório"],
+    required: [true, VALIDACAO.PASTA.NOME_OBRIGATORIO],
     trim: true
   },
   pastaPai: {
@@ -14,11 +18,11 @@ const pastaSchema = mongoose.Schema({
   criadorDaPasta: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Professor",
-    required: [true, "A pasta precisa do professor que a criou"]
+    required: [true, VALIDACAO.PASTA.CRIADOR_OBRIGATORIO]
   }
 })
 
-folderSchema.index({ pastaPai: 1, nome: 1 }, { unique: true });
+folderSchema.index({pastaPai: 1, nome: 1}, {unique: true})
 
 const Pasta = mongoose.model("Pasta", pastaSchema)
 

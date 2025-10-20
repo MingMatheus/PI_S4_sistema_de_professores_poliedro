@@ -2,26 +2,30 @@ const mongoose = require("mongoose")
 const bcrypt = require("bcrypt")
 const {validaEmailAluno, validaSenha} = require("../utils/validators.utils")
 
+const {
+  VALIDACAO
+} = require("../constants/responseMessages.constants")
+
 const alunoSchema = mongoose.Schema({
   email: {
     type: String,
-    required: [true, "O email é obrigatório"],
+    required: [true, VALIDACAO.GERAL.EMAIL_OBRIGATORIO],
     unique: true,
     trim: true,
     lowercase: true,
     validate: {
       validator: validaEmailAluno,
-      message: "Por favor insira um email de aluno válido"
+      message: VALIDACAO.ALUNO.EMAIL_INVALIDO
     }
   },
   senha: {
     type: String,
-    required: [true, "A senha é obrigatória"],
+    required: [true, VALIDACAO.GERAL.SENHA_OBRIGATORIA],
     select: false
   },
   nome: {
     type: String,
-    required: [true, "O nome do aluno é obrigatório"],
+    required: [true, VALIDACAO.ALUNO.NOME_OBRIGATORIO],
     trim: true
   },
   turma: {
@@ -31,7 +35,7 @@ const alunoSchema = mongoose.Schema({
   },
   ra: {
     type: String,
-    required: [true, "O RA é obrigatório"],
+    required: [true, VALIDACAO.ALUNO.RA_OBRIGATORIO],
     unique: true,
     trim: true
   }
@@ -45,7 +49,7 @@ alunoSchema.pre("save", async function(next) {
 
   // 1. Valida a senha
   if(!validaSenha(aluno.senha))
-    return next(new Error("A senha está inválida"))
+    return next(new Error(VALIDACAO.GERAL.SENHA_INVALIDA))
 
   // 2. Faz o hashing
   try

@@ -22,6 +22,49 @@ const RESPONSE_MESSAGES = {
     ERRO_INTERNO_NO_SERVIDOR: "Ocorreu um erro no servidor, tente novamente mais tarde"
   },
 
+  // Mensagens de validação, usadas nos models
+  VALIDACAO: {
+    GERAL: {
+      EMAIL_OBRIGATORIO: "O email é obrigatório",
+      SENHA_OBRIGATORIA: "A senha é obrigatória",
+      SENHA_INVALIDA: "A senha está inválida"
+    },
+    
+    ALUNO: {
+      EMAIL_INVALIDO: "Por favor insira um email de aluno válido",
+      NOME_OBRIGATORIO: "O nome do aluno é obrigatório",
+      RA_OBRIGATORIO: "O RA é obrigatório"
+    },
+
+    PROFESSOR: {
+      EMAIL_INVALIDO: "Por favor insira um email de professor válido",
+      NOME_OBRIGATORIO: "O nome do professor é obrigatório"
+    },
+
+    TURMA: {
+      NOME_OBRIGATORIO: "O nome da turma é obrigatório"
+    },
+
+    SERIE: {
+      NOME_OBRIGATORIO: "O nome da série é obrigatório"
+    },
+
+    ARQUIVO: {
+      NOME_ORIGINAL_OBRIGATORIO: "O nome original do arquivo é obrigatório",
+      NOME_NO_SISTEMA_OBRIGATORIO: "O nome do arquivo no sistema é obrigatório",
+      TAMANHO_OBRIGATORIO: "O tamanho do arquivo é obrigatório",
+      TIPO_OBRIGATORIO: "O tipo do arquivo é obrigatório",
+      CAMINHO_OBRIGATORIO: "O caminho do arquivo é obrigatório",
+      URL_OBRIGATORIA: "A URL do arquivo é obrigatória",
+      PROFESSOR_QUE_FEZ_O_UPLOAD_OBRIGATORIO: "O professor que fez o upload é obrigatório"
+    },
+
+    PASTA: {
+      NOME_OBRIGATORIO: "O nome da pasta é obrigatório",
+      CRIADOR_OBRIGATORIO: "A pasta precisa do professor que a criou"
+    }
+  },
+
   TURMA: {
     CRIADA_COM_SUCESSO: "Turma criada com sucesso",
     NOME_EM_USO: "Já existe uma turma cadastrada com esse nome"

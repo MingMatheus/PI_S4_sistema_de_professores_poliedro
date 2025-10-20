@@ -1,9 +1,13 @@
 const mongoose = require("mongoose")
 
+const {
+  VALIDACAO
+} = require("../constants/responseMessages.constants")
+
 const turmaSchema = mongoose.Schema({
   nome: {
     type: String,
-    required: [true, "O nome da turma é obrigatório"],
+    required: [true, VALIDACAO.TURMA.NOME_OBRIGATORIO],
     unique: true,
     trim: true
   },
