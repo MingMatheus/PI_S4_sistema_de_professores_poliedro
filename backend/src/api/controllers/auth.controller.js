@@ -18,7 +18,7 @@ exports.cadastraAluno = async (req, res) => {
 
     const senha = req.body.senha
 
-    if(senha.length < tamanhoMinimoDaSenha) return res.status(400).json({mensagem: "A senha deve ter no minímo 8 dígitos"})  // Status 400: Bad Request
+    if(senha.length < tamanhoMinimoDaSenha) return res.status(400).json({mensagem: `A senha deve ter no minímo ${tamanhoMinimoDaSenha} dígitos`})  // Status 400: Bad Request
 
     const nome = req.body.nome
     const turma = req.body.turma
@@ -75,7 +75,7 @@ exports.cadastraProfessor = async (req, res) => {
 
     const senha = req.body.senha
 
-    if(senha.length < tamanhoMinimoDaSenha) return res.status(400).json({mensagem: "A senha deve ter no minímo 8 dígitos"})  // Status 400: Bad Request
+    if(senha.length < tamanhoMinimoDaSenha) return res.status(400).json({mensagem: `A senha deve ter no minímo ${tamanhoMinimoDaSenha} dígitos`})  // Status 400: Bad Request
 
     const nome = req.body.nome
 
