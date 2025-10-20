@@ -27,9 +27,13 @@ class _HomeScreenState extends State<HomeScreen> {
     if (isDesktop) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Portal Poliedro'),
+          title: const Text(
+            'Portal Poliedro',
+            style: TextStyle(fontSize: 22),
+          ),
           actions: [
             IconButton(
+              iconSize: 30,
               icon: const Icon(Icons.logout_outlined),
               onPressed: () {
                 Navigator.of(context).pushReplacement(
@@ -46,9 +50,11 @@ class _HomeScreenState extends State<HomeScreen> {
               onDestinationSelected: _onItemTapped,
               backgroundColor: poliedroBlue,
               labelType: NavigationRailLabelType.none,
-              indicatorColor: Colors.white.withOpacity(0.2),
-              unselectedIconTheme: const IconThemeData(color: Colors.white),
-              selectedIconTheme: const IconThemeData(color: Colors.white),
+              indicatorColor: Colors.transparent,
+              unselectedIconTheme: const IconThemeData(color: Colors.white, size: 44),
+              selectedIconTheme: const IconThemeData(color: Colors.black, size: 44),
+              minWidth: 75,
+              groupAlignment: -1,
               destinations: const <NavigationRailDestination>[
                 NavigationRailDestination(
                   icon: Icon(Icons.menu_book_outlined),
@@ -100,9 +106,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Portal Poliedro'),
+        title: const Text(
+          'Portal Poliedro',
+          style: TextStyle(fontSize: 22),
+        ),
         actions: [
           IconButton(
+            iconSize: 30,
             icon: const Icon(Icons.logout_outlined),
             onPressed: () {
               Navigator.of(context).pushReplacement(
