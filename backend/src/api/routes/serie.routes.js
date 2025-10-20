@@ -3,6 +3,11 @@ const router = express.Router()
 
 const serieController = require("../controllers/serie.controller")
 const authMiddleware = require("../../middlewares/auth.middleware")
+const checkRole = require("../../middlewares/checkRole.middleware")
+
+const {
+  ROLES
+} = require("../../constants/validation.constants")
 
 // Rotas públicas
 
@@ -12,7 +17,7 @@ const authMiddleware = require("../../middlewares/auth.middleware")
 router.post(
   "/",
   authMiddleware,
-  checkRole(["professor"]),
+  checkRole([ROLES.PROFESSOR]),
   serieController.cadastraSerie
 )
 

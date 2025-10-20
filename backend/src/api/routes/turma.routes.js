@@ -5,6 +5,10 @@ const turmaController = require("../controllers/turma.controller")
 const authMiddleware = require("../../middlewares/auth.middleware")
 const checkRole = require("../../middlewares/checkRole.middleware")
 
+const {
+  ROLES
+} = require("../../constants/validation.constants")
+
 // Rotas públicas
 
 // Rotas protegidas
@@ -13,7 +17,7 @@ const checkRole = require("../../middlewares/checkRole.middleware")
 router.post(
   "/",
   authMiddleware,
-  checkRole(["professor"]),
+  checkRole([ROLES.PROFESSOR]),
   turmaController.cadastraTurma
 )
 
