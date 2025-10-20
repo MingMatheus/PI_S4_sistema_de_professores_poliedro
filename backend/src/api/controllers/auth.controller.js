@@ -1,10 +1,8 @@
 const jwt = require("jsonwebtoken")
+const bcrypt = require("bcrypt")
 
 const Aluno = require("../../models/Aluno.model")
 const Professor = require("../../models/Professor.model")
-
-const regexEmailValido = /^\S+@\S+\.\S+$/
-const regexEmailDeProfessor = /.*@sistemapoliedro.com.br$/
 
 const {
   validaEmail,
