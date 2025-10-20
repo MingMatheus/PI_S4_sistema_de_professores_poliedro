@@ -9,7 +9,8 @@ const turmaSchema = mongoose.Schema({
   },
   serie: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Serie"
+    ref: "Serie",
+    default: null
   }
 })
 
