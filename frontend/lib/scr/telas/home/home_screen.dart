@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../constants/app_colors.dart';
 import '../../widgets/desktop_dashboard_view.dart';
-import '../login/login_screen.dart';
 import '../../widgets/home_dashboard_view.dart';
+import '../../widgets/main_layout.dart';
+import '../login/login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,71 +24,20 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width >= 720;
 
+    // Lista de telas para o conteúdo principal
+    final List<Widget> pages = [
+      const DesktopDashboardView(), // Tela de Início
+      const Center(child: Text('Página de Materiais')),
+      const Center(child: Text('Página de Notas')),
+      const Center(child: Text('Página de Mensagens')),
+      const Center(child: Text('Página de Avisos')),
+    ];
+
     if (isDesktop) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            'Portal Poliedro',
-            style: TextStyle(fontSize: 22),
-          ),
-          actions: [
-            IconButton(
-              iconSize: 30,
-              icon: const Icon(Icons.logout_outlined),
-              onPressed: () {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                );
-              },
-            ),
-          ],
-        ),
-        body: Row(
-          children: [
-            NavigationRail(
-              selectedIndex: _selectedIndex,
-              onDestinationSelected: _onItemTapped,
-              backgroundColor: poliedroBlue,
-              labelType: NavigationRailLabelType.none,
-              indicatorColor: Colors.transparent,
-              unselectedIconTheme: const IconThemeData(color: Colors.white, size: 44),
-              selectedIconTheme: const IconThemeData(color: Colors.black, size: 44),
-              minWidth: 75,
-              groupAlignment: -1,
-              destinations: const <NavigationRailDestination>[
-                NavigationRailDestination(
-                  icon: Icon(Icons.menu_book_outlined),
-                  selectedIcon: Icon(Icons.menu_book),
-                  label: Text('Início'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.folder_outlined),
-                  selectedIcon: Icon(Icons.folder),
-                  label: Text('Materiais'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.bar_chart_outlined),
-                  selectedIcon: Icon(Icons.bar_chart),
-                  label: Text('Notas'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.chat_bubble_outline),
-                  selectedIcon: Icon(Icons.chat_bubble),
-                  label: Text('Mensagens'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.notifications_none_outlined),
-                  selectedIcon: Icon(Icons.notifications),
-                  label: Text('Avisos'),
-                ),
-              ],
-            ),
-            const VerticalDivider(thickness: 1, width: 1),
-            const Expanded(
-              child: DesktopDashboardView(),
-            ),
-          ],
-        ),
+      return MainLayout(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: _onItemTapped,
+        child: pages[_selectedIndex],
       );
     } else {
       return _buildMobileLayout();
