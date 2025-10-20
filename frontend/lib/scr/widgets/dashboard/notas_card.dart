@@ -6,12 +6,17 @@ class NotasCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleStyle = Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: poliedroBlue);
+    final titleStyle = Theme.of(context)
+        .textTheme
+        .titleLarge
+        ?.copyWith(fontWeight: FontWeight.bold, color: poliedroBlue);
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               children: [
@@ -21,18 +26,51 @@ class NotasCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            _buildNotaItem(context, title: 'Nota de Prova', details: 'Matemática - Prova Bimestral (P2): 8.5 / 10'),
+
+            _buildNotaItem(
+              context,
+              title: 'Nota de Prova',
+              details: 'Matemática - Prova Bimestral (P2): 8.5 / 10',
+            ),
             const SizedBox(height: 12),
-            _buildNotaItem(context, title: 'Nota de Exercício', details: 'Química - Lista de Exercícios (Tabela Periódica): 10 / 10'),
+
+            _buildNotaItem(
+              context,
+              title: 'Nota de Exercício',
+              details: 'Química - Lista de Exercícios: 10 / 10',
+            ),
             const SizedBox(height: 12),
-            _buildNotaItem(context, title: 'Nota de Trabalho em Grupo', details: 'História - Trabalho em Grupo (Revolução Industrial): 9.0 / 10'),
+
+            _buildNotaItem(
+              context,
+              title: 'Nota de Trabalho em Grupo',
+              details: 'História - Revolução Industrial: 9.0 / 10',
+            ),
+            const SizedBox(height: 12),
+
+            _buildNotaItem(
+              context,
+              title: 'Nota de Simulado',
+              details: 'Biologia - Genética: 7.8 / 10',
+            ),
+            const SizedBox(height: 12),
+
+            _buildNotaItem(
+              context,
+              title: 'Média Parcial',
+              details: 'Física - Leis de Newton: 8.2 / 10',
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNotaItem(BuildContext context, {required String title, required String details}) {
+  Widget _buildNotaItem(
+    BuildContext context, {
+    required String title,
+    required String details,
+  }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -42,7 +80,13 @@ class NotasCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                title,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleSmall
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
               Text(details, style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
