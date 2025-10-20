@@ -4,7 +4,7 @@ const VALIDATION_CONSTANTS = {
 
   // Constantes de Email
   REGEX_EMAIL_GERAL: /^\S+@\S+\.\S+$/,
-  REGEX_EMAIL_PROFESSOR: /.+@sistemapoliedro.com.br$/,
+  REGEX_EMAIL_PROFESSOR: /.*@sistemapoliedro.com.br$/,
   
   // Constantes de Cargos (Roles)
   ROLES: {
