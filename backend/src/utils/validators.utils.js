@@ -10,6 +10,12 @@ const validaEmail = (email) => {
   return REGEX_EMAIL_GERAL.test(email)
 }
 
+const validaEmailAluno = (emailAluno) => {
+  if(!emailAluno) return false
+
+  return REGEX_EMAIL_GERAL.test(emailAluno) && !REGEX_EMAIL_PROFESSOR.test(emailAluno)
+}
+
 const validaEmailProfessor = (emailProfessor) => {
   if(!emailProfessor) return false
 
@@ -24,6 +30,7 @@ const validaSenha = (senha) => {
 
 module.exports = {
   validaEmail,
+  validaEmailAluno,
   validaEmailProfessor,
   validaSenha
 }
