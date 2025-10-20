@@ -8,7 +8,7 @@ const {
 const {
   TURMA,
   ERRO
-} = require("../../constants/reponseMessages.constants")
+} = require("../../constants/responseMessages.constants")
 
 exports.cadastraTurma = async (req, res) => {
   try
