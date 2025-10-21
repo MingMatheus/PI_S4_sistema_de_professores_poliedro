@@ -301,7 +301,198 @@ describe("Rotas de autenticação", () => {
 
   // 2. Testes relacionados ao cadastro de professores
   describe("POST /api/auth/cadastro/professores", () => {
-    
+    let profToken
+
+    // Cria um professor antes dos testes de cadastro de professores, pq o cadastro de professores necessita de uma professor logado
+    beforeEach(async () => {
+      const professor = new Professor({
+        email: "professor@test.com",
+        senha: "senhaDoProfessor",
+        nome: "Professor de Teste"
+      });
+      await professor.save()
+
+      // Para simplificar, vamos criar um token manualmente
+      const jwt = require('jsonwebtoken')
+      profToken = jwt.sign({ sub: professor._id, role: "professor" }, process.env.JWT_SECRET)
+    })
+
+    // 2.1 Testa um cadastro de professor feito com sucesso
+    it("deve cadastrar um novo professor e retornar status 201", async () => {
+      // 1. Arrange
+      const novoProfessor = {
+        email: "professor.teste@sistemapoliedro.com.br",
+        senha: "password123",
+        nome: "Professor Teste"
+      }
+
+      // 2. Act (Agir) - Faz a requisição para a API
+      const response = await request(app)
+        .post("/api/auth/cadastro/professores")
+        .set("Authorization", `Bearer ${profToken}`) // Adiciona o token de autenticação
+        .send(novoProfessor); // Envia os dados do novo aluno no corpo da requisição
+
+      // 3. Assert (Verificar) - Checa a resposta da API
+      expect(response.statusCode).toBe(201);
+      expect(response.body).toHaveProperty("mensagem", AUTH.PROFESSOR_CRIADO);
+      
+      // 4. Assert (Verificar) - Checa se o usuário foi realmente salvo no banco de dados
+      const professorSalvo = await Professor.findOne({email: "professor.teste@sistemapoliedro.com.br"});
+      expect(professorSalvo).not.toBeNull();
+      expect(professorSalvo.nome).toBe("Professor Teste");
+    })
+
+    // 2.2 Testa um cadastro de professor que falha devido ao email ja estar em uso
+    it("deve retornar erro 409 se o email já estiver em uso", async () => {
+      // 1. Arrange
+      const professor1 = {
+        email: "professor.teste@sistemapoliedro.com.br",
+        senha: "password1234",
+        nome: "Professor Teste 1"
+      }
+
+      const professor2 = {
+        email: "professor.teste@sistemapoliedro.com.br",
+        senha: "password4321",
+        nome: "Professor Teste 2"
+      }
+
+      // Cadastra o primeiro professor
+      await request(app)
+        .post('/api/auth/cadastro/professores')
+        .set('Authorization', `Bearer ${profToken}`)
+        .send(professor1)
+
+      // 2. Act
+      const response = await request(app)
+        .post('/api/auth/cadastro/professores')
+        .set('Authorization', `Bearer ${profToken}`)
+        .send(professor2);
+
+      // 3. Assert
+      expect(response.statusCode).toBe(409);
+      expect(response.body).toHaveProperty("mensagem", AUTH.EMAIL_EM_USO);
+    })
+
+    // 2.3 Testa um cadastro de professor que falha devido ao email não ser um email de professor
+    it("deve retornar erro 400 se o email fornecido não for um email de professor", async () => {
+      // 1. Arrange
+      const professor = {
+        email: "professor.teste@outrodominio.com.br",
+        senha: "password1234",
+        nome: "Professor Teste"
+      }
+
+      // 2. Act
+      const response = await request(app)
+        .post('/api/auth/cadastro/professores')
+        .set('Authorization', `Bearer ${profToken}`)
+        .send(professor);
+
+      // 3. Assert
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toHaveProperty("mensagem", ERRO.VALIDACAO);
+    })
+
+    // 2.4 Testa um cadastro de professor que falha devido ao email estar mal formatado
+    it("deve retornar erro 400 se o email fornecido estiver mal formatado", async () => {
+      // 1. Arrange
+      const professor = {
+        email: "professor.teste@sistemapoliedrocombr",
+        senha: "password1234",
+        nome: "Professor Teste"
+      }
+
+      // 2. Act
+      const response = await request(app)
+        .post('/api/auth/cadastro/professores')
+        .set('Authorization', `Bearer ${profToken}`)
+        .send(professor);
+
+      // 3. Assert
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toHaveProperty("mensagem", ERRO.VALIDACAO);
+    })
+
+    // 2.5 Testa um cadastro de professor que falha devido a senha não estar válida
+    it("deve retornar erro 400 se a senha fornecido não for válida", async () => {
+      // 1. Arrange
+      const professor = {
+        email: "professor.teste@sistemapoliedro.com.br",
+        senha: "1234567",
+        nome: "Professor Teste"
+      }
+
+      // 2. Act
+      const response = await request(app)
+        .post('/api/auth/cadastro/professores')
+        .set('Authorization', `Bearer ${profToken}`)
+        .send(professor);
+
+      // 3. Assert
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toHaveProperty("mensagem", ERRO.VALIDACAO);
+    })
+
+    // 2.6 Testa um cadastro de professor que falha devido ao email não ter sido fornecido
+    it("deve retornar erro 400 se o email não for fornecido", async () => {
+      // 1. Arrange
+      const professor = {
+        // email: "professor.teste@sistemapoliedro.com.br",
+        senha: "12345678",
+        nome: "Professor Teste"
+      }
+
+      // 2. Act
+      const response = await request(app)
+        .post('/api/auth/cadastro/professores')
+        .set('Authorization', `Bearer ${profToken}`)
+        .send(professor);
+
+      // 3. Assert
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toHaveProperty("mensagem", ERRO.VALIDACAO);
+    })
+
+    // 2.7 Testa um cadastro de professor que falha devido a senha não ter sido fornecida
+    it("deve retornar erro 400 se a senha não for fornecida", async () => {
+      // 1. Arrange
+      const professor = {
+        email: "professor.teste@sistemapoliedro.com.br",
+        // senha: "12345678",
+        nome: "Professor Teste"
+      }
+
+      // 2. Act
+      const response = await request(app)
+        .post('/api/auth/cadastro/professores')
+        .set('Authorization', `Bearer ${profToken}`)
+        .send(professor);
+
+      // 3. Assert
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toHaveProperty("mensagem", ERRO.VALIDACAO);
+    })
+
+    // 2.8 Testa um cadastro de professor que falha devido ao nome não ter sido fornecido
+    it("deve retornar erro 400 se o nome não for fornecido", async () => {
+      // 1. Arrange
+      const professor = {
+        email: "professor.teste@sistemapoliedro.com.br",
+        senha: "12345678"
+        // nome: "Professor Teste"
+      }
+
+      // 2. Act
+      const response = await request(app)
+        .post('/api/auth/cadastro/professores')
+        .set('Authorization', `Bearer ${profToken}`)
+        .send(professor);
+
+      // 3. Assert
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toHaveProperty("mensagem", ERRO.VALIDACAO);
+    })
   })
 
   // 3. Testes relacionados ao login
