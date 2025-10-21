@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const jwt = require("jsonwebtoken")
 
 const request = require('supertest')
 const { MongoMemoryServer } = require('mongodb-memory-server')
@@ -13,7 +14,10 @@ const {
   ERRO
 } = require("../../../src/constants/responseMessages.constants")
 
-const tamanhoMinimoDaSenha = 8
+const {
+  ROLES
+} = require("../../../src/constants/validation.constants")
+
 let mongoServer
 
 // Hooks do Jest: Funções que rodam antes ou depois dos testes
@@ -45,7 +49,7 @@ describe("Rotas de autenticação", () => {
     // Cria um professor antes dos testes de cadastro de alunos, pq o cadastro de alunos necessita de uma professor logado
     beforeEach(async () => {
       const professor = new Professor({
-        email: "professor@test.com",
+        email: "professor@sistemapoliedro.com.br",
         senha: "senhaDoProfessor",
         nome: "Professor de Teste"
       });
@@ -306,7 +310,7 @@ describe("Rotas de autenticação", () => {
     // Cria um professor antes dos testes de cadastro de professores, pq o cadastro de professores necessita de uma professor logado
     beforeEach(async () => {
       const professor = new Professor({
-        email: "professor@test.com",
+        email: "professor@sistemapoliedro.com.br",
         senha: "senhaDoProfessor",
         nome: "Professor de Teste"
       });
@@ -497,6 +501,146 @@ describe("Rotas de autenticação", () => {
 
   // 3. Testes relacionados ao login
   describe("POST /api/auth/login", () => {
-    
+    // Cadastra um aluno e um professor antes dos testes de login
+    beforeEach(async () => {
+      const professor = new Professor({
+        email: "professor@sistemapoliedro.com.br",
+        senha: "senhaDoProfessor",
+        nome: "Professor de Teste"
+      });
+      await professor.save()
+
+      const aluno = new Aluno({
+        email: "aluno@teste.com",
+        senha: "senhaDoAluno",
+        nome: "Aluno de Teste",
+        ra: 123456
+      });
+      await aluno.save()
+    })
+
+    // 3.1 Testa um login de aluno concluido com sucesso
+    it("Deve retornar 200 quando o login de aluno for bem sucedido", async () => {
+      // 1. Arrange
+      const aluno = {
+        email: 'aluno@teste.com',
+        senha: 'senhaDoAluno'
+      }
+
+      // 2. Act
+      const response = await request(app)
+      .post("/api/auth/login")
+      .send(aluno)
+
+      // 3. Assert
+      expect(response.statusCode).toBe(200)
+      expect(response.body).toHaveProperty("mensagem", AUTH.LOGIN_FEITO)
+
+      const token = response.body.token
+      expect(token).not.toBeNull()
+      const decodedPayload = jwt.verify(token, process.env.JWT_SECRET)
+      expect(decodedPayload).not.toBeNull()
+      expect(decodedPayload).toHaveProperty("sub")
+      expect(decodedPayload).toHaveProperty("nome", "Aluno de Teste")
+      expect(decodedPayload).toHaveProperty("role", ROLES.ALUNO)
+    })
+
+    // 3.2 Testa um login de professor concluido com sucesso
+    it("Deve retornar 200 quando o login de professor for bem sucedido", async () => {
+      // 1. Arrange
+      const professor = {
+        email: "professor@sistemapoliedro.com.br",
+        senha: "senhaDoProfessor"
+      }
+
+      // 2. Act
+      const response = await request(app)
+      .post("/api/auth/login")
+      .send(professor)
+
+      // 3. Assert
+      expect(response.statusCode).toBe(200)
+      expect(response.body).toHaveProperty("mensagem", AUTH.LOGIN_FEITO)
+
+      const token = response.body.token
+      expect(token).not.toBeNull()
+      const decodedPayload = jwt.verify(token, process.env.JWT_SECRET)
+      expect(decodedPayload).not.toBeNull()
+      expect(decodedPayload).toHaveProperty("sub")
+      expect(decodedPayload).toHaveProperty("nome", "Professor de Teste")
+      expect(decodedPayload).toHaveProperty("role", ROLES.PROFESSOR)
+    })
+
+    // 3.3 Testa um login que falha devido ao email não ter sido fornecido
+    it("Deve retornar 400 quando o email não é fornecido", async () => {
+      // 1. Arrange
+      const professor = {
+        // email: "professor@sistemapoliedro.com.br",
+        senha: "senhaDoProfessor"
+      }
+
+      // 2. Act
+      const response = await request(app)
+      .post("/api/auth/login")
+      .send(professor)
+
+      // 3. Assert
+      expect(response.statusCode).toBe(400)
+      expect(response.body).toHaveProperty("mensagem", AUTH.CREDENCIAIS_INVALIDAS)
+    })
+
+    // 3.4 Testa um login que falha devido a senha não ter sido fornecida
+    it("Deve retornar 400 quando a senha não é fornecida", async () => {
+      // 1. Arrange
+      const professor = {
+        email: "professor@sistemapoliedro.com.br"
+        // senha: "senhaDoProfessor"
+      }
+
+      // 2. Act
+      const response = await request(app)
+      .post("/api/auth/login")
+      .send(professor)
+
+      // 3. Assert
+      expect(response.statusCode).toBe(400)
+      expect(response.body).toHaveProperty("mensagem", AUTH.CREDENCIAIS_INVALIDAS)
+    })
+
+    // 3.5 Testa um login que falha devido ao email não ter sido cadastrado previamente
+    it("Deve retornar 401 quando o email fornecido não está cadastrado na base de dados", async () => {
+      // 1. Arrange
+      const professor = {
+        email: "professor2@sistemapoliedro.com.br",
+        senha: "senhaDoProfessor"
+      }
+
+      // 2. Act
+      const response = await request(app)
+      .post("/api/auth/login")
+      .send(professor)
+
+      // 3. Assert
+      expect(response.statusCode).toBe(401)
+      expect(response.body).toHaveProperty("mensagem", AUTH.CREDENCIAIS_INVALIDAS)
+    })
+
+    // 3.6 Testa um login que falha devido a senha estar errada
+    it("Deve retornar 401 quando a senha fornecida está errada", async () => {
+      // 1. Arrange
+      const professor = {
+        email: "professor@sistemapoliedro.com.br",
+        senha: "senhaDoProfessor2"
+      }
+
+      // 2. Act
+      const response = await request(app)
+      .post("/api/auth/login")
+      .send(professor)
+
+      // 3. Assert
+      expect(response.statusCode).toBe(401)
+      expect(response.body).toHaveProperty("mensagem", AUTH.CREDENCIAIS_INVALIDAS)
+    })
   })
 })
