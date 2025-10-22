@@ -372,7 +372,7 @@ describe("Rotas de autenticação", () => {
 
       await professorComTokenExpirado.save()
 
-      const tokenExpirado = jwt.sign({sub: professorComTokenExpirado._id, role: ROLES.PROFESSOR}, JWT_SECRET, {expiresIn: "1s"})
+      const tokenExpirado = jwt.sign({sub: professorComTokenExpirado._id, role: ROLES.PROFESSOR}, process.env.JWT_SECRET, {expiresIn: "1s"})
       jest.advanceTimersByTime(2000)  // Faz com que se passe 2s, virtualmente, o que deixa o token expirado
 
       const aluno = {
@@ -709,7 +709,7 @@ describe("Rotas de autenticação", () => {
 
       await professorComTokenExpirado.save()
 
-      const tokenExpirado = jwt.sign({sub: professorComTokenExpirado._id, role: ROLES.PROFESSOR}, JWT_SECRET, {expiresIn: "1s"})
+      const tokenExpirado = jwt.sign({sub: professorComTokenExpirado._id, role: ROLES.PROFESSOR}, process.env.JWT_SECRET, {expiresIn: "1s"})
       jest.advanceTimersByTime(2000)  // Faz com que se passe 2s, virtualmente, o que deixa o token expirado
 
       const professor = {
