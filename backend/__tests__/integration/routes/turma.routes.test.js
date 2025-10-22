@@ -211,13 +211,13 @@ describe("Rotas de relacionadas a turmas", () => {
     // 1.8 Testa um cadastro de turma que falha devido a turma fornecida não ter nome
     it("Deve retornar um erro 400 caso o nome da turma não tenha sido fornecido", async () => {
       // 1. Arrange
-      const turmasemNome = new Turma({})
+      const turmaSemNome = new Turma({})
 
       // 2. Act
       const response = await request(app)
         .post("/turmas")
         .set("Authorization", `Bearer ${profToken}`)
-        .send(turmasemNome)
+        .send(turmaSemNome)
 
       // 3. Assert
       expect(response.statusCode).toBe(400)
