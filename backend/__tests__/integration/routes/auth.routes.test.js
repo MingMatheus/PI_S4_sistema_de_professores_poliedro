@@ -18,6 +18,10 @@ const {
   ROLES
 } = require("../../../src/constants/validation.constants")
 
+const {
+  API
+} = require("../../../src/constants/error.constants")
+
 let mongoServer
 
 // Hooks do Jest: Funções que rodam antes ou depois dos testes
@@ -44,12 +48,13 @@ beforeEach(async () => {
 describe("Rotas de autenticação", () => {
   // 1. Testes relacionados ao cadastro de alunos
   describe("POST /auth/cadastro/alunos", () => {
-    let profToken
+    let profToken, alunoToken
 
     // Cria um professor antes dos testes de cadastro de alunos, pq o cadastro de alunos necessita de uma professor logado
+    // Cria também um aluno para testar os middlewares
     beforeEach(async () => {
       const professor = new Professor({
-        email: "professor@sistemapoliedro.com.br",
+        email: "professor763454837@sistemapoliedro.com.br",
         senha: "senhaDoProfessor",
         nome: "Professor de Teste"
       });
@@ -57,6 +62,17 @@ describe("Rotas de autenticação", () => {
 
       // Para simplificar, vamos criar um token manualmente
       profToken = jwt.sign({sub: professor._id, role: ROLES.PROFESSOR}, process.env.JWT_SECRET)
+
+      const aluno = new Aluno({
+        email: "aluno873453@alunoteste.com",
+        senha: "senhaDoAluno",
+        nome: "Aluno de Teste",
+        ra: "7643563045045345"
+      })
+
+      await aluno.save()
+
+      alunoToken = jwt.sign({sub: aluno._id, role: ROLES.ALUNO}, process.env.JWT_SECRET)
     })
 
     // 1.1 Testa um cadastro de aluno feito com sucesso
@@ -221,7 +237,7 @@ describe("Rotas de autenticação", () => {
     it("deve retornar erro 400 se o email não tiver sido fornecido", async () => {
       // 1. Arrange
       const aluno = {
-        // email: 'aluno1@testcom',  * sem email *
+        // email: 'aluno@test.com',  * sem email *
         senha: 'senha1234',
         nome: 'Aluno Teste',
         ra: '123456'
@@ -242,7 +258,7 @@ describe("Rotas de autenticação", () => {
     it("deve retornar erro 400 se a senha não tiver sido fornecida", async () => {
       // 1. Arrange
       const aluno = {
-        email: 'aluno1@testcom',
+        email: 'aluno@test.com',
         // senha: 'senha1234',  * sem senha *
         nome: 'Aluno Teste',
         ra: '123456'
@@ -263,7 +279,7 @@ describe("Rotas de autenticação", () => {
     it("deve retornar erro 400 se o nome não tiver sido fornecido", async () => {
       // 1. Arrange
       const aluno = {
-        email: 'aluno1@testcom',
+        email: 'aluno@test.com',
         senha: 'senha1234',
         // nome: 'Aluno Teste',  * sem nome *
         ra: '123456'
@@ -284,7 +300,7 @@ describe("Rotas de autenticação", () => {
     it("deve retornar erro 400 se o RA não tiver sido fornecido", async () => {
       // 1. Arrange
       const aluno = {
-        email: 'aluno1@testcom',
+        email: 'aluno@test.com',
         senha: 'senha1234',
         nome: 'Aluno Teste'
         // ra: '123456'  * sem RA *
@@ -299,6 +315,139 @@ describe("Rotas de autenticação", () => {
       // 3. Assert
       expect(response.statusCode).toBe(400);
       expect(response.body).toHaveProperty("mensagem", ERRO.VALIDACAO);
+    })
+
+    // 1.11 Testa um cadastro de aluno que falha devido a requisição não possuir o header de authorization
+    it("deve retornar erro 401 se a requisição não possuir o header de authorization", async () => {
+      // 1. Arrange
+      const aluno = {
+        email: 'aluno@test.com',
+        senha: 'senha1234',
+        nome: 'Aluno Teste',
+        ra: '123456'
+      };
+
+      // 2. Act
+      const response = await request(app)
+        .post('/auth/cadastro/alunos')
+        // .set('Authorization', `Bearer ${profToken}`)
+        .send(aluno);
+
+      // 3. Assert
+      expect(response.statusCode).toBe(401);
+      expect(response.body).toHaveProperty("mensagem", AUTH.TOKEN_NAO_FORNECIDO);
+    })
+
+    // 1.12 Testa um cadastro de aluno que falha devido ao token estar mal formatado (sem o bearer)
+    it("deve retornar erro 401 se o token estiver mal formatado", async () => {
+      // 1. Arrange
+      const aluno = {
+        email: 'aluno@test.com',
+        senha: 'senha1234',
+        nome: 'Aluno Teste',
+        ra: '123456'
+      };
+
+      // 2. Act
+      const response = await request(app)
+        .post('/auth/cadastro/alunos')
+        .set('Authorization', `${profToken}`)
+        .send(aluno);
+
+      // 3. Assert
+      expect(response.statusCode).toBe(401);
+      expect(response.body).toHaveProperty("mensagem", AUTH.TOKEN_MAL_FORMATADO);
+    })
+
+    // 1.13 Testa um cadastro de aluno que falha devido ao token estar expirado
+    it("deve retornar erro 401 se o token estiver expirado", async () => {
+      // 1. Arrange
+      jest.useFakeTimers()  // Faz o uso de timers fake para 'manipular' o tempo para deixar o token expirado
+
+      const professorComTokenExpirado = new Professor({
+        email: "professorComTokenExpirado@sistemapoliedro.com.br",
+        senha: "senhaDoProfessorComTokenExpirado",
+        nome: "professorComTokenExpirado"
+      })
+
+      await professorComTokenExpirado.save()
+
+      const tokenExpirado = jwt.sign({sub: professorComTokenExpirado._id, role: ROLES.PROFESSOR}, JWT_SECRET, {expiresIn: "1s"})
+      jest.advanceTimersByTime(2000)  // Faz com que se passe 2s, virtualmente, o que deixa o token expirado
+
+      const aluno = {
+        email: 'aluno@test.com',
+        senha: 'senha1234',
+        nome: 'Aluno Teste',
+        ra: '123456'
+      };
+
+      // 2. Act
+      const response = await request(app)
+        .post('/auth/cadastro/alunos')
+        .set('Authorization', `Bearer ${tokenExpirado}`)
+        .send(aluno);
+
+      // 3. Assert
+      expect(response.statusCode).toBe(401);
+      expect(response.body).toHaveProperty("code", API.TOKEN_EXPIRADO);
+      expect(response.body).toHaveProperty("mensagem", AUTH.TOKEN_EXPIROU);
+
+      // 4. Volta os timers ao normal
+      jest.useRealTimers()
+    })
+
+    // 1.14 Testa um cadastro de aluno que falha devido ao token estar inválido
+    it("deve retornar erro 401 se o token estiver inválido", async () => {
+      // 1. Arrange
+      const professorComTokenInvalido = new Professor({
+        email: "professorComTokenInvalido@sistemapoliedro.com.br",
+        senha: "senhaDoProfessorComTokenInvalido",
+        nome: "professorComTokenInvalido"
+      })
+
+      await professorComTokenInvalido.save()
+
+      const tokenInvalido = jwt.sign({sub: professorComTokenInvalido._id, role: ROLES.PROFESSOR}, "segredoInvalido")
+
+      const aluno = {
+        email: 'aluno@test.com',
+        senha: 'senha1234',
+        nome: 'Aluno Teste',
+        ra: '123456'
+      };
+
+      // 2. Act
+      const response = await request(app)
+        .post('/auth/cadastro/alunos')
+        .set('Authorization', `Bearer ${tokenInvalido}`)
+        .send(aluno);
+
+      // 3. Assert
+      expect(response.statusCode).toBe(401);
+      expect(response.body).toHaveProperty("code", API.TOKEN_INVALIDO);
+      expect(response.body).toHaveProperty("mensagem", AUTH.TOKEN_INVALIDO);
+    })
+
+    // 1.15 Testa um cadastro de aluno que falha devido a role do requisitante não estar dentre as roles permitidas para essa ação
+    it("deve retornar erro 403 se a role do requisitante não estiver dentre as roles permitidas para essa ação", async () => {
+      // 1. Arrange
+      const aluno = {
+        email: 'aluno@test.com',
+        senha: 'senha1234',
+        nome: 'Aluno Teste',
+        ra: '123456'
+      };
+
+      // 2. Act
+      const response = await request(app)
+        .post('/auth/cadastro/alunos')
+        .set('Authorization', `Bearer ${alunoToken}`)
+        .send(aluno);
+
+      // 3. Assert
+      expect(response.statusCode).toBe(403);
+      expect(response.body).toHaveProperty("mensagem", AUTH.NAO_TEM_PERMISSAO);
     })
   })
 
