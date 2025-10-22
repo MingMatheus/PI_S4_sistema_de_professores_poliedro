@@ -81,9 +81,9 @@ describe("Rotas de relacionadas a series", () => {
       alunoToken = jwt.sign({sub: aluno._id, role: ROLES.ALUNO}, process.env.JWT_SECRET)
 
       // Série válida
-      serieValida = new Serie({
+      serieValida = {
         nome: "Série de Testes"
-      })
+      }
     })
 
     // 1.1 Testa um cadastro de série que falha devido a requisição não possuir o header de authorization
@@ -193,9 +193,9 @@ describe("Rotas de relacionadas a series", () => {
     // 1.7 Testa um cadastro de série que falha devido ao nome da série fornecida já estar em uso
     it("Deve retornar um erro 409 caso o nome da série fornecida já esteja em uso", async () => {
       // 1. Arrange
-      const serieJaCadastrada = new Serie({
+      const serieJaCadastrada = {
         nome: "Série de Testes"
-      })
+      }
 
       await request(app)
         .post("/series")
@@ -216,7 +216,7 @@ describe("Rotas de relacionadas a series", () => {
     // 1.8 Testa um cadastro de série que falha devido a série fornecida não ter nome
     it("Deve retornar um erro 400 caso o nome da série não tenha sido fornecido", async () => {
       // 1. Arrange
-      const serieSemNome = new Serie({})
+      const serieSemNome = {}
 
       // 2. Act
       const response = await request(app)
