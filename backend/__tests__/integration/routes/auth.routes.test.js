@@ -43,7 +43,7 @@ beforeEach(async () => {
 
 describe("Rotas de autenticação", () => {
   // 1. Testes relacionados ao cadastro de alunos
-  describe("POST /api/auth/cadastro/alunos", () => {
+  describe("POST /auth/cadastro/alunos", () => {
     let profToken
 
     // Cria um professor antes dos testes de cadastro de alunos, pq o cadastro de alunos necessita de uma professor logado
@@ -304,7 +304,7 @@ describe("Rotas de autenticação", () => {
   })
 
   // 2. Testes relacionados ao cadastro de professores
-  describe("POST /api/auth/cadastro/professores", () => {
+  describe("POST /auth/cadastro/professores", () => {
     let profToken
 
     // Cria um professor antes dos testes de cadastro de professores, pq o cadastro de professores necessita de uma professor logado
@@ -500,7 +500,7 @@ describe("Rotas de autenticação", () => {
   })
 
   // 3. Testes relacionados ao login
-  describe("POST /api/auth/login", () => {
+  describe("POST /auth/login", () => {
     // Cadastra um aluno e um professor antes dos testes de login
     beforeEach(async () => {
       const professor = new Professor({
