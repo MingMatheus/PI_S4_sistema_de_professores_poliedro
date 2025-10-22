@@ -20,6 +20,10 @@ const {
   ROLES
 } = require("../../../src/constants/validation.constants")
 
+const {
+  API
+} = require("../../../src/constants/error.constants")
+
 let mongoServer
 
 // Hooks do Jest: Funções que rodam antes ou depois dos testes
@@ -47,6 +51,177 @@ beforeEach(async () => {
 describe("Rotas de relacionadas a turmas", () => {
   // 1. Testes relacionados ao cadastro de turmas
   describe("POST /turmas", () => {
-    
+    let profToken, alunoToken, turmaValida
+
+    // Cria um professor antes dos testes de cadastro de turmas, pq o cadastro de turmas necessita de uma professor logado
+    // Cria também um aluno para testar os middlewares
+    // Cria também uma turma válida para cadastro para reutilização dentro de diversos dos testes
+    beforeEach(async () => {
+      // Professor com token
+      const professor = new Professor({
+        email: "professor2195156161@sistemapoliedro.com.br",
+        senha: "senhaDoProfessor",
+        nome: "Professor de Teste"
+      });
+      await professor.save()
+
+      // Para simplificar, vamos criar um token manualmente
+      profToken = jwt.sign({sub: professor._id, role: ROLES.PROFESSOR}, process.env.JWT_SECRET)
+
+      // Aluno com token
+      const aluno = new Aluno({
+        email: "aluno5198151@alunoteste.com",
+        senha: "senhaDoAluno",
+        nome: "Aluno de Teste",
+        ra: "118198151116663878"
+      })
+
+      await aluno.save()
+
+      alunoToken = jwt.sign({sub: aluno._id, role: ROLES.ALUNO}, process.env.JWT_SECRET)
+
+      // Turma válida
+      turmaValida = new Turma({
+        nome: "Turma de Testes"
+      })
+    })
+
+    // 1.1 Testa um cadastro de turma que falha devido a requisição não possuir o header de authorization
+    it("Deve retornar um erro 401 caso a requisição não possua o header de authorization", async () => {
+      // 1. Arrange
+
+      // 2. Act
+      const response = await request(app)
+        .post("/turmas")
+        // .set("Authorization", `Bearer ${profToken}`)
+        .send(turmaValida)
+
+      // 3. Assert
+      expect(response.statusCode).toBe(401)
+      expect(response.body).toHaveProperty("mensagem", AUTH.TOKEN_NAO_FORNECIDO)
+    })
+
+    // 1.2 Testa um cadastro de turma que falha devido ao token estar mal formatado
+    it("Deve retornar um erro 401 caso o token esteja mal formatado", async () => {
+      // 1. Arrange
+
+      // 2. Act
+      const response = await request(app)
+        .post("/turmas")
+        .set("Authorization", `${profToken}`)
+        .send(turmaValida)
+
+      // 3. Assert
+      expect(response.statusCode).toBe(401)
+      expect(response.body).toHaveProperty("mensagem", AUTH.TOKEN_MAL_FORMATADO)
+    })
+
+    // 1.3 Testa um cadastro de turma que falha devido ao token estar expirado
+    it("Deve retornar um erro 401 caso o token esteja expirado", async () => {
+      // 1. Arrange
+      jest.useFakeTimers()
+      tokenExpirado = jwt.sign({sub: "idGenerico", role: ROLES.PROFESSOR}, process.env.JWT_SECRET, {expiresIn: "1s"})
+      jest.advanceTimersByTime(2000)
+
+      // 2. Act
+      const response = await request(app)
+        .post("/turmas")
+        .set("Authorization", `Bearer ${tokenExpirado}`)
+        .send(turmaValida)
+
+      // 3. Assert
+      expect(response.statusCode).toBe(401)
+      expect(response.body).toHaveProperty("code", API.TOKEN_EXPIRADO)
+      expect(response.body).toHaveProperty("mensagem", AUTH.TOKEN_EXPIROU)
+
+      // 4. Volta os timers ao normal
+      jest.useRealTimers()
+    })
+
+    // 1.4 Testa um cadastro de turma que falha devido ao token estar inválido
+    it("Deve retornar um erro 401 caso o token esteja inválido", async () => {
+      // 1. Arrange
+      tokenInvalido = jwt.sign({sub: "idGenerico", role: ROLES.PROFESSOR}, "segredoInvalido")
+
+      // 2. Act
+      const response = await request(app)
+        .post("/turmas")
+        .set("Authorization", `Bearer ${tokenInvalido}`)
+        .send(turmaValida)
+
+      // 3. Assert
+      expect(response.statusCode).toBe(401)
+      expect(response.body).toHaveProperty("code", API.TOKEN_INVALIDO)
+      expect(response.body).toHaveProperty("mensagem", AUTH.TOKEN_INVALIDO)
+    })
+
+    // 1.5 Testa um cadastro de turma que falha devido ao requisitante não ter uma role que esteja dentre aquelas permitidas para essa ação
+    it("Deve retornar um erro 403 caso o requisitante não tenha uma role que esteja dentre aquelas permitidas para essa ação", async () => {
+      // 1. Arrange
+
+      // 2. Act
+      const response = await request(app)
+        .post("/turmas")
+        .set("Authorization", `Bearer ${alunoToken}`)
+        .send(turmaValida)
+
+      // 3. Assert
+      expect(response.statusCode).toBe(403)
+      expect(response.body).toHaveProperty("mensagem", AUTH.NAO_TEM_PERMISSAO)
+    })
+
+    // 1.6 Testa um cadastro de turma que é bem sucedido
+    it("Deve retornar um código 201 caso o cadastro da turma seja bem sucedido", async () => {
+      // 1. Arrange
+
+      // 2. Act
+      const response = await request(app)
+        .post("/turmas")
+        .set("Authorization", `Bearer ${profToken}`)
+        .send(turmaValida)
+
+      // 3. Assert
+      expect(response.statusCode).toBe(201)
+      expect(response.body).toHaveProperty("mensagem", TURMA.CRIADA_COM_SUCESSO)
+    })
+
+    // 1.7 Testa um cadastro de turma que falha devido ao nome da turma fornecida já estar em uso
+    it("Deve retornar um erro 409 caso o nome da turma fornecida já esteja em uso", async () => {
+      // 1. Arrange
+      const turmaJaCadastrada = new Turma({
+        nome: "Turma de Testes"
+      })
+
+      await request(app)
+        .post("/turmas")
+        .set("Authorization", `Bearer ${profToken}`)
+        .send(turmaValida)
+
+      // 2. Act
+      const response = await request(app)
+        .post("/turmas")
+        .set("Authorization", `Bearer ${profToken}`)
+        .send(turmaJaCadastrada)
+
+      // 3. Assert
+      expect(response.statusCode).toBe(409)
+      expect(response.body).toHaveProperty("mensagem", TURMA.NOME_EM_USO)
+    })
+
+    // 1.8 Testa um cadastro de turma que falha devido a turma fornecida não ter nome
+    it("Deve retornar um erro 400 caso o nome da turma não tenha sido fornecido", async () => {
+      // 1. Arrange
+      const turmasemNome = new Turma({})
+
+      // 2. Act
+      const response = await request(app)
+        .post("/turmas")
+        .set("Authorization", `Bearer ${profToken}`)
+        .send(turmasemNome)
+
+      // 3. Assert
+      expect(response.statusCode).toBe(400)
+      expect(response.body).toHaveProperty("mensagem", ERRO.VALIDACAO)
+    })
   })
 })
