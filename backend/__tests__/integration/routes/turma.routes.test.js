@@ -180,9 +180,14 @@ describe("Rotas de relacionadas a turmas", () => {
         .set("Authorization", `Bearer ${profToken}`)
         .send(turmaValida)
 
-      // 3. Assert
+      // 3. Assert - Checa a resposta da API
       expect(response.statusCode).toBe(201)
       expect(response.body).toHaveProperty("mensagem", TURMA.CRIADA_COM_SUCESSO)
+
+      // 4. Assert - Checa se a turma foi salva no Banco de Dados
+      const turmaSalva = await Turma.findOne({nome: "Turma de Testes"})
+      expect(turmaSalva).not.toBeNull()
+      expect(turmaSalva.nome).toBe("Turma de Testes")
     })
 
     // 1.7 Testa um cadastro de turma que falha devido ao nome da turma fornecida já estar em uso
