@@ -453,12 +453,12 @@ describe("Rotas de autenticação", () => {
 
   // 2. Testes relacionados ao cadastro de professores
   describe("POST /auth/cadastro/professores", () => {
-    let profToken
+    let profToken, alunoToken
 
     // Cria um professor antes dos testes de cadastro de professores, pq o cadastro de professores necessita de uma professor logado
     beforeEach(async () => {
       const professor = new Professor({
-        email: "professor@sistemapoliedro.com.br",
+        email: "professor5192166@sistemapoliedro.com.br",
         senha: "senhaDoProfessor",
         nome: "Professor de Teste"
       });
@@ -466,6 +466,17 @@ describe("Rotas de autenticação", () => {
 
       // Para simplificar, vamos criar um token manualmente
       profToken = jwt.sign({sub: professor._id, role: ROLES.PROFESSOR}, process.env.JWT_SECRET)
+
+      const aluno = new Aluno({
+        email: "aluno8751616523@alunoteste.com",
+        senha: "senhaDoAluno",
+        nome: "Aluno de Teste",
+        ra: "76435651515165045345"
+      })
+
+      await aluno.save()
+
+      alunoToken = jwt.sign({sub: aluno._id, role: ROLES.ALUNO}, process.env.JWT_SECRET)
     })
 
     // 2.1 Testa um cadastro de professor feito com sucesso
@@ -643,6 +654,134 @@ describe("Rotas de autenticação", () => {
       // 3. Assert
       expect(response.statusCode).toBe(400);
       expect(response.body).toHaveProperty("mensagem", ERRO.VALIDACAO);
+    })
+
+    // 2.9 Testa um cadastro de professor que falha devido a requisição não possuir o header de authorization
+    it("deve retornar erro 401 se a requisição não possuir o header de authorization", async () => {
+      // 1. Arrange
+      const professor = {
+        email: "professorTeste@sistemapoliedro.com.br",
+        senha: "senhaDoProfessor",
+        nome: "Professor de Teste"
+      }
+
+      // 2. Act
+      const response = await request(app)
+        .post('/auth/cadastro/professores')
+        // .set('Authorization', `Bearer ${profToken}`)
+        .send(professor);
+
+      // 3. Assert
+      expect(response.statusCode).toBe(401);
+      expect(response.body).toHaveProperty("mensagem", AUTH.TOKEN_NAO_FORNECIDO);
+    })
+
+    // 2.10 Testa um cadastro de professor que falha devido ao token estar mal formatado (sem o bearer)
+    it("deve retornar erro 401 se o token estiver mal formatado", async () => {
+      // 1. Arrange
+      const professor = {
+        email: "professorTeste@sistemapoliedro.com.br",
+        senha: "senhaDoProfessor",
+        nome: "Professor de Teste"
+      }
+
+      // 2. Act
+      const response = await request(app)
+        .post('/auth/cadastro/professores')
+        .set('Authorization', `${profToken}`)
+        .send(professor);
+
+      // 3. Assert
+      expect(response.statusCode).toBe(401);
+      expect(response.body).toHaveProperty("mensagem", AUTH.TOKEN_MAL_FORMATADO);
+    })
+
+    // 2.11 Testa um cadastro de professor que falha devido ao token estar expirado
+    it("deve retornar erro 401 se o token estiver expirado", async () => {
+      // 1. Arrange
+      jest.useFakeTimers()  // Faz o uso de timers fake para 'manipular' o tempo para deixar o token expirado
+
+      const professorComTokenExpirado = new Professor({
+        email: "professorComTokenExpirado@sistemapoliedro.com.br",
+        senha: "senhaDoProfessorComTokenExpirado",
+        nome: "professorComTokenExpirado"
+      })
+
+      await professorComTokenExpirado.save()
+
+      const tokenExpirado = jwt.sign({sub: professorComTokenExpirado._id, role: ROLES.PROFESSOR}, JWT_SECRET, {expiresIn: "1s"})
+      jest.advanceTimersByTime(2000)  // Faz com que se passe 2s, virtualmente, o que deixa o token expirado
+
+      const professor = {
+        email: "professorTeste@sistemapoliedro.com.br",
+        senha: "senhaDoProfessor",
+        nome: "Professor de Teste"
+      }
+
+      // 2. Act
+      const response = await request(app)
+        .post('/auth/cadastro/professores')
+        .set('Authorization', `Bearer ${tokenExpirado}`)
+        .send(professor);
+
+      // 3. Assert
+      expect(response.statusCode).toBe(401);
+      expect(response.body).toHaveProperty("code", API.TOKEN_EXPIRADO);
+      expect(response.body).toHaveProperty("mensagem", AUTH.TOKEN_EXPIROU);
+
+      // 4. Volta os timers ao normal
+      jest.useRealTimers()
+    })
+
+    // 2.12 Testa um cadastro de professor que falha devido ao token estar inválido
+    it("deve retornar erro 401 se o token estiver inválido", async () => {
+      // 1. Arrange
+      const professorComTokenInvalido = new Professor({
+        email: "professorComTokenInvalido@sistemapoliedro.com.br",
+        senha: "senhaDoProfessorComTokenInvalido",
+        nome: "professorComTokenInvalido"
+      })
+
+      await professorComTokenInvalido.save()
+
+      const tokenInvalido = jwt.sign({sub: professorComTokenInvalido._id, role: ROLES.PROFESSOR}, "segredoInvalido")
+
+      const professor = {
+        email: "professorTeste@sistemapoliedro.com.br",
+        senha: "senhaDoProfessor",
+        nome: "Professor de Teste"
+      }
+
+      // 2. Act
+      const response = await request(app)
+        .post('/auth/cadastro/professores')
+        .set('Authorization', `Bearer ${tokenInvalido}`)
+        .send(professor);
+
+      // 3. Assert
+      expect(response.statusCode).toBe(401);
+      expect(response.body).toHaveProperty("code", API.TOKEN_INVALIDO);
+      expect(response.body).toHaveProperty("mensagem", AUTH.TOKEN_INVALIDO);
+    })
+
+    // 2.13 Testa um cadastro de professor que falha devido a role do requisitante não estar dentre as roles permitidas para essa ação
+    it("deve retornar erro 403 se a role do requisitante não estiver dentre as roles permitidas para essa ação", async () => {
+      // 1. Arrange
+      const professor = {
+        email: "professorTeste@sistemapoliedro.com.br",
+        senha: "senhaDoProfessor",
+        nome: "Professor de Teste"
+      }
+
+      // 2. Act
+      const response = await request(app)
+        .post('/auth/cadastro/professores')
+        .set('Authorization', `Bearer ${alunoToken}`)
+        .send(professor);
+
+      // 3. Assert
+      expect(response.statusCode).toBe(403);
+      expect(response.body).toHaveProperty("mensagem", AUTH.NAO_TEM_PERMISSAO);
     })
   })
 
