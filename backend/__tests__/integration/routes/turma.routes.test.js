@@ -81,9 +81,9 @@ describe("Rotas de relacionadas a turmas", () => {
       alunoToken = jwt.sign({sub: aluno._id, role: ROLES.ALUNO}, process.env.JWT_SECRET)
 
       // Turma válida
-      turmaValida = new Turma({
+      turmaValida = {
         nome: "Turma de Testes"
-      })
+      }
     })
 
     // 1.1 Testa um cadastro de turma que falha devido a requisição não possuir o header de authorization
@@ -193,9 +193,9 @@ describe("Rotas de relacionadas a turmas", () => {
     // 1.7 Testa um cadastro de turma que falha devido ao nome da turma fornecida já estar em uso
     it("Deve retornar um erro 409 caso o nome da turma fornecida já esteja em uso", async () => {
       // 1. Arrange
-      const turmaJaCadastrada = new Turma({
+      const turmaJaCadastrada = {
         nome: "Turma de Testes"
-      })
+      }
 
       await request(app)
         .post("/turmas")
@@ -216,7 +216,7 @@ describe("Rotas de relacionadas a turmas", () => {
     // 1.8 Testa um cadastro de turma que falha devido a turma fornecida não ter nome
     it("Deve retornar um erro 400 caso o nome da turma não tenha sido fornecido", async () => {
       // 1. Arrange
-      const turmaSemNome = new Turma({})
+      const turmaSemNome = {}
 
       // 2. Act
       const response = await request(app)
