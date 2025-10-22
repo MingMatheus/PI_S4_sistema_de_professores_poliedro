@@ -56,8 +56,7 @@ describe("Rotas de autenticação", () => {
       await professor.save()
 
       // Para simplificar, vamos criar um token manualmente
-      const jwt = require('jsonwebtoken')
-      profToken = jwt.sign({ sub: professor._id, role: "professor" }, process.env.JWT_SECRET)
+      profToken = jwt.sign({sub: professor._id, role: ROLES.PROFESSOR}, process.env.JWT_SECRET)
     })
 
     // 1.1 Testa um cadastro de aluno feito com sucesso
@@ -73,7 +72,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act (Agir) - Faz a requisição para a API
       const response = await request(app)
-        .post('/api/auth/cadastro/alunos')
+        .post('auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`) // Adiciona o token de autenticação
         .send(novoAluno); // Envia os dados do novo aluno no corpo da requisição
 
@@ -99,7 +98,7 @@ describe("Rotas de autenticação", () => {
 
       // Act
       const response = await request(app)
-        .post('/api/auth/cadastro/alunos')
+        .post('/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno);
 
@@ -120,7 +119,7 @@ describe("Rotas de autenticação", () => {
 
       // Act
       const response = await request(app)
-        .post('/api/auth/cadastro/alunos')
+        .post('/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno);
 
@@ -148,13 +147,13 @@ describe("Rotas de autenticação", () => {
 
       // Cadastra o primeiro aluno
       await request(app)
-        .post('/api/auth/cadastro/alunos')
+        .post('/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno1)
 
       // 2. Act
       const response = await request(app)
-        .post('/api/auth/cadastro/alunos')
+        .post('/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno2);
 
@@ -182,13 +181,13 @@ describe("Rotas de autenticação", () => {
 
       // Cadastra o primeiro aluno
       await request(app)
-        .post('/api/auth/cadastro/alunos')
+        .post('/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno1)
 
       // 2. Act
       const response = await request(app)
-        .post('/api/auth/cadastro/alunos')
+        .post('/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno2);
 
@@ -209,7 +208,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/api/auth/cadastro/alunos')
+        .post('/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno);
 
@@ -230,7 +229,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/api/auth/cadastro/alunos')
+        .post('/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno);
 
@@ -251,7 +250,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/api/auth/cadastro/alunos')
+        .post('/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno);
 
@@ -272,7 +271,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/api/auth/cadastro/alunos')
+        .post('/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno);
 
@@ -293,7 +292,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/api/auth/cadastro/alunos')
+        .post('/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno);
 
@@ -317,8 +316,7 @@ describe("Rotas de autenticação", () => {
       await professor.save()
 
       // Para simplificar, vamos criar um token manualmente
-      const jwt = require('jsonwebtoken')
-      profToken = jwt.sign({ sub: professor._id, role: "professor" }, process.env.JWT_SECRET)
+      profToken = jwt.sign({sub: professor._id, role: ROLES.PROFESSOR}, process.env.JWT_SECRET)
     })
 
     // 2.1 Testa um cadastro de professor feito com sucesso
@@ -332,7 +330,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act (Agir) - Faz a requisição para a API
       const response = await request(app)
-        .post("/api/auth/cadastro/professores")
+        .post("/auth/cadastro/professores")
         .set("Authorization", `Bearer ${profToken}`) // Adiciona o token de autenticação
         .send(novoProfessor); // Envia os dados do novo aluno no corpo da requisição
 
@@ -363,13 +361,13 @@ describe("Rotas de autenticação", () => {
 
       // Cadastra o primeiro professor
       await request(app)
-        .post('/api/auth/cadastro/professores')
+        .post('/auth/cadastro/professores')
         .set('Authorization', `Bearer ${profToken}`)
         .send(professor1)
 
       // 2. Act
       const response = await request(app)
-        .post('/api/auth/cadastro/professores')
+        .post('/auth/cadastro/professores')
         .set('Authorization', `Bearer ${profToken}`)
         .send(professor2);
 
@@ -389,7 +387,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/api/auth/cadastro/professores')
+        .post('/auth/cadastro/professores')
         .set('Authorization', `Bearer ${profToken}`)
         .send(professor);
 
@@ -409,7 +407,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/api/auth/cadastro/professores')
+        .post('/auth/cadastro/professores')
         .set('Authorization', `Bearer ${profToken}`)
         .send(professor);
 
@@ -429,7 +427,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/api/auth/cadastro/professores')
+        .post('/auth/cadastro/professores')
         .set('Authorization', `Bearer ${profToken}`)
         .send(professor);
 
@@ -449,7 +447,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/api/auth/cadastro/professores')
+        .post('/auth/cadastro/professores')
         .set('Authorization', `Bearer ${profToken}`)
         .send(professor);
 
@@ -469,7 +467,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/api/auth/cadastro/professores')
+        .post('/auth/cadastro/professores')
         .set('Authorization', `Bearer ${profToken}`)
         .send(professor);
 
@@ -489,7 +487,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/api/auth/cadastro/professores')
+        .post('/auth/cadastro/professores')
         .set('Authorization', `Bearer ${profToken}`)
         .send(professor);
 
@@ -529,7 +527,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-      .post("/api/auth/login")
+      .post("/auth/login")
       .send(aluno)
 
       // 3. Assert
@@ -555,7 +553,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-      .post("/api/auth/login")
+      .post("/auth/login")
       .send(professor)
 
       // 3. Assert
@@ -581,7 +579,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-      .post("/api/auth/login")
+      .post("/auth/login")
       .send(professor)
 
       // 3. Assert
@@ -599,7 +597,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-      .post("/api/auth/login")
+      .post("/auth/login")
       .send(professor)
 
       // 3. Assert
@@ -617,7 +615,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-      .post("/api/auth/login")
+      .post("/auth/login")
       .send(professor)
 
       // 3. Assert
@@ -635,7 +633,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-      .post("/api/auth/login")
+      .post("/auth/login")
       .send(professor)
 
       // 3. Assert
