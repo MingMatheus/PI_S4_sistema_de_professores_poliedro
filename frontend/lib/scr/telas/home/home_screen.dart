@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 import '../../widgets/desktop_dashboard_view.dart';
 import '../../widgets/home_dashboard_view.dart';
 import '../../widgets/main_layout.dart';
@@ -15,9 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    setState(() => _selectedIndex = index);
   }
 
   @override
@@ -70,28 +69,60 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: mobileWidgetOptions.elementAt(_selectedIndex),
+      body: mobileWidgetOptions[_selectedIndex],
+
+      // ──────────────── NAVBAR INFERIOR ────────────────
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: poliedroBlue,
+        elevation: 8,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+
+        // cores gerais
+        selectedItemColor: Colors.black, // ícone ativo preto sólido
+        unselectedItemColor: Colors.white, // ícones inativos brancos
+
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: 'Início',
+            icon: Icon(
+              _selectedIndex == 0
+                  ? Icons.home // filled
+                  : Icons.home_outlined, // outline
+            ),
+            label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.folder_outlined),
-            label: 'Materiais',
+            icon: Icon(
+              _selectedIndex == 1
+                  ? Icons.folder // filled
+                  : Icons.folder_outlined,
+            ),
+            label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart_outlined),
-            label: 'Notas',
+            icon: Icon(
+              _selectedIndex == 2
+                  ? Icons.bar_chart // filled
+                  : Icons.bar_chart_outlined,
+            ),
+            label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            label: 'Mensagens',
+            icon: Icon(
+              _selectedIndex == 3
+                  ? Icons.chat_bubble // filled
+                  : Icons.chat_bubble_outline,
+            ),
+            label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.notifications_none_outlined),
-            label: 'Avisos',
+            icon: Icon(
+              _selectedIndex == 4
+                  ? Icons.notifications // filled
+                  : Icons.notifications_none_outlined,
+            ),
+            label: '',
           ),
         ],
         currentIndex: _selectedIndex,
