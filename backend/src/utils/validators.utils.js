@@ -25,7 +25,7 @@ const validaEmailProfessor = (emailProfessor) => {
 const validaSenha = (senha) => {
   if(!senha) return false
 
-  return senha.legth >= TAMANHO_MINIMO_SENHA
+  return senha.length >= TAMANHO_MINIMO_SENHA
 }
 
 module.exports = {
