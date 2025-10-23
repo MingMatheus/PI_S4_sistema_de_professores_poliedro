@@ -48,6 +48,11 @@ beforeEach(async () => {
   await Turma.deleteMany({})
 })
 
+// Roda APÓS cada teste para voltar os timers ao normal, caso eles tenham sido alterados para timers fake
+afterEach(() => {
+  jest.useRealTimers();
+});
+
 describe("Rotas de relacionadas a turmas", () => {
   // 1. Testes relacionados ao cadastro de turmas
   describe("POST /turmas", () => {
@@ -133,9 +138,6 @@ describe("Rotas de relacionadas a turmas", () => {
       expect(response.statusCode).toBe(401)
       expect(response.body).toHaveProperty("code", API.TOKEN_EXPIRADO)
       expect(response.body).toHaveProperty("mensagem", AUTH.TOKEN_EXPIROU)
-
-      // 4. Volta os timers ao normal
-      jest.useRealTimers()
     })
 
     // 1.4 Testa um cadastro de turma que falha devido ao token estar inválido
