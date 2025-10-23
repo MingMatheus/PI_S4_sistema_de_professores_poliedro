@@ -11,15 +11,25 @@ const serieRoutes = require("./src/api/routes/serie.routes")
 
 const app = express()
 
-conectaAoBancoDeDados()
 configuraExpress(app)
 
 app.use("/auth", authRoutes)
 app.use("/turmas", turmaRoutes)
 app.use("/series", serieRoutes)
 
-const PORT = process.env.API_PORT
+// Exporta o app para uso dos testes de integração
+module.exports = app
 
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`)
-})
+// Só executa essa parte do código caso esse seja o arquivo principal em execução
+// ou seja, só vai executar esse código quando o servidor for ligado de fato e não durante os testes
+// Isso é necessário pois os testes de integração não estavam funcionando
+if(require.main === module)
+{
+  const PORT = process.env.API_PORT
+  
+  conectaAoBancoDeDados()
+  
+  app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`)
+  })
+}
