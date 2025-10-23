@@ -45,6 +45,11 @@ beforeEach(async () => {
   await Professor.deleteMany({})
 })
 
+// Roda APÓS cada teste para voltar os timers ao normal, caso eles tenham sido alterados para timers fake
+afterEach(() => {
+  jest.useRealTimers();
+});
+
 describe("Rotas de autenticação", () => {
   // 1. Testes relacionados ao cadastro de alunos
   describe("POST /auth/cadastro/alunos", () => {
@@ -362,16 +367,15 @@ describe("Rotas de autenticação", () => {
     // 1.13 Testa um cadastro de aluno que falha devido ao token estar expirado
     it("deve retornar erro 401 se o token estiver expirado", async () => {
       // 1. Arrange
-      jest.useFakeTimers()  // Faz o uso de timers fake para 'manipular' o tempo para deixar o token expirado
-
       const professorComTokenExpirado = new Professor({
         email: "professorComTokenExpirado@sistemapoliedro.com.br",
         senha: "senhaDoProfessorComTokenExpirado",
         nome: "professorComTokenExpirado"
       })
-
+      
       await professorComTokenExpirado.save()
-
+      
+      jest.useFakeTimers()  // Faz o uso de timers fake para 'manipular' o tempo para deixar o token expirado
       const tokenExpirado = jwt.sign({sub: professorComTokenExpirado._id, role: ROLES.PROFESSOR}, process.env.JWT_SECRET, {expiresIn: "1s"})
       jest.advanceTimersByTime(2000)  // Faz com que se passe 2s, virtualmente, o que deixa o token expirado
 
@@ -392,9 +396,6 @@ describe("Rotas de autenticação", () => {
       expect(response.statusCode).toBe(401);
       expect(response.body).toHaveProperty("code", API.TOKEN_EXPIRADO);
       expect(response.body).toHaveProperty("mensagem", AUTH.TOKEN_EXPIROU);
-
-      // 4. Volta os timers ao normal
-      jest.useRealTimers()
     })
 
     // 1.14 Testa um cadastro de aluno que falha devido ao token estar inválido
@@ -699,16 +700,15 @@ describe("Rotas de autenticação", () => {
     // 2.11 Testa um cadastro de professor que falha devido ao token estar expirado
     it("deve retornar erro 401 se o token estiver expirado", async () => {
       // 1. Arrange
-      jest.useFakeTimers()  // Faz o uso de timers fake para 'manipular' o tempo para deixar o token expirado
-
       const professorComTokenExpirado = new Professor({
         email: "professorComTokenExpirado@sistemapoliedro.com.br",
         senha: "senhaDoProfessorComTokenExpirado",
         nome: "professorComTokenExpirado"
       })
-
+      
       await professorComTokenExpirado.save()
-
+      
+      jest.useFakeTimers()  // Faz o uso de timers fake para 'manipular' o tempo para deixar o token expirado
       const tokenExpirado = jwt.sign({sub: professorComTokenExpirado._id, role: ROLES.PROFESSOR}, process.env.JWT_SECRET, {expiresIn: "1s"})
       jest.advanceTimersByTime(2000)  // Faz com que se passe 2s, virtualmente, o que deixa o token expirado
 
@@ -728,9 +728,6 @@ describe("Rotas de autenticação", () => {
       expect(response.statusCode).toBe(401);
       expect(response.body).toHaveProperty("code", API.TOKEN_EXPIRADO);
       expect(response.body).toHaveProperty("mensagem", AUTH.TOKEN_EXPIROU);
-
-      // 4. Volta os timers ao normal
-      jest.useRealTimers()
     })
 
     // 2.12 Testa um cadastro de professor que falha devido ao token estar inválido
