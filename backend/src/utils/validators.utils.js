@@ -2,7 +2,7 @@ const {
   TAMANHO_MINIMO_SENHA,
   REGEX_EMAIL_GERAL,
   REGEX_EMAIL_PROFESSOR
-} = require("../../constants/validation.constants")
+} = require("../constants/validation.constants")
 
 const validaEmail = (email) => {
   if(!email) return false
