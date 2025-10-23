@@ -88,7 +88,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act (Agir) - Faz a requisição para a API
       const response = await request(app)
-        .post('auth/cadastro/alunos')
+        .post('/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`) // Adiciona o token de autenticação
         .send(novoAluno); // Envia os dados do novo aluno no corpo da requisição
 
