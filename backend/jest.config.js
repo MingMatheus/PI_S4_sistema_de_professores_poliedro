@@ -3,4 +3,5 @@ module.exports = {
   coveragePathIgnorePatterns: [ // Pastas que não precisam de cobertura de teste
     "/node_modules/"
   ],
+  setupFilesAfterEnv: ['./jest.setup.js']
 }
