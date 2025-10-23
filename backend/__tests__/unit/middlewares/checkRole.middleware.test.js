@@ -66,6 +66,7 @@ describe("Middleware: checkRole", () => {
 
     // 3. Assert
     expect(nextFunction).toHaveBeenCalledTimes(1)
+    expect(mockResponse.status).not.toHaveBeenCalled()
   })
 
   // Teste 4: O request não tem o parametro user
