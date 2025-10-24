@@ -41,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   try {
-    final url = Uri.parse('http://localhost:3000/login');
+    final url = Uri.parse('http://localhost:8080/login');
     // ⚠️ Troque localhost pelo IP do servidor backend, ex:
     // final url = Uri.parse('http://192.168.0.10:3000/login');
 

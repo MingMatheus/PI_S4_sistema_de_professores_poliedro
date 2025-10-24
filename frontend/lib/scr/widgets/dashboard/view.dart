@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'dashboard/avisos_card.dart';
-import 'dashboard/materiais_card.dart';
-import 'dashboard/mensagens_card.dart';
-import 'dashboard/notas_card.dart';
+import './avisos_card.dart';
+import './materiais_card.dart';
+import './mensagens_card.dart';
+import './notas_card.dart';
 
 class DesktopDashboardView extends StatelessWidget {
   const DesktopDashboardView({super.key});
