@@ -4,6 +4,9 @@ const ERROR_CODES = {
 
   // Nomes de Erros do Mongoose
   MONGOOSE_VALIDATION_ERROR: 'ValidationError',
+
+  // Nome de Erro Genérico
+  NOME_DE_ERRO_GENÉRICO: "Error",
   
   // Nomes de Erros do JWT
   JWT_EXPIRED_ERROR: 'TokenExpiredError',
