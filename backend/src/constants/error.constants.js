@@ -6,7 +6,7 @@ const ERROR_CODES = {
   MONGOOSE_VALIDATION_ERROR: 'ValidationError',
 
   // Nome de Erro Genérico
-  NOME_DE_ERRO_GENÉRICO: "Error",
+  NOME_DE_ERRO_GENERICO: "Error",
   
   // Nomes de Erros do JWT
   JWT_EXPIRED_ERROR: 'TokenExpiredError',
