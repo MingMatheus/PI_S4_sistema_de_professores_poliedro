@@ -99,11 +99,11 @@ exports.cadastraProfessor = async (req, res) => {
 
     // Trata o caso em que a senha enviada é inválida
     if(error.name == NOME_DE_ERRO_GENERICO && error.message == VALIDACAO.GERAL.SENHA_INVALIDA)
-      {
-        return res.status(400).json({
-          mensagem: ERRO.VALIDACAO
-        })
-      }
+    {
+      return res.status(400).json({
+        mensagem: ERRO.VALIDACAO
+      })
+    }
 
     return res.status(500).json({mensagem: ERRO.ERRO_INTERNO_NO_SERVIDOR}) // código 500, internal server error
   }
