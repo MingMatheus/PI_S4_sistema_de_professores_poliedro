@@ -32,14 +32,14 @@ Esse projeto tem como objetivo ser um sistema para professores e alunos do colé
 2. Ter o [Node.js](https://nodejs.org/) instalado
 3. Ter o [MongoDB](https://www.mongodb.com/) instalado e rodando (caso for usar o MongoDB localmente)
 
-### Setup e configuração
+### 1. Clonagem do repositório
 - Inicialmente clone o repositório usando o seguinte comando:
 
 ```bash
 git clone https://github.com/MingMatheus/PI_S4_sistema_de_professores_poliedro
 ```
 
-- **Frontend**
+### 2. Frontend
 1. Com um terminal já aberto na pasta do projeto navegue para a pasta do frontend usando o seguinte comando:
 
 ```bash
@@ -67,7 +67,7 @@ cp .env.example .env
 flutter run
 ```
 
-- **Backend**
+### 2. Backend
 1. Com um terminal já aberto na pasta do projeto navegue para a pasta do backend usando o seguinte comando:
 
 ```bash
@@ -97,4 +97,10 @@ npm run dev
 
 # Para ambiente de produção
 npm start
+```
+
+### 3. Testes
+Para rodar os testes do backend abra um terminal na pasta do backend e execute o seguinte comando
+```bash:
+npm test
 ```
