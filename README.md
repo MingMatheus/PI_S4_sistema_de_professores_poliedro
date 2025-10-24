@@ -67,7 +67,7 @@ cp .env.example .env
 flutter run
 ```
 
-### 2. Backend
+### 3. Backend
 1. Com um terminal já aberto na pasta do projeto navegue para a pasta do backend usando o seguinte comando:
 
 ```bash
@@ -99,7 +99,7 @@ npm run dev
 npm start
 ```
 
-### 3. Testes
+### 4. Testes
 Para rodar os testes do backend abra um terminal na pasta do backend e execute o seguinte comando
 ```bash:
 npm test
