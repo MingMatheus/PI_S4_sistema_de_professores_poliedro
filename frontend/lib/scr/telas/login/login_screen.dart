@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/custom_text_field.dart';
 import '../home/home_screen.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,13 +26,60 @@ class _LoginScreenState extends State<LoginScreen> {
   final double cardTopSpacing = 94; //  distância do card até a faixa azul (mobile)
 
   Future<void> _handleLogin() async {
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 1)); // simulação
-    if (!mounted) return;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
+  setState(() => _isLoading = true);
+
+  final email = _emailController.text.trim();
+  final senha = _senhaController.text.trim();
+
+  // Validação simples
+  if (email.isEmpty || senha.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Por favor, preencha todos os campos.')),
+    );
+    setState(() => _isLoading = false);
+    return;
+  }
+
+  try {
+    final url = Uri.parse('http://localhost:3000/login');
+    // ⚠️ Troque localhost pelo IP do servidor backend, ex:
+    // final url = Uri.parse('http://192.168.0.10:3000/login');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'senha': senha}),
+    );
+
+    setState(() => _isLoading = false);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final token = data['token'];
+
+      // Salva o token JWT
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('jwt_token', token);
+
+      // Redireciona para a tela principal
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    } else {
+      final error = jsonDecode(response.body);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error['mensagem'] ?? 'Falha no login')),
+      );
+    }
+  } catch (e) {
+    setState(() => _isLoading = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Erro ao conectar com o servidor.')),
     );
   }
+}
+
 
   @override
   void dispose() {
