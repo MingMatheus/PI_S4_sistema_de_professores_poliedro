@@ -1,3 +1,4 @@
+// telas/home/widgets/desktop_dashboard_view.dart
 import 'package:flutter/material.dart';
 import 'dashboard/mensagens_card.dart';
 import 'dashboard/notas_card.dart';
@@ -13,25 +14,21 @@ class DesktopDashboardView extends StatelessWidget {
       builder: (context, constraints) {
         final w = constraints.maxWidth;
 
-        // escala leve para telas menores
         double scale = 1.0;
         if (w < 1366) scale = 0.96;
         if (w < 1180) scale = 0.90;
 
-        // margens laterais e espaçamento
         const double outerGutterH = 0;
         const double outerGutterTop = 8;
         const double outerGutterBottom = 12;
         const double gap = 8.0;
 
-        // proporções
         final double rightWidth = (w * 0.30).clamp(360.0, 520.0);
         final double leftWidth = w - rightWidth - gap;
 
-        // aumenta um pouco mais o card de avisos pra igualar Materiais
         final double avisosMinHeight = w < 1366 ? 620 : 560;
 
-        // COLUNA ESQUERDA: mensagens, notas e materiais
+        // ESQUERDA
         Widget leftBlock = SizedBox(
           width: leftWidth,
           child: Column(
@@ -40,10 +37,10 @@ class DesktopDashboardView extends StatelessWidget {
               IntrinsicHeight(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: const [
-                    Expanded(child: _CappedHeight(child: MensagensCard())),
-                    SizedBox(width: gap),
-                    Expanded(child: _CappedHeight(child: NotasCard())),
+                  children: [
+                    const Expanded(child: _CappedHeight(child: MensagensCard())),
+                    const SizedBox(width: gap),
+                    const Expanded(child: _CappedHeight(child: NotasCard())),
                   ],
                 ),
               ),
@@ -53,15 +50,13 @@ class DesktopDashboardView extends StatelessWidget {
           ),
         );
 
-        // COLUNA DIREITA: últimos avisos
+        // DIREITA
         Widget rightBlock = SizedBox(
           width: rightWidth,
           child: Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: avisosMinHeight, // 🔹 agora desce mais
-              ),
+              constraints: BoxConstraints(minHeight: avisosMinHeight),
               child: const AvisosCard(),
             ),
           ),
@@ -71,7 +66,7 @@ class DesktopDashboardView extends StatelessWidget {
           alignment: Alignment.topCenter,
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(
-              outerGutterH, outerGutterTop, outerGutterH, outerGutterBottom),
+                outerGutterH, outerGutterTop, outerGutterH, outerGutterBottom),
             child: Transform.scale(
               alignment: Alignment.topCenter,
               scale: scale,
@@ -79,7 +74,6 @@ class DesktopDashboardView extends StatelessWidget {
                 constraints: BoxConstraints(minWidth: w),
                 child: Stack(
                   children: [
-                    // base das duas colunas
                     SizedBox(
                       width: w,
                       child: Row(
@@ -91,8 +85,6 @@ class DesktopDashboardView extends StatelessWidget {
                         ],
                       ),
                     ),
-
-                    // avisos posicionados na borda direita
                     Positioned(
                       top: 0,
                       right: 0,
@@ -110,7 +102,6 @@ class DesktopDashboardView extends StatelessWidget {
   }
 }
 
-// limita a altura dos cards de Mensagens e Notas
 class _CappedHeight extends StatelessWidget {
   const _CappedHeight({required this.child});
   final Widget child;
@@ -118,7 +109,7 @@ class _CappedHeight extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxHeight: 315),
+      constraints: const BoxConstraints(maxHeight: 330), // pequeno buffer
       child: child,
     );
   }

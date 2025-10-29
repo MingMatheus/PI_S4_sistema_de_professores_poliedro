@@ -1,3 +1,4 @@
+// telas/home/widgets/dashboard/mensagens_card.dart
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 
@@ -23,35 +24,44 @@ class MensagensCard extends StatelessWidget {
           'Ontem, 10:12'),
     ];
 
-    final width = MediaQuery.sizeOf(context).width;
-    final isNotebook = width < 1366;
-    // Em notebook mostramos só 2 para evitar overflow
-    final mensagens = isNotebook ? todas.take(2).toList() : todas;
+    final w = MediaQuery.sizeOf(context).width;
 
-    return Card(
-      elevation: 4,
-      shadowColor: Colors.black.withOpacity(0.12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.chat_bubble_outline, color: poliedroBlue),
-                const SizedBox(width: 8),
-                Text('Mensagens', style: titleStyle),
-              ],
-            ),
-            const SizedBox(height: 16),
+    // 👉 até 1550px mostra só 2 pra não ficar apertado
+    final maxItens = w < 1550 ? 2 : 3;
+    final mensagens = todas.take(maxItens).toList();
 
-            // lista (com truncamento para evitar texto sair do card)
-            ...mensagens.map((m) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _MensagemItem(mensagem: m),
-                )),
-          ],
+    return SizedBox(
+      height: 315,
+      child: Card(
+        elevation: 4,
+        shadowColor: Colors.black.withOpacity(0.12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        clipBehavior: Clip.hardEdge,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.chat_bubble_outline, color: poliedroBlue),
+                  const SizedBox(width: 8),
+                  Text('Mensagens', style: titleStyle),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              Flexible(
+                child: ListView.separated(
+                  padding: const EdgeInsets.only(bottom: 12), // 👈 folga no rodapé
+                  physics: const ClampingScrollPhysics(),
+                  itemCount: mensagens.length,
+                  separatorBuilder: (_, __) => const Divider(height: 20),
+                  itemBuilder: (_, i) => _MensagemItem(mensagem: mensagens[i]),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -89,7 +99,6 @@ class _MensagemItem extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        const Divider(height: 20),
       ],
     );
   }

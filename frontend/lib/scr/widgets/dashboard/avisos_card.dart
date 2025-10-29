@@ -1,3 +1,4 @@
+// telas/home/widgets/dashboard/avisos_card.dart
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 
@@ -44,19 +45,10 @@ class _AvisoItem extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFEFF3F8)), // sutil
-        // 💡 sombra mais leve, mas ainda perceptível
+        border: Border.all(color: const Color(0xFFEFF3F8)),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.10),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
+          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 6, offset: const Offset(0, 2)),
+          BoxShadow(color: Colors.black.withOpacity(0.10), blurRadius: 10, offset: const Offset(0, 5)),
         ],
       ),
       child: Row(
@@ -68,25 +60,20 @@ class _AvisoItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  a.titulo,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w600),
-                ),
+                Text(a.titulo,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 4),
-                Text(
-                  a.descricao,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: Colors.black87),
-                ),
+                Text(a.descricao,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: Colors.black87)),
                 const SizedBox(height: 8),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: poliedroBlue.withOpacity(0.10),
                     borderRadius: BorderRadius.circular(8),
@@ -113,8 +100,7 @@ class _AvisoItem extends StatelessWidget {
 final List<_Aviso> _avisos = [
   _Aviso(
     titulo: 'Notas atualizadas',
-    descricao:
-        'Resultados da prova sobre Leis de Newton disponíveis na aba de notas.',
+    descricao: 'Resultados da prova sobre Leis de Newton disponíveis na aba de notas.',
     tag: 'Física',
   ),
   _Aviso(
@@ -124,14 +110,12 @@ final List<_Aviso> _avisos = [
   ),
   _Aviso(
     titulo: 'Novo material disponível',
-    descricao:
-        'Arquivo "Funções Quadráticas Exercícios Resolvidos" já disponível para download.',
+    descricao: 'Arquivo "Funções Quadráticas Exercícios Resolvidos" já disponível para download.',
     tag: 'Matemática',
   ),
   _Aviso(
     titulo: 'Prova P2 marcada',
-    descricao:
-        'Avaliação de Genética e Hereditariedade no dia 14/10 às 10h20.',
+    descricao: 'Avaliação de Genética e Hereditariedade no dia 14/10 às 10h20.',
     tag: 'Biologia',
   ),
 ];

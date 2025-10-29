@@ -1,3 +1,4 @@
+// telas/home/widgets/dashboard/materiais_card.dart
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 
@@ -12,18 +13,15 @@ class MateriaisCard extends StatelessWidget {
         ?.copyWith(fontWeight: FontWeight.bold, color: poliedroBlue);
 
     return ConstrainedBox(
-      constraints: const BoxConstraints(
-        maxHeight: 300, // 🔹 reduzi mais pra o card subir na tela
-      ),
+      constraints: const BoxConstraints(maxHeight: 300),
       child: Card(
         elevation: 4,
         shadowColor: Colors.black.withOpacity(0.12),
-        margin: const EdgeInsets.only(bottom: 4), // 🔹 tira espaço embaixo
+        margin: const EdgeInsets.only(bottom: 4),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: LayoutBuilder(
             builder: (context, constraints) {
-              // BREAKPOINTS: tamanhos da logo (desktop/web)
               double? logoSize;
               if (constraints.maxWidth >= 1100) {
                 logoSize = 240;
@@ -32,13 +30,13 @@ class MateriaisCard extends StatelessWidget {
               } else if (constraints.maxWidth >= 700) {
                 logoSize = 180;
               } else {
-                logoSize = null; // mobile: some
+                logoSize = null;
               }
 
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // lista de materiais
+                  // lista
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,14 +49,11 @@ class MateriaisCard extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 12),
-
-                        // mostra só 4 itens pra caber sem overflow
                         ..._itens.take(4).map((e) => _MaterialItem(e)).toList(),
                       ],
                     ),
                   ),
 
-                  // logo do Poliedro
                   if (logoSize != null) ...[
                     const SizedBox(width: 24),
                     SizedBox(
@@ -69,10 +64,7 @@ class MateriaisCard extends StatelessWidget {
                         shadowColor: Colors.black.withOpacity(0.12),
                         child: Padding(
                           padding: const EdgeInsets.all(14),
-                          child: Image.asset(
-                            'assets/images/logo.jpg',
-                            fit: BoxFit.contain,
-                          ),
+                          child: Image.asset('assets/images/logo.jpg', fit: BoxFit.contain),
                         ),
                       ),
                     ),
@@ -86,8 +78,6 @@ class MateriaisCard extends StatelessWidget {
     );
   }
 }
-
-// ---------------- Dados ----------------
 
 final List<_Material> _itens = [
   _Material(
@@ -134,13 +124,11 @@ class _MaterialItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  m.titulo,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w600),
-                ),
+                Text(m.titulo,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
                 Text(m.descricao, style: Theme.of(context).textTheme.bodySmall),
               ],
@@ -156,9 +144,5 @@ class _Material {
   final IconData icon;
   final String titulo;
   final String descricao;
-  _Material({
-    required this.icon,
-    required this.titulo,
-    required this.descricao,
-  });
+  _Material({required this.icon, required this.titulo, required this.descricao});
 }

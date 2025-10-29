@@ -16,25 +16,35 @@ class NotasCard extends StatelessWidget {
 
     final width = MediaQuery.sizeOf(context).width;
     final isNotebook = width < 1366;
-    // Em notebook mostra só 4 itens para não estourar
     final itens = isNotebook ? todas.take(4).toList() : todas;
 
-    return Card(
-      elevation: 4,
-      shadowColor: Colors.black.withOpacity(0.08),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const _SectionHeader(icon: Icons.bar_chart_outlined, titulo: 'Notas e Médias'),
-            const SizedBox(height: 12),
-            for (final n in itens) ...[
-              _LinhaNota(nota: n),
-              if (n != itens.last) const Divider(height: 16),
+    return SizedBox(
+      height: 315, // 🔹 mesmo limite
+      child: Card(
+        elevation: 4,
+        shadowColor: Colors.black.withOpacity(0.08),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        clipBehavior: Clip.hardEdge,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _SectionHeader(icon: Icons.bar_chart_outlined, titulo: 'Notas e Médias'),
+              const SizedBox(height: 12),
+
+              // 🔹 Scroll interno
+              Flexible(
+                child: ListView.separated(
+                  padding: EdgeInsets.zero,
+                  physics: const ClampingScrollPhysics(),
+                  itemCount: itens.length,
+                  separatorBuilder: (_, __) => const Divider(height: 16),
+                  itemBuilder: (_, i) => _LinhaNota(nota: itens[i]),
+                ),
+              ),
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -60,12 +70,7 @@ class _LinhaNota extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(nota.titulo, style: titleStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
-              Text(
-                nota.detalhes,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                softWrap: true,
-              ),
+              Text(nota.detalhes, maxLines: 2, overflow: TextOverflow.ellipsis, softWrap: true),
             ],
           ),
         ),
@@ -97,12 +102,7 @@ class _SectionHeader extends StatelessWidget {
         Icon(icon, color: poliedroBlue),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(
-            titulo,
-            style: titleStyle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+          child: Text(titulo, style: titleStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
         ),
       ],
     );
