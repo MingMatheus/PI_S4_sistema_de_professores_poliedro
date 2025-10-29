@@ -11,76 +11,83 @@ class MateriaisCard extends StatelessWidget {
         .titleLarge
         ?.copyWith(fontWeight: FontWeight.bold, color: poliedroBlue);
 
-    return Card(
-      elevation: 4,
-      shadowColor: Colors.black.withOpacity(0.12),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            // ▸ BREAKPOINTS e tamanhos da LOGO (só afeta desktop/web)
-            //   - >= 1100px  → logo 300
-            //   - >= 900px   → logo 260
-            //   - >= 700px   → logo 220
-            //   - < 700px    → esconde a logo (mobile)
-            double? logoSize;
-            if (constraints.maxWidth >= 1100) {
-              logoSize = 300; // ← ajuste aqui se quiser maior/menor no desktop largo
-            } else if (constraints.maxWidth >= 900) {
-              logoSize = 260;
-            } else if (constraints.maxWidth >= 700) {
-              logoSize = 220;
-            } else {
-              logoSize = null; // mobile: some
-            }
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        maxHeight: 300, // 🔹 reduzi mais pra o card subir na tela
+      ),
+      child: Card(
+        elevation: 4,
+        shadowColor: Colors.black.withOpacity(0.12),
+        margin: const EdgeInsets.only(bottom: 4), // 🔹 tira espaço embaixo
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // BREAKPOINTS: tamanhos da logo (desktop/web)
+              double? logoSize;
+              if (constraints.maxWidth >= 1100) {
+                logoSize = 240;
+              } else if (constraints.maxWidth >= 900) {
+                logoSize = 210;
+              } else if (constraints.maxWidth >= 700) {
+                logoSize = 180;
+              } else {
+                logoSize = null; // mobile: some
+              }
 
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // LISTA (ocupa todo espaço disponível)
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.folder_open, color: poliedroBlue),
-                          const SizedBox(width: 8),
-                          Text('Materiais de aula', style: titleStyle),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      ..._itens.map((e) => _MaterialItem(e)).toList(),
-                    ],
-                  ),
-                ),
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // lista de materiais
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.folder_open, color: poliedroBlue),
+                            const SizedBox(width: 8),
+                            Text('Materiais de aula', style: titleStyle),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
 
-                // LOGO à direita (só aparece quando logoSize != null)
-                if (logoSize != null) ...[
-                  const SizedBox(width: 24),
-                  SizedBox(
-                    width: logoSize,
-                    height: logoSize,
-                    child: Card(
-                      elevation: 3,
-                      shadowColor: Colors.black.withOpacity(0.12),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Image.asset('assets/images/logo.jpg', fit: BoxFit.contain),
-                      ),
+                        // mostra só 4 itens pra caber sem overflow
+                        ..._itens.take(4).map((e) => _MaterialItem(e)).toList(),
+                      ],
                     ),
                   ),
+
+                  // logo do Poliedro
+                  if (logoSize != null) ...[
+                    const SizedBox(width: 24),
+                    SizedBox(
+                      width: logoSize,
+                      height: logoSize,
+                      child: Card(
+                        elevation: 3,
+                        shadowColor: Colors.black.withOpacity(0.12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Image.asset(
+                            'assets/images/logo.jpg',
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
   }
 }
 
-// ---------------- Dados/Itens ----------------
+// ---------------- Dados ----------------
 
 final List<_Material> _itens = [
   _Material(
@@ -117,7 +124,7 @@ class _MaterialItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -127,11 +134,13 @@ class _MaterialItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(m.titulo,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleSmall
-                        ?.copyWith(fontWeight: FontWeight.w600)),
+                Text(
+                  m.titulo,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w600),
+                ),
                 const SizedBox(height: 2),
                 Text(m.descricao, style: Theme.of(context).textTheme.bodySmall),
               ],
@@ -147,5 +156,9 @@ class _Material {
   final IconData icon;
   final String titulo;
   final String descricao;
-  _Material({required this.icon, required this.titulo, required this.descricao});
+  _Material({
+    required this.icon,
+    required this.titulo,
+    required this.descricao,
+  });
 }

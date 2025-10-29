@@ -11,42 +11,20 @@ class AvisosCard extends StatelessWidget {
         .titleLarge
         ?.copyWith(fontWeight: FontWeight.bold, color: poliedroBlue);
 
-    final avisos = const [
-      _Aviso('Notas atualizadas',
-          'Resultados da prova sobre Leis de Newton disponíveis na aba de notas.',
-          'Física'),
-      _Aviso('Trabalho em grupo',
-          'Entrega do mapa conceitual sobre Globalização até 09/10.',
-          'Geografia'),
-      _Aviso('Novo material disponível',
-          'Arquivo "Funções Quadráticas Exercícios Resolvidos" já disponível para download.',
-          'Matemática'),
-      _Aviso('Prova P2 marcada',
-          'Avaliação de Genética e Hereditariedade no dia 14/10 às 10h20.',
-          'Biologia'),
-      _Aviso('Plantão de dúvidas',
-          'Plantão extra de Matemática na quinta-feira, 18h às 19h.',
-          'Matemática'),
-      _Aviso('Feira de Ciências',
-          'Inscrições abertas até 20/10. Consulte o regulamento no portal.',
-          'Geral'),
-    ];
-
     return Card(
-      elevation: 4,
-      shadowColor: Colors.black.withOpacity(0.1),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 6,
+      shadowColor: Colors.black.withOpacity(0.12),
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      color: Colors.white,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(18.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Últimos avisos', style: titleStyle),
             const SizedBox(height: 16),
-            for (final a in avisos) ...[
-              _MiniAvisoCard(aviso: a),
-              const SizedBox(height: 14),
-            ],
+            for (final a in _avisos) _AvisoItem(a),
           ],
         ),
       ),
@@ -54,76 +32,113 @@ class AvisosCard extends StatelessWidget {
   }
 }
 
-class _MiniAvisoCard extends StatelessWidget {
-  const _MiniAvisoCard({required this.aviso});
-  final _Aviso aviso;
+class _AvisoItem extends StatelessWidget {
+  const _AvisoItem(this.a);
+  final _Aviso a;
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFEFF3F8)), // sutil
+        // 💡 sombra mais leve, mas ainda perceptível
         boxShadow: [
-          // 🔹 sombra mais espalhada e visível, cria separação suave
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 10, // espalha mais a sombra
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.10),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(14.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Icon(Icons.lightbulb_outline, color: poliedroBlue),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(aviso.titulo,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleSmall
-                          ?.copyWith(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text(
-                    aviso.detalhes,
-                    style: Theme.of(context).textTheme.bodyMedium,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.lightbulb_outline, color: poliedroBlue, size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  a.titulo,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  a.descricao,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: Colors.black87),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: poliedroBlue.withOpacity(0.10),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: poliedroBlue.withOpacity(0.18)),
                   ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: poliedroBlue.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      aviso.tag,
-                      style: const TextStyle(
-                        color: poliedroBlue,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
+                  child: Text(
+                    a.tag,
+                    style: const TextStyle(
+                      color: poliedroBlue,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
+final List<_Aviso> _avisos = [
+  _Aviso(
+    titulo: 'Notas atualizadas',
+    descricao:
+        'Resultados da prova sobre Leis de Newton disponíveis na aba de notas.',
+    tag: 'Física',
+  ),
+  _Aviso(
+    titulo: 'Trabalho em grupo',
+    descricao: 'Entrega do mapa conceitual sobre Globalização até 09/10.',
+    tag: 'Geografia',
+  ),
+  _Aviso(
+    titulo: 'Novo material disponível',
+    descricao:
+        'Arquivo "Funções Quadráticas Exercícios Resolvidos" já disponível para download.',
+    tag: 'Matemática',
+  ),
+  _Aviso(
+    titulo: 'Prova P2 marcada',
+    descricao:
+        'Avaliação de Genética e Hereditariedade no dia 14/10 às 10h20.',
+    tag: 'Biologia',
+  ),
+];
+
 class _Aviso {
   final String titulo;
-  final String detalhes;
+  final String descricao;
   final String tag;
-  const _Aviso(this.titulo, this.detalhes, this.tag);
+  _Aviso({required this.titulo, required this.descricao, required this.tag});
 }

@@ -6,13 +6,18 @@ class NotasCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final itens = const [
+    const todas = [
       _Nota('Nota de Prova', 'Matemática - Prova Bimestral (P2): 8.5 / 10'),
       _Nota('Nota de Exercício', 'Química - Lista de Exercícios: 10 / 10'),
       _Nota('Nota de Trabalho em Grupo', 'História - Revolução Industrial: 9.0 / 10'),
       _Nota('Nota de Simulado', 'Biologia - Genética: 7.8 / 10'),
       _Nota('Média Parcial', 'Física - Leis de Newton: 8.2 / 10'),
     ];
+
+    final width = MediaQuery.sizeOf(context).width;
+    final isNotebook = width < 1366;
+    // Em notebook mostra só 4 itens para não estourar
+    final itens = isNotebook ? todas.take(4).toList() : todas;
 
     return Card(
       elevation: 4,
@@ -42,7 +47,8 @@ class _LinhaNota extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700);
+    final titleStyle =
+        Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,

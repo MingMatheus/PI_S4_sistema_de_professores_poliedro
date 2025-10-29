@@ -11,7 +11,7 @@ class MensagensCard extends StatelessWidget {
         .titleLarge
         ?.copyWith(fontWeight: FontWeight.bold, color: poliedroBlue);
 
-    final mensagens = <_Msg>[
+    final todas = <_Msg>[
       _Msg('Prof. Silva - Física',
           '“Olá, João. Recebi seu trabalho e gostei da análise na questão 4. Para as próximas, lembre-se de...”',
           'Hoje, 15:20'),
@@ -23,9 +23,15 @@ class MensagensCard extends StatelessWidget {
           'Ontem, 10:12'),
     ];
 
+    final width = MediaQuery.sizeOf(context).width;
+    final isNotebook = width < 1366;
+    // Em notebook mostramos só 2 para evitar overflow
+    final mensagens = isNotebook ? todas.take(2).toList() : todas;
+
     return Card(
       elevation: 4,
       shadowColor: Colors.black.withOpacity(0.12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -39,12 +45,12 @@ class MensagensCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            ...mensagens
-                .map((m) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _MensagemItem(mensagem: m),
-                    ))
-                .toList(),
+
+            // lista (com truncamento para evitar texto sair do card)
+            ...mensagens.map((m) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _MensagemItem(mensagem: m),
+                )),
           ],
         ),
       ),
@@ -63,12 +69,26 @@ class _MensagemItem extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(mensagem.titulo,
-            style: txt.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+        Text(
+          mensagem.titulo,
+          style: txt.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         const SizedBox(height: 4),
-        Text(mensagem.preview, style: txt.bodyMedium),
+        Text(
+          mensagem.preview,
+          style: txt.bodyMedium,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
         const SizedBox(height: 4),
-        Text(mensagem.horario, style: txt.bodySmall?.copyWith(color: Colors.grey[700])),
+        Text(
+          mensagem.horario,
+          style: txt.bodySmall?.copyWith(color: Colors.grey[700]),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         const Divider(height: 20),
       ],
     );
