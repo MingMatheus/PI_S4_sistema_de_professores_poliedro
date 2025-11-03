@@ -23,12 +23,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width >= 720;
 
+    // páginas (mensagens removida)
     final List<Widget> pages = [
-      const DesktopDashboardView(),
-      const Center(child: Text('Página de Materiais')),
-      const Center(child: Text('Página de Notas')),
-      const Center(child: Text('Página de Mensagens')),
-      const Center(child: Text('Página de Avisos')),
+      const DesktopDashboardView(),                    // 0 Início
+      const Center(child: Text('Página de Materiais')), // 1
+      const Center(child: Text('Página de Notas')),     // 2
+      const Center(child: Text('Página de Avisos')),    // 3
     ];
 
     if (isDesktop) {
@@ -44,19 +44,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Scaffold _buildMobileLayout() {
     final List<Widget> mobileWidgetOptions = <Widget>[
-      const HomeDashboardView(),
-      const Center(child: Text('Página de Materiais')),
-      const Center(child: Text('Página de Notas')),
-      const Center(child: Text('Página de Mensagens')),
-      const Center(child: Text('Página de Avisos')),
+      const HomeDashboardView(),                         // 0
+      const Center(child: Text('Página de Materiais')),  // 1
+      const Center(child: Text('Página de Notas')),      // 2
+      const Center(child: Text('Página de Avisos')),     // 3
     ];
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Portal Poliedro',
-          style: TextStyle(fontSize: 22),
-        ),
+        title: const Text('Portal Poliedro', style: TextStyle(fontSize: 22)),
         actions: [
           IconButton(
             iconSize: 30,
@@ -70,58 +66,31 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: mobileWidgetOptions[_selectedIndex],
-
-      // ──────────────── NAVBAR INFERIOR ────────────────
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: poliedroBlue,
         elevation: 8,
         showSelectedLabels: false,
         showUnselectedLabels: false,
-
-        // cores gerais
-        selectedItemColor: Colors.black, // ícone ativo preto sólido
-        unselectedItemColor: Colors.white, // ícones inativos brancos
-
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.white,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(
-              _selectedIndex == 0
-                  ? Icons.home // filled
-                  : Icons.home_outlined, // outline
-            ),
+            icon: Icon(_selectedIndex == 0 ? Icons.home : Icons.home_outlined),
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(
-              _selectedIndex == 1
-                  ? Icons.folder // filled
-                  : Icons.folder_outlined,
-            ),
+            icon: Icon(_selectedIndex == 1 ? Icons.folder : Icons.folder_outlined),
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(
-              _selectedIndex == 2
-                  ? Icons.bar_chart // filled
-                  : Icons.bar_chart_outlined,
-            ),
+            icon: Icon(_selectedIndex == 2 ? Icons.bar_chart : Icons.bar_chart_outlined),
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(
-              _selectedIndex == 3
-                  ? Icons.chat_bubble // filled
-                  : Icons.chat_bubble_outline,
-            ),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              _selectedIndex == 4
-                  ? Icons.notifications // filled
-                  : Icons.notifications_none_outlined,
-            ),
+            icon: Icon(_selectedIndex == 3
+                ? Icons.notifications
+                : Icons.notifications_none_outlined),
             label: '',
           ),
         ],

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
-// importa a tela de login (ajuste o caminho se o seu projeto for diferente)
 import '../telas/login/login_screen.dart';
 
 class MainLayout extends StatelessWidget {
@@ -16,10 +15,6 @@ class MainLayout extends StatelessWidget {
   });
 
   void _handleLogout(BuildContext context) {
-    // se você tiver auth (ex.: FirebaseAuth), faça o signOut aqui antes de navegar:
-    // await FirebaseAuth.instance.signOut();
-
-    // navega para a tela de login e limpa todo o histórico (não permite voltar)
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const LoginScreen()),
       (route) => false,
@@ -30,16 +25,13 @@ class MainLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Portal Poliedro',
-          style: TextStyle(fontSize: 22),
-        ),
+        title: const Text('Portal Poliedro', style: TextStyle(fontSize: 22)),
         actions: [
           IconButton(
             iconSize: 30,
             icon: const Icon(Icons.logout_outlined),
-            onPressed: () => _handleLogout(context),
             tooltip: 'Sair',
+            onPressed: () => _handleLogout(context),
           ),
         ],
       ),
@@ -52,8 +44,10 @@ class MainLayout extends StatelessWidget {
             backgroundColor: poliedroBlue,
             labelType: NavigationRailLabelType.none,
             indicatorColor: Colors.transparent,
-            unselectedIconTheme: const IconThemeData(color: Colors.white, size: 44),
-            selectedIconTheme: const IconThemeData(color: Colors.black, size: 44),
+            unselectedIconTheme:
+                const IconThemeData(color: Colors.white, size: 44),
+            selectedIconTheme:
+                const IconThemeData(color: Colors.black, size: 44),
             minWidth: 75,
             groupAlignment: -1,
             destinations: const <NavigationRailDestination>[
@@ -72,11 +66,7 @@ class MainLayout extends StatelessWidget {
                 selectedIcon: Icon(Icons.bar_chart),
                 label: Text('Notas'),
               ),
-              NavigationRailDestination(
-                icon: Icon(Icons.chat_bubble_outline),
-                selectedIcon: Icon(Icons.chat_bubble),
-                label: Text('Mensagens'),
-              ),
+              // 🔻 “Mensagens” foi removido
               NavigationRailDestination(
                 icon: Icon(Icons.notifications_none_outlined),
                 selectedIcon: Icon(Icons.notifications),
@@ -85,9 +75,7 @@ class MainLayout extends StatelessWidget {
             ],
           ),
           const VerticalDivider(thickness: 1, width: 1),
-          Expanded(
-            child: child,
-          ),
+          Expanded(child: child),
         ],
       ),
     );

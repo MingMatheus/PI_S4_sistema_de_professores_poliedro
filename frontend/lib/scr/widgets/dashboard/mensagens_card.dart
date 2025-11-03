@@ -1,4 +1,3 @@
-// telas/home/widgets/dashboard/mensagens_card.dart
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 
@@ -26,8 +25,8 @@ class MensagensCard extends StatelessWidget {
 
     final w = MediaQuery.sizeOf(context).width;
 
-    // 👉 até 1550px mostra só 2 pra não ficar apertado
-    final maxItens = w < 1550 ? 2 : 3;
+    // 👉 Até ~1700px continua exibindo só 2 mensagens
+    final maxItens = w < 1700 ? 2 : 3;
     final mensagens = todas.take(maxItens).toList();
 
     return SizedBox(
@@ -42,18 +41,13 @@ class MensagensCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.chat_bubble_outline, color: poliedroBlue),
-                  const SizedBox(width: 8),
-                  Text('Mensagens', style: titleStyle),
-                ],
-              ),
+              // ✅ Sem ícone
+              Text('Mensagens', style: titleStyle),
               const SizedBox(height: 12),
 
               Flexible(
                 child: ListView.separated(
-                  padding: const EdgeInsets.only(bottom: 12), // 👈 folga no rodapé
+                  padding: const EdgeInsets.only(bottom: 12),
                   physics: const ClampingScrollPhysics(),
                   itemCount: mensagens.length,
                   separatorBuilder: (_, __) => const Divider(height: 20),
