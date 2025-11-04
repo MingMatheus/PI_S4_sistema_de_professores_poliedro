@@ -5,6 +5,9 @@ import '../../widgets/home_dashboard_view.dart';
 import '../../widgets/main_layout.dart';
 import '../login/login_screen.dart';
 
+// ⬇️ importa a página de Materiais
+import 'materiais_screen.dart'; // <- certifique-se de criar/colar o arquivo que te passei
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -23,31 +26,35 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width >= 720;
 
-    // páginas (mensagens removida)
+    // páginas (4 abas: Início, Materiais, Notas, Avisos)
     final List<Widget> pages = [
-      const DesktopDashboardView(),                    // 0 Início
-      const Center(child: Text('Página de Materiais')), // 1
-      const Center(child: Text('Página de Notas')),     // 2
-      const Center(child: Text('Página de Avisos')),    // 3
+      const DesktopDashboardView(),        // 0 Início
+      const MateriaisScreen(),             // 1 Materiais
+      const Center(child: Text('Página de Notas')),   // 2 Notas (placeholder)
+      const Center(child: Text('Página de Avisos')),  // 3 Avisos (placeholder)
     ];
+
+    // proteção defensiva (em hot reload às vezes o selectedIndex fica fora do range)
+    final safeIndex = _selectedIndex.clamp(0, pages.length - 1);
 
     if (isDesktop) {
       return MainLayout(
-        selectedIndex: _selectedIndex,
+        selectedIndex: safeIndex,
         onDestinationSelected: _onItemTapped,
-        child: pages[_selectedIndex],
+        child: pages[safeIndex],
       );
     } else {
-      return _buildMobileLayout();
+      return _buildMobileLayout(safeIndex, pages);
     }
   }
 
-  Scaffold _buildMobileLayout() {
+  Scaffold _buildMobileLayout(int safeIndex, List<Widget> desktopPages) {
+    // no mobile usamos a HomeDashboardView na aba 0
     final List<Widget> mobileWidgetOptions = <Widget>[
-      const HomeDashboardView(),                         // 0
-      const Center(child: Text('Página de Materiais')),  // 1
-      const Center(child: Text('Página de Notas')),      // 2
-      const Center(child: Text('Página de Avisos')),     // 3
+      const HomeDashboardView(),     // 0 Início (versão mobile)
+      const MateriaisScreen(),       // 1 Materiais
+      const Center(child: Text('Página de Notas')),   // 2 Notas (placeholder)
+      const Center(child: Text('Página de Avisos')),  // 3 Avisos (placeholder)
     ];
 
     return Scaffold(
@@ -65,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: mobileWidgetOptions[_selectedIndex],
+      body: mobileWidgetOptions[safeIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: poliedroBlue,
@@ -88,9 +95,9 @@ class _HomeScreenState extends State<HomeScreen> {
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(_selectedIndex == 3
-                ? Icons.notifications
-                : Icons.notifications_none_outlined),
+            icon: Icon(
+              _selectedIndex == 3 ? Icons.notifications : Icons.notifications_none_outlined,
+            ),
             label: '',
           ),
         ],
