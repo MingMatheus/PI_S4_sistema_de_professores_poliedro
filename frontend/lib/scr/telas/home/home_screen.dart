@@ -5,8 +5,9 @@ import '../../widgets/home_dashboard_view.dart';
 import '../../widgets/main_layout.dart';
 import '../login/login_screen.dart';
 
-// ⬇️ importa a página de Materiais
-import 'materiais_screen.dart'; // <- certifique-se de criar/colar o arquivo que te passei
+// telas
+import 'materiais_screen.dart';
+import 'notas_screen.dart'; // ⬅️ nova tela de Notas
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,13 +29,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // páginas (4 abas: Início, Materiais, Notas, Avisos)
     final List<Widget> pages = [
-      const DesktopDashboardView(),        // 0 Início
-      const MateriaisScreen(),             // 1 Materiais
-      const Center(child: Text('Página de Notas')),   // 2 Notas (placeholder)
-      const Center(child: Text('Página de Avisos')),  // 3 Avisos (placeholder)
+      const DesktopDashboardView(),   // 0 Início
+      const MateriaisScreen(),        // 1 Materiais
+      const NotasScreen(),            // 2 Notas ✅
+      const Center(child: Text('Página de Avisos')), // 3 Avisos (placeholder)
     ];
 
-    // proteção defensiva (em hot reload às vezes o selectedIndex fica fora do range)
     final safeIndex = _selectedIndex.clamp(0, pages.length - 1);
 
     if (isDesktop) {
@@ -44,17 +44,16 @@ class _HomeScreenState extends State<HomeScreen> {
         child: pages[safeIndex],
       );
     } else {
-      return _buildMobileLayout(safeIndex, pages);
+      return _buildMobileLayout(safeIndex);
     }
   }
 
-  Scaffold _buildMobileLayout(int safeIndex, List<Widget> desktopPages) {
-    // no mobile usamos a HomeDashboardView na aba 0
+  Scaffold _buildMobileLayout(int safeIndex) {
     final List<Widget> mobileWidgetOptions = <Widget>[
-      const HomeDashboardView(),     // 0 Início (versão mobile)
-      const MateriaisScreen(),       // 1 Materiais
-      const Center(child: Text('Página de Notas')),   // 2 Notas (placeholder)
-      const Center(child: Text('Página de Avisos')),  // 3 Avisos (placeholder)
+      const HomeDashboardView(),  // 0
+      const MateriaisScreen(),    // 1
+      const NotasScreen(),        // 2 ✅
+      const Center(child: Text('Página de Avisos')), // 3
     ];
 
     return Scaffold(
@@ -95,9 +94,9 @@ class _HomeScreenState extends State<HomeScreen> {
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(
-              _selectedIndex == 3 ? Icons.notifications : Icons.notifications_none_outlined,
-            ),
+            icon: Icon(_selectedIndex == 3
+                ? Icons.notifications
+                : Icons.notifications_none_outlined),
             label: '',
           ),
         ],
