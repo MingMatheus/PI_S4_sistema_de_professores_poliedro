@@ -7,7 +7,8 @@ import '../login/login_screen.dart';
 
 // telas
 import 'materiais_screen.dart';
-import 'notas_screen.dart'; // ⬅️ nova tela de Notas
+import 'notas_screen.dart';
+import 'avisos_screen.dart'; // ✅ Avisos
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,22 +21,24 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
-    setState(() => _selectedIndex = index);
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width >= 720;
 
-    // páginas (4 abas: Início, Materiais, Notas, Avisos)
+    // ✅ páginas das abas
     final List<Widget> pages = [
-      const DesktopDashboardView(),   // 0 Início
-      const MateriaisScreen(),        // 1 Materiais
-      const NotasScreen(),            // 2 Notas ✅
-      const Center(child: Text('Página de Avisos')), // 3 Avisos (placeholder)
+      const DesktopDashboardView(), // 0 Início
+      const MateriaisScreen(),      // 1 Materiais
+      const NotasScreen(),          // 2 Notas
+      const AvisosScreen(),         // 3 Avisos
     ];
 
-    final safeIndex = _selectedIndex.clamp(0, pages.length - 1);
+    final int safeIndex = _selectedIndex.clamp(0, pages.length - 1);
 
     if (isDesktop) {
       return MainLayout(
@@ -43,22 +46,25 @@ class _HomeScreenState extends State<HomeScreen> {
         onDestinationSelected: _onItemTapped,
         child: pages[safeIndex],
       );
-    } else {
-      return _buildMobileLayout(safeIndex);
     }
+
+    return _buildMobileLayout(safeIndex);
   }
 
   Scaffold _buildMobileLayout(int safeIndex) {
-    final List<Widget> mobileWidgetOptions = <Widget>[
-      const HomeDashboardView(),  // 0
-      const MateriaisScreen(),    // 1
-      const NotasScreen(),        // 2 ✅
-      const Center(child: Text('Página de Avisos')), // 3
+    final List<Widget> mobileWidgetOptions = [
+      const HomeDashboardView(), // 0 Início
+      const MateriaisScreen(),   // 1 Materiais
+      const NotasScreen(),       // 2 Notas
+      const AvisosScreen(),      // 3 Avisos
     ];
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Portal Poliedro', style: TextStyle(fontSize: 22)),
+        title: const Text(
+          'Portal Poliedro',
+          style: TextStyle(fontSize: 22),
+        ),
         actions: [
           IconButton(
             iconSize: 30,
@@ -80,17 +86,25 @@ class _HomeScreenState extends State<HomeScreen> {
         showUnselectedLabels: false,
         selectedItemColor: Colors.black,
         unselectedItemColor: Colors.white,
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(_selectedIndex == 0 ? Icons.home : Icons.home_outlined),
+            icon: Icon(_selectedIndex == 0
+                ? Icons.home
+                : Icons.home_outlined),
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(_selectedIndex == 1 ? Icons.folder : Icons.folder_outlined),
+            icon: Icon(_selectedIndex == 1
+                ? Icons.folder
+                : Icons.folder_outlined),
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(_selectedIndex == 2 ? Icons.bar_chart : Icons.bar_chart_outlined),
+            icon: Icon(_selectedIndex == 2
+                ? Icons.bar_chart
+                : Icons.bar_chart_outlined),
             label: '',
           ),
           BottomNavigationBarItem(
@@ -100,8 +114,6 @@ class _HomeScreenState extends State<HomeScreen> {
             label: '',
           ),
         ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
       ),
     );
   }

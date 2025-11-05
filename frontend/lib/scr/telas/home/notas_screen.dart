@@ -10,7 +10,7 @@ class NotasScreen extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     final w = size.width;
 
-    // === mesma lógica da tela de materiais ===
+    
     final bool isWide = w >= 1200;
     final double imgScale = isWide ? 1.32 : 1.12;
     final double imgOffsetY = isWide ? 150 : 90;
@@ -100,7 +100,7 @@ class NotasScreen extends StatelessWidget {
   }
 }
 
-// === dados fake (iguais materiais) ===
+// === dados ===
 class _Materia {
   final String nome, professor, quando;
   const _Materia(this.nome, this.professor, this.quando);
@@ -118,7 +118,7 @@ const _materias = <_Materia>[
   _Materia('Sociologia', 'Juliana Costa', 'Ontem 14:00'),
 ];
 
-// === card (igual materiais, só muda o ícone) ===
+// === card ===
 class _NotaCard extends StatelessWidget {
   final _Materia m;
   const _NotaCard({required this.m});

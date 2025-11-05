@@ -9,18 +9,18 @@ class MateriaisScreen extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     final w = size.width;
 
-    // ======= CONTROLES DA IMAGEM (pode brincar nesses 3) =======
+    // ======= CONTROLES DA IMAGEM 
     final bool isWide = w >= 1200;
 
     // ↑ escala maior para telas grandes
     final double imgScale = isWide ? 1.32 : 1.12;
 
     // ↓ empurra a imagem PARA BAIXO (positivo = desce)
-    //   se quiser subir, use valor negativo
+    //   se quiser subir, usa valor negativo
     final double imgOffsetY = isWide ? 150 : 90;
 
-    // → empurra um pouco para a direita/esquerda (opcional)
-    final double imgOffsetX = 0; // deixe 0 se não quiser mexer
+    // → empurra um pouco para a direita/esquerda 
+    final double imgOffsetX = 0; // deixa 0 se não quiser mexer
     // ============================================================
 
     const bg = Color(0xFFF2F4F7);
