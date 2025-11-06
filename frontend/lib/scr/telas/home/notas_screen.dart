@@ -13,7 +13,7 @@ class NotasScreen extends StatelessWidget {
     final bool isWide = w >= 1200;            // desktop/notebook
     final bool isPhoneNarrow = w < 420;       // celulares estreitos
     final double imgScale   = isWide ? 1.32 : (isPhoneNarrow ? 1.42 : 1.12);
-    final double imgOffsetY = isWide ? 150  : (isPhoneNarrow ? 5 : -10);
+    final double imgOffsetY = isWide ? 195  : (isPhoneNarrow ? 5 : -10);
     final double imgOffsetX = 0.0;
 
     const bg = Color(0xFFF2F4F7);

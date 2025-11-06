@@ -13,7 +13,7 @@ class MateriaisScreen extends StatelessWidget {
     final bool isPhoneNarrow = w < 420;
 
     final double imgScale   = isWide ? 1.32 : (isPhoneNarrow ? 1.42 : 1.12);
-    final double imgOffsetY = isWide ? 150  : (isPhoneNarrow ? 5 : -10);
+    final double imgOffsetY = isWide ? 195  : (isPhoneNarrow ? 5 : -10);
     final double imgOffsetX = 0.0;
 
     const bg = Color(0xFFF2F4F7);

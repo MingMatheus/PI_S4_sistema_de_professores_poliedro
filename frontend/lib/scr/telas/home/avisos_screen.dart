@@ -6,23 +6,14 @@ class AvisosScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final w = size.width;
+    final w = MediaQuery.of(context).size.width;
 
-    // mesma posição das faixas 
-    final bool isWide = w >= 1200;
-    final double imgScale   = isWide ? 1.32 : 1.30;
-    final double imgOffsetY = isWide ? 65.0 : 100.0;
-    final double imgOffsetX = isWide ? 0.0 : -28.0;
-
-    // 👇 garantir double (com .0)
-    final double contentMaxWidth = () {
-      if (w >= 1400) return 980.0;
-      if (w >= 1200) return 940.0;
-      if (w >= 1080) return 900.0;
-      if (w >= 900)  return 860.0;
-      return double.infinity; // mobile/tablet preenche
-    }();
+    // === Fundo diagonal ===
+    final bool isWide        = w >= 1200;            // desktop/notebook
+    final bool isPhoneNarrow = w < 420;              // celulares estreitos
+    final double imgScale    = isWide ? 1.32 : (isPhoneNarrow ? 1.42 : 1.12);
+    final double imgOffsetY  = isWide ? 0 : (isPhoneNarrow ? 5 : -10);
+    final double imgOffsetX  = 0.0;
 
     const bg = Color(0xFFF2F4F7);
 
@@ -30,7 +21,7 @@ class AvisosScreen extends StatelessWidget {
       color: bg,
       child: Stack(
         children: [
-          // 🎨 FUNDO DIAGONAL
+          //  fundo (ancorado no canto inferior-direito)
           Positioned.fill(
             child: IgnorePointer(
               child: Align(
@@ -55,39 +46,62 @@ class AvisosScreen extends StatelessWidget {
             ),
           ),
 
-          // 📦 CONTEÚDO
+          // conteúdo
           SafeArea(
             bottom: false,
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(24, 18, 24, 28),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: contentMaxWidth),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Avisos',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black.withOpacity(0.85),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final cw = constraints.maxWidth;
 
-                      ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _avisos.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
-                        itemBuilder: (_, i) => _AvisoCard(aviso: _avisos[i]),
-                      ),
-                    ],
+                // paddings iguais aos da Notas
+                EdgeInsets pagePad = const EdgeInsets.fromLTRB(24, 18, 24, 28);
+                double vSpace = 12;
+                if (cw < 740 && cw >= 420) {
+                  pagePad = const EdgeInsets.fromLTRB(20, 16, 20, 24);
+                  vSpace = 10;
+                } else if (cw < 420) {
+                  pagePad = const EdgeInsets.fromLTRB(16, 14, 16, 24);
+                  vSpace = 10;
+                }
+
+                final titleStyle = Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black.withOpacity(0.85),
+                    );
+
+                // FIX: garante altura mínima = viewport
+                final double minBodyHeight =
+                    constraints.maxHeight - pagePad.vertical;
+
+                return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: pagePad,
+                  child: Container(
+                    constraints: BoxConstraints(minHeight: minBodyHeight),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Avisos', style: titleStyle),
+                        const SizedBox(height: 10),
+
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: _avisos.length,
+                          separatorBuilder: (_, __) => SizedBox(height: vSpace),
+                          itemBuilder: (_, i) => _AvisoCard(
+                            aviso: _avisos[i],
+                            compact: cw < 420,
+                          ),
+                        ),
+
+                        // respiro pra não encostar no bottom bar
+                        const SizedBox(height: 8),
+                      ],
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ),
         ],
@@ -96,13 +110,12 @@ class AvisosScreen extends StatelessWidget {
   }
 }
 
-// ========== DATA MODEL ==========
+// ===== dados =====
 class _Aviso {
   final String titulo;
   final String corpo;
   final String quando;
   final bool lido; // false = não lido (preto) | true = lido (azul)
-
   const _Aviso({
     required this.titulo,
     required this.corpo,
@@ -111,43 +124,69 @@ class _Aviso {
   });
 }
 
-// ========== LISTA FAKE (2 pretos, 2 azuis) ==========
-const List<_Aviso> _avisos = [
+const _avisos = <_Aviso>[
   _Aviso(
     titulo: 'Prof. Silva — Física',
-    corpo: 'Olá João. Recebi seu trabalho e gostei muito da sua análise. Continue assim!',
+    corpo:
+        'Olá João. Recebi seu trabalho e gostei muito da sua análise. Continue assim!',
     quando: 'Hoje — 15:20',
-    lido: false, // preto
+    lido: false,
   ),
   _Aviso(
     titulo: 'Prof. Marina — Matemática',
-    corpo: 'Corrigi sua lista. Você melhorou muito nas últimas atividades, continue praticando!',
+    corpo:
+        'Corrigi sua lista. Você melhorou muito nas últimas atividades, continue praticando!',
     quando: 'Ontem — 18:45',
-    lido: false, // preto
+    lido: false,
   ),
   _Aviso(
     titulo: 'Prof. Lucas — Química',
-    corpo: 'Ótimo desempenho no laboratório, sua explicação das ligações covalentes foi ótima.',
+    corpo:
+        'Ótimo desempenho no laboratório, sua explicação das ligações covalentes foi ótima.',
     quando: 'Ontem — 09:10',
-    lido: true, // azul
+    lido: true,
   ),
   _Aviso(
     titulo: 'Coordenação — Poliedro',
-    corpo: 'Lembrando que o prazo para entrega dos trabalhos de revisão termina sexta-feira.',
+    corpo:
+        'Lembrando que o prazo para entrega dos trabalhos de revisão termina sexta-feira.',
     quando: '01/10 — 11:00',
-    lido: true, // azul
+    lido: true,
   ),
 ];
 
-// ========== CARD ==========
+// ===== card =====
 class _AvisoCard extends StatelessWidget {
-  const _AvisoCard({required this.aviso});
   final _Aviso aviso;
+  final bool compact;
+  const _AvisoCard({required this.aviso, this.compact = false});
 
   @override
   Widget build(BuildContext context) {
     final txt = Theme.of(context).textTheme;
 
+    final EdgeInsets pad = compact
+        ? const EdgeInsets.fromLTRB(12, 10, 10, 8)
+        : const EdgeInsets.fromLTRB(12, 10, 10, 8);
+
+    final titleStyle = txt.titleMedium?.copyWith(
+      fontWeight: FontWeight.w700,
+      fontSize: compact ? 14 : txt.titleMedium?.fontSize,
+      height: compact ? 1.08 : null,
+    );
+
+    final bodyStyle = txt.bodySmall!.copyWith(
+      color: Colors.black.withOpacity(0.78),
+      fontSize: compact ? 12 : 13,
+      height: 1.22,
+    );
+
+    final infoStyle = txt.bodySmall!.copyWith(
+      color: Colors.black.withOpacity(0.55),
+      fontSize: compact ? 12 : 13,
+    );
+
+    final double iconSize = compact ? 20 : 22;
     final Color iconColor = aviso.lido ? poliedroBlue : Colors.black87;
 
     return Card(
@@ -155,44 +194,27 @@ class _AvisoCard extends StatelessWidget {
       shadowColor: Colors.black.withOpacity(0.08),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
-        child: Row(
+        padding: pad,
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // texto
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    aviso.titulo,
-                    style: txt.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    aviso.corpo,
-                    style: txt.bodyMedium?.copyWith(
-                      color: Colors.black.withOpacity(0.78),
-                      height: 1.25,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(height: 1, color: Colors.black.withOpacity(0.06)),
-                  const SizedBox(height: 6),
-                  Text(
-                    aviso.quando,
-                    style: txt.bodySmall?.copyWith(
-                      color: Colors.black.withOpacity(0.55),
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(aviso.titulo,
+                      maxLines: 1, overflow: TextOverflow.ellipsis, style: titleStyle),
+                ),
+                Icon(Icons.notifications_rounded, size: iconSize, color: iconColor),
+              ],
             ),
-            const SizedBox(width: 10),
-            Icon(Icons.notifications_rounded, size: 22, color: iconColor),
+            const SizedBox(height: 6),
+            Text(aviso.corpo,
+                style: bodyStyle, maxLines: 3, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 8),
+            Container(height: 1, color: Colors.black.withOpacity(0.06)),
+            const SizedBox(height: 6),
+            Text(aviso.quando, style: infoStyle),
           ],
         ),
       ),
