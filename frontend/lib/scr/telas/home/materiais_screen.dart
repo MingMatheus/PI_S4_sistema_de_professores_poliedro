@@ -6,22 +6,15 @@ class MateriaisScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final w = size.width;
+    final w = MediaQuery.of(context).size.width;
 
-    // ======= CONTROLES DA IMAGEM 
-    final bool isWide = w >= 1200;
+    // ===== fundo diagonal =====
+    final bool isWide   = w >= 1200;
+    final bool isPhoneNarrow = w < 420;
 
-    // ↑ escala maior para telas grandes
-    final double imgScale = isWide ? 1.32 : 1.12;
-
-    // ↓ empurra a imagem PARA BAIXO (positivo = desce)
-    //   se quiser subir, usa valor negativo
-    final double imgOffsetY = isWide ? 150 : 90;
-
-    // → empurra um pouco para a direita/esquerda 
-    final double imgOffsetX = 0; // deixa 0 se não quiser mexer
-    // ============================================================
+    final double imgScale   = isWide ? 1.32 : (isPhoneNarrow ? 1.42 : 1.12);
+    final double imgOffsetY = isWide ? 150  : (isPhoneNarrow ? 5 : -10);
+    final double imgOffsetX = 0.0;
 
     const bg = Color(0xFFF2F4F7);
 
@@ -29,20 +22,23 @@ class MateriaisScreen extends StatelessWidget {
       color: bg,
       child: Stack(
         children: [
-          // 🔵 FUNDO: imagem inteira, ancorada no canto inferior-direito,
-          // ampliada e DESCIDA alguns pixels
           Positioned.fill(
             child: IgnorePointer(
               child: Align(
                 alignment: Alignment.bottomRight,
-                child: Transform.translate(
-                  offset: Offset(imgOffsetX, imgOffsetY), // ↓ desce
-                  child: Transform.scale(
-                    scale: imgScale, // ↑ aumenta
-                    alignment: Alignment.bottomRight,
-                    child: Image.asset(
-                      'assets/images/poliedro_diagonal.png',
-                      filterQuality: FilterQuality.medium,
+                child: OverflowBox(
+                  minWidth: 0, minHeight: 0,
+                  maxWidth: double.infinity, maxHeight: double.infinity,
+                  alignment: Alignment.bottomRight,
+                  child: Transform.translate(
+                    offset: Offset(imgOffsetX, imgOffsetY),
+                    child: Transform.scale(
+                      scale: imgScale,
+                      alignment: Alignment.bottomRight,
+                      child: Image.asset(
+                        'assets/images/poliedro_diagonal.png',
+                        filterQuality: FilterQuality.medium,
+                      ),
                     ),
                   ),
                 ),
@@ -50,16 +46,18 @@ class MateriaisScreen extends StatelessWidget {
             ),
           ),
 
-          // 🔹 CONTEÚDO
+          // =================== conteúdo ===================
           SafeArea(
             bottom: false,
             child: LayoutBuilder(
               builder: (context, c) {
                 final w = c.maxWidth;
 
-                // 4 colunas no desktop, menores no resto
+                // breakpoints (desktop intacto)
                 late int cross;
                 late double aspect;
+                EdgeInsets pagePad = const EdgeInsets.fromLTRB(24, 18, 24, 28);
+                double hSpace = 12, vSpace = 12;
 
                 if (w >= 1400) {
                   cross = 4; aspect = 2.8;
@@ -67,17 +65,26 @@ class MateriaisScreen extends StatelessWidget {
                   cross = 4; aspect = 2.6;
                 } else if (w >= 740) {
                   cross = 2; aspect = 2.2;
+                } else if (w >= 420) {
+                  // phones/mini-tablets “largos”: 2 colunas
+                  cross = 2; aspect = 2.35;
+                  pagePad = const EdgeInsets.fromLTRB(20, 16, 20, 24);
+                  hSpace = 10; vSpace = 10;
                 } else {
-                  cross = 1; aspect = 1.8;
+                  //  very-narrow phones (ex.: 320px): 1 coluna = sem overflow
+                  cross = 1; aspect = 3.6;
+                  pagePad = const EdgeInsets.fromLTRB(16, 14, 16, 24);
+                  hSpace = 10; vSpace = 10;
                 }
 
-                final titleStyle = Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black.withOpacity(0.85),
-                );
+                final titleStyle = Theme.of(context)
+                    .textTheme
+                    .headlineSmall
+                    ?.copyWith(fontWeight: FontWeight.w700,
+                               color: Colors.black.withOpacity(0.85));
 
                 return SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(24, 18, 24, 28),
+                  padding: pagePad,
                   physics: const BouncingScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -91,10 +98,13 @@ class MateriaisScreen extends StatelessWidget {
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: cross,
                           childAspectRatio: aspect,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
+                          crossAxisSpacing: hSpace,
+                          mainAxisSpacing:  vSpace,
                         ),
-                        itemBuilder: (_, i) => _MateriaCard(m: _materias[i]),
+                        itemBuilder: (_, i) => _MateriaCard(
+                          m: _materias[i],
+                          compact: w < 420, // modo compacto só no cel estreito
+                        ),
                       ),
                     ],
                   ),
@@ -129,11 +139,30 @@ const _materias = <_Materia>[
 // -------- CARD --------
 class _MateriaCard extends StatelessWidget {
   final _Materia m;
-  const _MateriaCard({required this.m});
+  final bool compact; // ← ativa no cel estreito (<420)
+  const _MateriaCard({required this.m, this.compact = false});
 
   @override
   Widget build(BuildContext context) {
     final txt = Theme.of(context).textTheme;
+
+    final EdgeInsets pad = compact
+        ? const EdgeInsets.fromLTRB(12, 10, 10, 8)
+        : const EdgeInsets.fromLTRB(12, 10, 10, 8);
+
+    final titleStyle = txt.titleMedium?.copyWith(
+      fontWeight: FontWeight.w700,
+      fontSize: compact ? 14 : txt.titleMedium?.fontSize,
+      height: compact ? 1.08 : null,
+    );
+
+    final bodyStyle = txt.bodySmall!.copyWith(
+      color: Colors.black.withOpacity(0.75),
+      fontSize: compact ? 12 : 13,
+      height: compact ? 1.18 : 1.22,
+    );
+
+    final double iconSize = compact ? 18 : 18;
 
     return Card(
       elevation: 6,
@@ -143,36 +172,34 @@ class _MateriaCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         onTap: () {},
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 10, 10, 8),
+          padding: pad,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                m.nome,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: txt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-              ),
+              Text(m.nome,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: titleStyle),
               const SizedBox(height: 4),
               Expanded(
                 child: DefaultTextStyle(
-                  style: txt.bodySmall!.copyWith(
-                    color: Colors.black.withOpacity(0.75),
-                    fontSize: 13,
-                  ),
+                  style: bodyStyle,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Prof. ${m.professor}', maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text('Prof. ${m.professor}',
+                          maxLines: 1, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 2),
-                      Text(m.quando, maxLines: 2, overflow: TextOverflow.ellipsis),
+                      Text(m.quando,
+                          maxLines: 2, overflow: TextOverflow.ellipsis),
                     ],
                   ),
                 ),
               ),
               Align(
                 alignment: Alignment.bottomRight,
-                child: Icon(Icons.open_in_new_rounded, size: 18, color: poliedroBlue),
+                child: Icon(Icons.open_in_new_rounded,
+                    size: iconSize, color: poliedroBlue),
               ),
             ],
           ),
