@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/custom_text_field.dart';
-import '../home/home_screen.dart';
+import '../home/professor_home_screen.dart'; // ← import da nova tela a dos fessor
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,65 +18,62 @@ class _LoginScreenState extends State<LoginScreen> {
   final _senhaController = TextEditingController();
   bool _isLoading = false;
 
-  //  CONFIGURAÇÕES PRINCIPAIS DO CARD
-  // Aqui você ajusta facilmente o tamanho e a distância da parte azul 
-  final double cardWidth = 380;   //  largura do card
-  final double cardHeight = 400;  //  altura do card
-  final double cardTopSpacing = 94; //  distância do card até a faixa azul (mobile)
+  // CONFIGURAÇÕES PRINCIPAIS DO CARD
+  final double cardWidth = 380;
+  final double cardHeight = 400;
+  final double cardTopSpacing = 94;
 
   Future<void> _handleLogin() async {
-  setState(() => _isLoading = true);
+    setState(() => _isLoading = true);
 
-  final email = _emailController.text.trim();
-  final senha = _senhaController.text.trim();
+    final email = _emailController.text.trim();
+    final senha = _senhaController.text.trim();
 
-  // Validação simples
-  if (email.isEmpty || senha.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Por favor, preencha todos os campos.')),
-    );
-    setState(() => _isLoading = false);
-    return;
-  }
-
-  try {
-    final url = Uri.parse('http://localhost:8080/auth/login');
-
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'senha': senha}),
-    );
-
-    setState(() => _isLoading = false);
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final token = data['token'];
-
-      // Salva o token JWT
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('jwt_token', token);
-
-      // Redireciona para a tela principal
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
-    } else {
-      final error = jsonDecode(response.body);
+    if (email.isEmpty || senha.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error['mensagem'] ?? 'Falha no login')),
+        const SnackBar(content: Text('Por favor, preencha todos os campos.')),
+      );
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    try {
+      final url = Uri.parse('http://localhost:8080/auth/login');
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'senha': senha}),
+      );
+
+      setState(() => _isLoading = false);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final token = data['token'];
+
+        // Salva o token JWT
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('jwt_token', token);
+
+        // Redireciona para a tela do PROFESSOR (temporário)
+        if (!mounted) return;
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const ProfessorHomeScreen()),
+        );
+      } else {
+        final error = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error['mensagem'] ?? 'Falha no login')),
+        );
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erro ao conectar com o servidor.')),
       );
     }
-  } catch (e) {
-    setState(() => _isLoading = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Erro ao conectar com o servidor.')),
-    );
   }
-}
-
 
   @override
   void dispose() {
@@ -96,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: isSmallScreen
             ? _MobileLayout(
                 buildCard: _buildLoginCard,
-                cardTopSpacing: cardTopSpacing, // ← passa o espaçamento pro mobile
+                cardTopSpacing: cardTopSpacing,
               )
             : _DesktopLayout(buildCard: _buildLoginCard),
       ),
@@ -196,8 +192,8 @@ class _LoginScreenState extends State<LoginScreen> {
       shadowColor: Colors.black.withOpacity(0.1),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: SizedBox(
-        width: cardWidth,   // ← usa o valor configurado lá em cima
-        height: cardHeight, // ← idem
+        width: cardWidth,
+        height: cardHeight,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [Expanded(child: SingleChildScrollView(child: form)), footer],
@@ -215,7 +211,7 @@ class _MobileLayout extends StatelessWidget {
   });
 
   final Widget Function({double? fixedWidth, double? fixedHeight}) buildCard;
-  final double cardTopSpacing; // ← recebe o espaçamento configurável
+  final double cardTopSpacing;
 
   @override
   Widget build(BuildContext context) {
@@ -223,7 +219,6 @@ class _MobileLayout extends StatelessWidget {
       physics: const BouncingScrollPhysics(),
       child: Column(
         children: [
-          // FAIXA AZUL DE FORA A FORA
           Container(
             width: double.infinity,
             height: 190,
@@ -235,15 +230,11 @@ class _MobileLayout extends StatelessWidget {
               fit: BoxFit.contain,
             ),
           ),
-
-          // 🔧 AQUI É O ESPAÇAMENTO ENTRE O AZUL E O CARD
           SizedBox(height: cardTopSpacing),
-
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: buildCard(),
           ),
-
           const SizedBox(height: 40),
         ],
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'telas/login/login_screen.dart';   
 import 'theme/app_theme.dart';       
+import 'telas/home/professor_home_screen.dart'; // import da tela nova
 
 class App extends StatefulWidget {
   @override
@@ -16,7 +17,12 @@ class AppState extends State<App> {
       title: 'Portal Poliedro',
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
-      home: LoginScreen(), // tela de login
+
+      home: LoginScreen(),
+
+      routes: {
+        '/professor-home': (context) => const ProfessorHomeScreen(),
+      },
     );
   }
 }
