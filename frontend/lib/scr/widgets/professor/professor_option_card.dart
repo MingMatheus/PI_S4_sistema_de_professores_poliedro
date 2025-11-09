@@ -58,9 +58,8 @@ class _ProfessorOptionCardState extends State<ProfessorOptionCard> {
               Icon(
                 widget.icon,
                 size: 30,
-                color: _hovering
-                    ? widget.color
-                    : Colors.grey.shade700,
+                color:
+                    _hovering ? widget.color : Colors.grey.shade700,
               ),
               const SizedBox(width: 12),
               Expanded(

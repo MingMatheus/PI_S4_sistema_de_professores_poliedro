@@ -41,7 +41,6 @@ class ProfessorHomeScreen extends StatelessWidget {
       ),
       body: Row(
         children: [
-          // coluna esquerda
           Expanded(
             flex: 3,
             child: Padding(
@@ -63,7 +62,7 @@ class ProfessorHomeScreen extends StatelessWidget {
                       crossAxisCount: crossAxisCount,
                       mainAxisSpacing: 12,
                       crossAxisSpacing: 12,
-                      childAspectRatio: 2.6, // cards baixinhos
+                      childAspectRatio: 2.6,
                       children: const [
                         ProfessorTurmasCard(),
                         ProfessorMateriaisCard(),
@@ -77,8 +76,6 @@ class ProfessorHomeScreen extends StatelessWidget {
               ),
             ),
           ),
-
-          // coluna direita: logo
           Container(
             width: 260,
             color: poliedroBlue,
