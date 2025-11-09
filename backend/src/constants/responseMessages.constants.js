@@ -65,6 +65,16 @@ const RESPONSE_MESSAGES = {
     }
   },
 
+  ALUNO: {
+    ENCONTRADO_COM_SUCESSO: "Aluno encontrado com sucesso",
+    NAO_ENCONTRADO: "Aluno não encontrado",
+    TODOS_ALUNOS_ENCONTRADOS: "Alunos encontrados com sucesso",
+    ATUALIZADO_COM_SUCESSO: "Aluno atualizado com sucesso",
+    DELETADO_COM_SUCESSO: "Aluno deletado com sucesso",
+    ID_NAO_FORNECIDO: "O id do aluno não foi fornecido",
+    ID_FORNECIDO_INVALIDO: "O id fornecido do aluno é inválido",
+  },
+
   TURMA: {
     CRIADA_COM_SUCESSO: "Turma criada com sucesso",
     NOME_EM_USO: "Já existe uma turma cadastrada com esse nome"
