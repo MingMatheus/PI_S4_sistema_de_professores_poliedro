@@ -12,7 +12,7 @@ class ProfessorAtividadesCard extends StatelessWidget {
       title: 'Atividades',
       subtitle: 'Publicar e corrigir atividades dos alunos.',
       onTap: () {
-        // depois: navegar para tela de atividades
+        Navigator.pushNamed(context, '/professor/atividades');
       },
     );
   }

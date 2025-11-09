@@ -12,7 +12,7 @@ class ProfessorNotasCard extends StatelessWidget {
       title: 'Notas',
       subtitle: 'Lançar e editar notas de provas e atividades.',
       onTap: () {
-        // depois: navegar para tela de notas
+        Navigator.pushNamed(context, '/professor/notas');
       },
     );
   }

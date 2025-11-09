@@ -12,7 +12,7 @@ class ProfessorAvisosCard extends StatelessWidget {
       title: 'Avisos',
       subtitle: 'Publicar comunicados e mensagens para as turmas.',
       onTap: () {
-        // depois: navegar para tela de avisos
+        Navigator.pushNamed(context, '/professor/avisos');
       },
     );
   }

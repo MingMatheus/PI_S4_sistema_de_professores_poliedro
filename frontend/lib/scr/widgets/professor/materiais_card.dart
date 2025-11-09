@@ -12,7 +12,7 @@ class ProfessorMateriaisCard extends StatelessWidget {
       title: 'Materiais',
       subtitle: 'Publicar e editar materiais de aula e apostilas.',
       onTap: () {
-        // depois: navegar para tela de materiais do professor
+        Navigator.pushNamed(context, '/professor/materiais');
       },
     );
   }

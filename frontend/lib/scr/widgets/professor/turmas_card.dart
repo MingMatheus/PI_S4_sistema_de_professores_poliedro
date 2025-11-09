@@ -12,7 +12,7 @@ class ProfessorTurmasCard extends StatelessWidget {
       title: 'Turmas',
       subtitle: 'Criar, editar e gerenciar turmas e alunos.',
       onTap: () {
-        // depois: navegar para tela de turmas do professor
+        Navigator.pushNamed(context, '/professor/turmas');
       },
     );
   }
