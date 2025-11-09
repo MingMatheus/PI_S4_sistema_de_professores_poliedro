@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/custom_text_field.dart';
 import '../home/professor_home_screen.dart'; // ← import da nova tela a dos fessor
+import '../home/home_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -48,7 +50,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
       setState(() => _isLoading = false);
 
-      if (response.statusCode == 200) {
+      if(response.statusCode == 200)
+      {
         final data = jsonDecode(response.body);
         final token = data['token'];
 
@@ -58,10 +61,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
         // Redireciona para a tela do PROFESSOR (temporário)
         if (!mounted) return;
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const ProfessorHomeScreen()),
-        );
-      } else {
+
+        Map<String, dynamic> tokenPayload = JwtDecoder.decode(token);
+        String role = tokenPayload["role"];
+
+        if(role == "professor")
+        {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const ProfessorHomeScreen()),
+          );
+        }
+        else
+        {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+          );
+        }
+      }
+      else
+      {
         final error = jsonDecode(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(error['mensagem'] ?? 'Falha no login')),
