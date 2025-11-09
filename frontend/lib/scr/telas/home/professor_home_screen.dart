@@ -7,7 +7,8 @@ class ProfessorHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
+    final size = MediaQuery.of(context).size;
+    final isMobile = size.width < 800;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -29,113 +30,195 @@ class ProfessorHomeScreen extends StatelessWidget {
               );
             },
             icon: const Icon(Icons.logout_outlined, color: Colors.white),
-          )
+          ),
         ],
       ),
 
-      // ===== BODY PRINCIPAL =====
-      body: Row(
-        children: [
-          // ==== COLUNA ESQUERDA ====
-          Expanded(
-            flex: 3,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(40, 20, 40, 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Painel do Professor',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+      // ============ BODY =============
+      body: isMobile
+          ? _buildMobileLayout(context)
+          : _buildDesktopLayout(context, size),
+    );
+  }
+
+  // ============ DESKTOP =============
+  Widget _buildDesktopLayout(BuildContext context, Size size) {
+    return Row(
+      children: [
+        // ==== COLUNA ESQUERDA ====
+        Expanded(
+          flex: 3,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(40, 20, 40, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Painel do Professor',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
                   ),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: GridView.count(
-                      crossAxisCount: width > 1300 ? 3 : 2,
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 16,
-                      childAspectRatio: 1.8, // ← deixa os cards retangulares
-                      children: const [
-                        _ProfessorCard(
-                          color: Color(0xFF1976D2),
-                          icon: Icons.people_alt_rounded,
-                          title: 'Turmas',
-                          subtitle:
-                              'Criar, editar e gerenciar turmas e alunos.',
-                        ),
-                        _ProfessorCard(
-                          color: Color(0xFF43A047),
-                          icon: Icons.menu_book_rounded,
-                          title: 'Materiais',
-                          subtitle:
-                              'Publicar e editar materiais de aula e apostilas.',
-                        ),
-                        _ProfessorCard(
-                          color: Color(0xFF7E57C2),
-                          icon: Icons.assignment_rounded,
-                          title: 'Atividades',
-                          subtitle:
-                              'Publicar e corrigir atividades dos alunos.',
-                        ),
-                        _ProfessorCard(
-                          color: Color(0xFFFFB300),
-                          icon: Icons.star_rate_rounded,
-                          title: 'Notas',
-                          subtitle:
-                              'Lançar e editar notas de provas e atividades.',
-                        ),
-                        _ProfessorCard(
-                          color: Color(0xFFE53935),
-                          icon: Icons.campaign_rounded,
-                          title: 'Avisos',
-                          subtitle:
-                              'Publicar comunicados e mensagens para as turmas.',
-                        ),
-                      ],
-                    ),
+                ),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: GridView.count(
+                    crossAxisCount: size.width > 1300 ? 3 : 2,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: 1.8, // ← deixa os cards mais retangulares
+                    children: const [
+                      _ProfessorCard(
+                        color: Color(0xFF1976D2),
+                        icon: Icons.people_alt_rounded,
+                        title: 'Turmas',
+                        subtitle:
+                            'Criar, editar e gerenciar turmas e alunos.',
+                      ),
+                      _ProfessorCard(
+                        color: Color(0xFF43A047),
+                        icon: Icons.menu_book_rounded,
+                        title: 'Materiais',
+                        subtitle:
+                            'Publicar e editar materiais de aula e apostilas.',
+                      ),
+                      _ProfessorCard(
+                        color: Color(0xFF7E57C2),
+                        icon: Icons.assignment_rounded,
+                        title: 'Atividades',
+                        subtitle:
+                            'Publicar e corrigir atividades dos alunos.',
+                      ),
+                      _ProfessorCard(
+                        color: Color(0xFFFFB300),
+                        icon: Icons.star_rate_rounded,
+                        title: 'Notas',
+                        subtitle:
+                            'Lançar e editar notas de provas e atividades.',
+                      ),
+                      _ProfessorCard(
+                        color: Color(0xFFE53935),
+                        icon: Icons.campaign_rounded,
+                        title: 'Avisos',
+                        subtitle:
+                            'Publicar comunicados e mensagens para as turmas.',
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // ==== COLUNA DIREITA (LOGO) ====
+        Container(
+          width: 300,
+          color: poliedroBlue,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.25),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
-            ),
-          ),
-
-          // ==== COLUNA DIREITA (LOGO) ====
-          Container(
-            width: 300,
-            color: poliedroBlue,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.25),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Image.asset(
-                  'assets/images/logo.jpg',
-                  width: 170,
-                  fit: BoxFit.contain,
-                ),
+              child: Image.asset(
+                'assets/images/logo.jpg',
+                width: 170,
+                fit: BoxFit.contain,
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
+    );
+  }
+
+  // ============ MOBILE =============
+  Widget _buildMobileLayout(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          color: poliedroBlue,
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            children: [
+              Image.asset(
+                'assets/images/logo.jpg',
+                width: 100,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Painel do Professor',
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: const [
+                _ProfessorCard(
+                  color: Color(0xFF1976D2),
+                  icon: Icons.people_alt_rounded,
+                  title: 'Turmas',
+                  subtitle: 'Criar, editar e gerenciar turmas e alunos.',
+                ),
+                SizedBox(height: 12),
+                _ProfessorCard(
+                  color: Color(0xFF43A047),
+                  icon: Icons.menu_book_rounded,
+                  title: 'Materiais',
+                  subtitle: 'Publicar e editar materiais de aula e apostilas.',
+                ),
+                SizedBox(height: 12),
+                _ProfessorCard(
+                  color: Color(0xFF7E57C2),
+                  icon: Icons.assignment_rounded,
+                  title: 'Atividades',
+                  subtitle: 'Publicar e corrigir atividades dos alunos.',
+                ),
+                SizedBox(height: 12),
+                _ProfessorCard(
+                  color: Color(0xFFFFB300),
+                  icon: Icons.star_rate_rounded,
+                  title: 'Notas',
+                  subtitle: 'Lançar e editar notas de provas e atividades.',
+                ),
+                SizedBox(height: 12),
+                _ProfessorCard(
+                  color: Color(0xFFE53935),
+                  icon: Icons.campaign_rounded,
+                  title: 'Avisos',
+                  subtitle:
+                      'Publicar comunicados e mensagens para as turmas.',
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
 
-// ===== COMPONENTE DE CARD =====
+// ======== COMPONENTE DE CARD ========
 class _ProfessorCard extends StatefulWidget {
   final IconData icon;
   final String title;
