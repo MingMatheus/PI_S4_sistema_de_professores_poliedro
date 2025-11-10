@@ -4,8 +4,16 @@ const Aluno = require("../../models/Aluno.model")
 
 const {
   ERRO,
-  ALUNO
+  ALUNO,
+  AUTH,
+  VALIDACAO
 } = require("../../constants/responseMessages.constants")
+
+const {
+  MONGO_DUPLICATE_KEY,
+  MONGOOSE_VALIDATION_ERROR,
+  NOME_DE_ERRO_GENERICO
+} = require("../../constants/error.constants")
 
 exports.getAlunoById = async (req, res) => {
   try
