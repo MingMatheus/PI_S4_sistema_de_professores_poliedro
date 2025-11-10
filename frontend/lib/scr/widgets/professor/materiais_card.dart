@@ -7,8 +7,7 @@ class ProfessorMateriaisCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProfessorOptionCard(
-      icon: Icons.menu_book_rounded,
-      color: const Color(0xFF43A047),
+      icon: Icons.folder_copy_outlined,
       title: 'Materiais',
       subtitle: 'Publicar e editar materiais de aula e apostilas.',
       onTap: () {
