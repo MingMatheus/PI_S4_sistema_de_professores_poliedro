@@ -7,12 +7,11 @@ class ProfessorNotasCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProfessorOptionCard(
-      icon: Icons.star_rate_rounded,
-      color: const Color(0xFFFFB300),
+      icon: Icons.bar_chart_outlined,
       title: 'Notas',
       subtitle: 'Lançar e editar notas de provas e atividades.',
       onTap: () {
-        // depois: navegar para tela de notas
+        Navigator.pushNamed(context, '/professor/notas');
       },
     );
   }

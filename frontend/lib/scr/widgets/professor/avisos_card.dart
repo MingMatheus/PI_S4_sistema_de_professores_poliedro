@@ -7,12 +7,11 @@ class ProfessorAvisosCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProfessorOptionCard(
-      icon: Icons.campaign_rounded,
-      color: const Color(0xFFE53935),
+      icon: Icons.notifications_none_outlined,
       title: 'Avisos',
       subtitle: 'Publicar comunicados e mensagens para as turmas.',
       onTap: () {
-        // depois: navegar para tela de avisos
+        Navigator.pushNamed(context, '/professor/avisos');
       },
     );
   }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../login/login_screen.dart';
 
-// widgets dos cards do professor
 import '../../widgets/professor/turmas_card.dart';
 import '../../widgets/professor/materiais_card.dart';
 import '../../widgets/professor/atividades_card.dart';
@@ -15,7 +14,7 @@ class ProfessorHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final isMobile = size.width < 800;
+    final bool isMobile = size.width < 800;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -48,11 +47,12 @@ class ProfessorHomeScreen extends StatelessWidget {
 
   // ================= DESKTOP =================
   Widget _buildDesktopLayout(BuildContext context, Size size) {
-    final crossAxisCount = size.width > 1400 ? 3 : 2;
+    final width = size.width;
+    final crossAxisCount = width > 1400 ? 3 : 2;
 
     return Row(
       children: [
-        // COLUNA ESQUERDA: título + cards
+        // coluna esquerda: título + grid de cards
         Expanded(
           flex: 3,
           child: Padding(
@@ -74,7 +74,6 @@ class ProfessorHomeScreen extends StatelessWidget {
                     crossAxisCount: crossAxisCount,
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
-                    // cards MAIS BAIXOS (bem menor que antes)
                     childAspectRatio: 2.6,
                     children: const [
                       ProfessorTurmasCard(),
@@ -90,7 +89,7 @@ class ProfessorHomeScreen extends StatelessWidget {
           ),
         ),
 
-        // COLUNA DIREITA: logo fixa
+        // coluna direita: logo fixa no azul
         Container(
           width: 260,
           color: poliedroBlue,
@@ -124,11 +123,11 @@ class ProfessorHomeScreen extends StatelessWidget {
   Widget _buildMobileLayout(BuildContext context) {
     return Column(
       children: [
-        // faixa azul com logo e título
+        // faixa azul com logo + título (igual vibe Poliedro)
         Container(
           width: double.infinity,
           color: poliedroBlue,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 18),
           child: Column(
             children: [
               Image.asset(
@@ -149,10 +148,10 @@ class ProfessorHomeScreen extends StatelessWidget {
           ),
         ),
 
-        // cards empilhados, também pequenininhos
+        // cards empilhados
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
             child: Column(
               children: const [
                 ProfessorTurmasCard(),
