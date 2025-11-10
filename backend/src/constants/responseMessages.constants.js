@@ -87,7 +87,14 @@ const RESPONSE_MESSAGES = {
 
   TURMA: {
     CRIADA_COM_SUCESSO: "Turma criada com sucesso",
-    NOME_EM_USO: "Já existe uma turma cadastrada com esse nome"
+    NOME_EM_USO: "Já existe uma turma cadastrada com esse nome",
+    ENCONTRADA_COM_SUCESSO: "Turma encontrada com sucesso",
+    NAO_ENCONTRADA: "Turma não encontrada",
+    TODAS_TURMAS_ENCONTRADAS: "Turmas encontradas com sucesso",
+    ATUALIZADA_COM_SUCESSO: "Turma atualizada com sucesso",
+    DELETADA_COM_SUCESSO: "Turma deletada com sucesso",
+    ID_NAO_FORNECIDO: "O id da turma não foi fornecido",
+    ID_FORNECIDO_INVALIDO: "O id fornecido da turma é inválido"
   },
 
   SERIE: {

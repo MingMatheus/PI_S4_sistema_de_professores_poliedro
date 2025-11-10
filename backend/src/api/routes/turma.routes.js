@@ -21,4 +21,32 @@ router.post(
   turmaController.cadastraTurma
 )
 
+router.get(
+  "/:id",
+  authMiddleware,
+  checkRole([ROLES.PROFESSOR]),
+  turmaController.getTurmaById
+)
+
+router.get(
+  "/",
+  authMiddleware,
+  checkRole([ROLES.PROFESSOR]),
+  turmaController.getTodasTurmas
+)
+
+router.put(
+  "/:id",
+  authMiddleware,
+  checkRole([ROLES.PROFESSOR]),
+  turmaController.updateTurmaById
+)
+
+router.delete(
+  "/:id",
+  authMiddleware,
+  checkRole([ROLES.PROFESSOR]),
+  turmaController.deleteTurmaById
+)
+
 module.exports = router
