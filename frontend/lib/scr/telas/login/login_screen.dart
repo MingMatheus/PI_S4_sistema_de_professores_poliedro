@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/custom_text_field.dart';
@@ -9,6 +7,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import '../../utils/url.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -42,9 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     try {
-      final urlPreParse = Platform.isAndroid ? "http://10.0.2.2:8080/auth/login" : "http://localhost:8080/auth/login";
-
-      final url = Uri.parse(urlPreParse);
+      final url = Uri.parse("${getApiBaseUrl()}/auth/login");
 
       final response = await http.post(
         url,
