@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/custom_text_field.dart';
@@ -40,7 +42,9 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     try {
-      final url = Uri.parse('http://localhost:8080/auth/login');
+      final urlPreParse = Platform.isAndroid ? "http://10.0.2.2:8080/auth/login" : "http://localhost:8080/auth/login";
+
+      final url = Uri.parse(urlPreParse);
 
       final response = await http.post(
         url,
