@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 
 class ProfessorOptionCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final Color color;
   final VoidCallback? onTap;
 
   const ProfessorOptionCard({
@@ -12,7 +12,6 @@ class ProfessorOptionCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
-    required this.color,
     this.onTap,
   });
 
@@ -27,19 +26,23 @@ class ProfessorOptionCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 6,
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 5,
               offset: const Offset(0, 3),
             ),
           ],
+          border: Border.all(
+            color: poliedroBlue.withOpacity(0.08),
+            width: 1,
+          ),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(
               icon,
-              size: 30,
-              color: color,
+              size: 26,
+              color: poliedroBlue,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -49,7 +52,7 @@ class ProfessorOptionCard extends StatelessWidget {
                   Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 15.5,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: Colors.black87,
                     ),
