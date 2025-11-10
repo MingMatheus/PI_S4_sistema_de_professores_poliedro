@@ -13,8 +13,8 @@ class ProfessorHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final crossAxisCount = width > 1400 ? 3 : 2;
+    final size = MediaQuery.of(context).size;
+    final bool isMobile = size.width < 800;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -36,73 +36,138 @@ class ProfessorHomeScreen extends StatelessWidget {
               );
             },
             icon: const Icon(Icons.logout_outlined, color: Colors.white),
-          )
+          ),
         ],
       ),
-      body: Row(
-        children: [
-          Expanded(
-            flex: 3,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(32, 18, 32, 18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Painel do Professor',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+      body: isMobile
+          ? _buildMobileLayout(context)
+          : _buildDesktopLayout(context, size),
+    );
+  }
+
+  // ================= DESKTOP =================
+  Widget _buildDesktopLayout(BuildContext context, Size size) {
+    final width = size.width;
+    final crossAxisCount = width > 1400 ? 3 : 2;
+
+    return Row(
+      children: [
+        // coluna esquerda: título + grid de cards
+        Expanded(
+          flex: 3,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(32, 18, 32, 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Painel do Professor',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
                   ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    child: GridView.count(
-                      crossAxisCount: crossAxisCount,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                      childAspectRatio: 2.6,
-                      children: const [
-                        ProfessorTurmasCard(),
-                        ProfessorMateriaisCard(),
-                        ProfessorAtividadesCard(),
-                        ProfessorNotasCard(),
-                        ProfessorAvisosCard(),
-                      ],
-                    ),
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: GridView.count(
+                    crossAxisCount: crossAxisCount,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 2.6,
+                    children: const [
+                      ProfessorTurmasCard(),
+                      ProfessorMateriaisCard(),
+                      ProfessorAtividadesCard(),
+                      ProfessorNotasCard(),
+                      ProfessorAvisosCard(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // coluna direita: logo fixa no azul
+        Container(
+          width: 260,
+          color: poliedroBlue,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.25),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
-            ),
-          ),
-          Container(
-            width: 260,
-            color: poliedroBlue,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.25),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Image.asset(
-                  'assets/images/logo.jpg',
-                  width: 150,
-                  fit: BoxFit.contain,
-                ),
+              child: Image.asset(
+                'assets/images/logo.jpg',
+                width: 150,
+                fit: BoxFit.contain,
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
+    );
+  }
+
+  // ================= MOBILE =================
+  Widget _buildMobileLayout(BuildContext context) {
+    return Column(
+      children: [
+        // faixa azul com logo + título (igual vibe Poliedro)
+        Container(
+          width: double.infinity,
+          color: poliedroBlue,
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          child: Column(
+            children: [
+              Image.asset(
+                'assets/images/logo.jpg',
+                width: 80,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Painel do Professor',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // cards empilhados
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+            child: Column(
+              children: const [
+                ProfessorTurmasCard(),
+                SizedBox(height: 10),
+                ProfessorMateriaisCard(),
+                SizedBox(height: 10),
+                ProfessorAtividadesCard(),
+                SizedBox(height: 10),
+                ProfessorNotasCard(),
+                SizedBox(height: 10),
+                ProfessorAvisosCard(),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
