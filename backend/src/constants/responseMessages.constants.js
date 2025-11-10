@@ -72,7 +72,17 @@ const RESPONSE_MESSAGES = {
     ATUALIZADO_COM_SUCESSO: "Aluno atualizado com sucesso",
     DELETADO_COM_SUCESSO: "Aluno deletado com sucesso",
     ID_NAO_FORNECIDO: "O id do aluno não foi fornecido",
-    ID_FORNECIDO_INVALIDO: "O id fornecido do aluno é inválido",
+    ID_FORNECIDO_INVALIDO: "O id fornecido do aluno é inválido"
+  },
+
+  PROFESSOR: {
+    ENCONTRADO_COM_SUCESSO: "Professor encontrado com sucesso",
+    NAO_ENCONTRADO: "Professor não encontrado",
+    TODOS_PROFESSORES_ENCONTRADOS: "Professores encontrados com sucesso",
+    ATUALIZADO_COM_SUCESSO: "Professor atualizado com sucesso",
+    DELETADO_COM_SUCESSO: "Professor deletado com sucesso",
+    ID_NAO_FORNECIDO: "O id do professor não foi fornecido",
+    ID_FORNECIDO_INVALIDO: "O id fornecido do professor é inválido"
   },
 
   TURMA: {

@@ -9,6 +9,7 @@ const authRoutes = require("./src/api/routes/auth.routes")
 const turmaRoutes = require("./src/api/routes/turma.routes")
 const serieRoutes = require("./src/api/routes/serie.routes")
 const alunoRoutes = require("./src/api/routes/aluno.routes")
+const professorRoutes = require("./src/api/routes/professor.routes")
 
 const app = express()
 
@@ -18,6 +19,7 @@ app.use("/auth", authRoutes)
 app.use("/turmas", turmaRoutes)
 app.use("/series", serieRoutes)
 app.use("/alunos", alunoRoutes)
+app.use("/professores", professorRoutes)
 
 // Exporta o app para uso dos testes de integração
 module.exports = app
