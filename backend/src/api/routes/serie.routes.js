@@ -21,4 +21,32 @@ router.post(
   serieController.cadastraSerie
 )
 
+router.get(
+  "/:id",
+  authMiddleware,
+  checkRole([ROLES.PROFESSOR]),
+  serieController.getSerieById
+)
+
+router.get(
+  "/",
+  authMiddleware,
+  checkRole([ROLES.PROFESSOR]),
+  serieController.getTodasSeries
+)
+
+router.put(
+  "/:id",
+  authMiddleware,
+  checkRole([ROLES.PROFESSOR]),
+  serieController.updateSerieById
+)
+
+router.delete(
+  "/:id",
+  authMiddleware,
+  checkRole([ROLES.PROFESSOR]),
+  serieController.deleteSerieById
+)
+
 module.exports = router

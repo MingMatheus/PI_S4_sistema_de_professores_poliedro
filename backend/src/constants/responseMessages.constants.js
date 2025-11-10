@@ -97,9 +97,16 @@ const RESPONSE_MESSAGES = {
     ID_FORNECIDO_INVALIDO: "O id fornecido da turma é inválido"
   },
 
-  SERIE: {
+    SERIE: {
     CRIADA_COM_SUCESSO: "Série criada com sucesso",
-    NOME_EM_USO: "Já existe uma série cadastrada com esse nome"
+    NOME_EM_USO: "Já existe uma série cadastrada com esse nome",
+    ENCONTRADA_COM_SUCESSO: "Série encontrada com sucesso",
+    NAO_ENCONTRADA: "Série não encontrada",
+    TODAS_SERIES_ENCONTRADAS: "Séries encontradas com sucesso",
+    ATUALIZADA_COM_SUCESSO: "Série atualizada com sucesso",
+    DELETADA_COM_SUCESSO: "Série deletada com sucesso",
+    ID_NAO_FORNECIDO: "O id da série não foi fornecido",
+    ID_FORNECIDO_INVALIDO: "O id fornecido da série é inválido"
   }
 }
 
