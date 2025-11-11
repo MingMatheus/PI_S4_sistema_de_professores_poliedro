@@ -11,21 +11,20 @@ class ProfessorTurmasScreen extends StatefulWidget {
 }
 
 class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
-  
+  // Lista de turmas: cada turma tem um nome e uma lista de alunos
   final List<Map<String, dynamic>> turmas = [
     {
       'nome': '1º Ano A',
-      'alunos': ['Ana', 'Lucas', 'Mariana'],
+      'alunos': <String>['Ana', 'Lucas', 'Mariana'],
     },
     {
       'nome': '2º Ano B',
-      'alunos': ['Gustavo', 'Helena'],
+      'alunos': <String>['Gustavo', 'Helena'],
     },
   ];
 
   // -------------------- AÇÕES --------------------
 
-  // Criar nova turma
   Future<void> _adicionarTurma() async {
     final controller = TextEditingController();
 
@@ -67,9 +66,9 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
     );
   }
 
-  // Editar nome da turma
   Future<void> _editarTurma(int index) async {
-    final controller = TextEditingController(text: turmas[index]['nome'] as String);
+    final controller =
+        TextEditingController(text: turmas[index]['nome'] as String);
 
     await showDialog(
       context: context,
@@ -106,7 +105,6 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
     );
   }
 
-  // Adicionar aluno
   Future<void> _adicionarAluno(int turmaIndex) async {
     final controller = TextEditingController();
 
@@ -116,9 +114,7 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
         title: const Text('Adicionar aluno'),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(
-            hintText: 'Nome do aluno',
-          ),
+          decoration: const InputDecoration(hintText: 'Nome do aluno'),
         ),
         actions: [
           TextButton(
@@ -145,14 +141,12 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
     );
   }
 
-  // Remover aluno
   void _removerAluno(int turmaIndex, int alunoIndex) {
     setState(() {
       (turmas[turmaIndex]['alunos'] as List<String>).removeAt(alunoIndex);
     });
   }
 
-  // Remover turma
   Future<void> _removerTurma(int index) async {
     final nome = turmas[index]['nome'] as String;
 
@@ -188,7 +182,8 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 800;
+    final size = MediaQuery.of(context).size;
+    final bool isMobile = size.width < 800;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -227,18 +222,18 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
         ],
       ),
 
-      
+      // FAB ajustado para mobile/desktop
       floatingActionButton: SizedBox(
-        height: 46,
+        height: isMobile ? 44 : 46,
         child: FloatingActionButton.extended(
           onPressed: _adicionarTurma,
           backgroundColor: poliedroBlue,
           foregroundColor: Colors.white,
           icon: const Icon(Icons.add, size: 22),
-          label: const Text(
+          label: Text(
             'Nova turma',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: isMobile ? 13 : 14,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -248,11 +243,11 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
         ),
       ),
       floatingActionButtonLocation: isMobile
-          ? FloatingActionButtonLocation.endFloat
+          ? FloatingActionButtonLocation.centerFloat
           : FloatingActionButtonLocation.endFloat,
 
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(isMobile ? 10 : 16),
         child: turmas.isEmpty
             ? const Center(
                 child: Text(
@@ -267,14 +262,16 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
                   final alunos = (turma['alunos'] as List<String>);
 
                   return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    elevation: 4,
+                    margin: EdgeInsets.symmetric(
+                      vertical: isMobile ? 6 : 8,
+                    ),
+                    elevation: 3,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: ExpansionTile(
-                      tilePadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
+                      tilePadding: EdgeInsets.symmetric(
+                        horizontal: isMobile ? 12 : 16,
                         vertical: 4,
                       ),
                       leading: const Icon(
@@ -283,34 +280,39 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
                       ),
                       title: Text(
                         turma['nome'] as String,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w600,
-                          fontSize: 16,
+                          fontSize: isMobile ? 14 : 16,
                         ),
                       ),
-                      childrenPadding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
+                      childrenPadding: EdgeInsets.fromLTRB(
+                        isMobile ? 12 : 16,
+                        8,
+                        isMobile ? 12 : 16,
+                        10,
+                      ),
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
                               'Alunos (${alunos.length})',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                                fontSize: isMobile ? 13 : 14,
                               ),
                             ),
                             TextButton.icon(
                               onPressed: () => _adicionarAluno(index),
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.person_add_alt_1_outlined,
-                                size: 18,
+                                size: isMobile ? 16 : 18,
                                 color: poliedroBlue,
                               ),
-                              label: const Text(
+                              label: Text(
                                 'Adicionar aluno',
                                 style: TextStyle(
-                                  fontSize: 12.5,
+                                  fontSize: isMobile ? 11.5 : 12.5,
                                   color: poliedroBlue,
                                 ),
                               ),
@@ -319,12 +321,13 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
                         ),
                         const SizedBox(height: 4),
                         if (alunos.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.only(bottom: 6),
+                          Padding(
+                            padding:
+                                EdgeInsets.only(bottom: isMobile ? 4 : 6),
                             child: Text(
                               'Nenhum aluno cadastrado nesta turma.',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: isMobile ? 11 : 12,
                                 color: Colors.grey,
                               ),
                             ),
@@ -337,15 +340,18 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
                               contentPadding: EdgeInsets.zero,
                               title: Text(
                                 alunos[i],
-                                style: const TextStyle(fontSize: 13.5),
+                                style: TextStyle(
+                                  fontSize: isMobile ? 12.5 : 13.5,
+                                ),
                               ),
                               trailing: IconButton(
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.remove_circle_outline,
                                   color: Colors.redAccent,
-                                  size: 20,
+                                  size: isMobile ? 18 : 20,
                                 ),
-                                onPressed: () => _removerAluno(index, i),
+                                onPressed: () =>
+                                    _removerAluno(index, i),
                               ),
                             ),
                           ),
@@ -355,15 +361,15 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
                           children: [
                             TextButton.icon(
                               onPressed: () => _editarTurma(index),
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.edit_outlined,
-                                size: 18,
+                                size: isMobile ? 16 : 18,
                                 color: poliedroBlue,
                               ),
-                              label: const Text(
+                              label: Text(
                                 'Editar',
                                 style: TextStyle(
-                                  fontSize: 12.5,
+                                  fontSize: isMobile ? 11.5 : 12.5,
                                   color: poliedroBlue,
                                 ),
                               ),
@@ -371,15 +377,15 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
                             const SizedBox(width: 8),
                             TextButton.icon(
                               onPressed: () => _removerTurma(index),
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.delete_outline,
-                                size: 18,
+                                size: isMobile ? 16 : 18,
                                 color: Colors.redAccent,
                               ),
-                              label: const Text(
+                              label: Text(
                                 'Excluir',
                                 style: TextStyle(
-                                  fontSize: 12.5,
+                                  fontSize: isMobile ? 11.5 : 12.5,
                                   color: Colors.redAccent,
                                 ),
                               ),
