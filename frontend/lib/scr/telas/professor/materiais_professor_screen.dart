@@ -12,7 +12,7 @@ class ProfessorMateriaisScreen extends StatefulWidget {
 }
 
 class _ProfessorMateriaisScreenState extends State<ProfessorMateriaisScreen> {
-  // Lista de materiais (mock/local)
+  // Lista mock/local de materiais
   final List<Map<String, String>> _materiais = [
     {
       'titulo': 'Lista de Exercícios - Funções Quadráticas.pdf',
@@ -61,43 +61,41 @@ class _ProfessorMateriaisScreenState extends State<ProfessorMateriaisScreen> {
 
     await showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Novo material'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: tituloController,
-                decoration: const InputDecoration(
-                  labelText: 'Título do material',
-                  hintText: 'Ex: Lista de Exercícios - Funções',
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: disciplinaController,
-                decoration: const InputDecoration(
-                  labelText: 'Disciplina',
-                  hintText: 'Ex: Matemática',
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: turmaController,
-                decoration: const InputDecoration(
-                  labelText: 'Turma',
-                  hintText: 'Ex: 1º Ano A',
-                ),
-              ),
-              const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: DropdownButtonFormField<String>(
-                  value: tipoSelecionado,
+      builder: (_) {
+        return AlertDialog(
+          title: const Text('Novo material'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: tituloController,
                   decoration: const InputDecoration(
-                    labelText: 'Tipo de material',
+                    labelText: 'Título do material',
+                    hintText: 'Ex: Lista de Exercícios - Funções',
                   ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: disciplinaController,
+                  decoration: const InputDecoration(
+                    labelText: 'Disciplina',
+                    hintText: 'Ex: Matemática',
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: turmaController,
+                  decoration: const InputDecoration(
+                    labelText: 'Turma',
+                    hintText: 'Ex: 1º Ano A',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: tipoSelecionado,
+                  decoration:
+                      const InputDecoration(labelText: 'Tipo de material'),
                   items: _tipos
                       .map(
                         (t) => DropdownMenuItem(
@@ -112,45 +110,47 @@ class _ProfessorMateriaisScreenState extends State<ProfessorMateriaisScreen> {
                     }
                   },
                 ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Obs: upload/link real pode ser conectado depois à API.',
-                style: TextStyle(fontSize: 10.5, color: Colors.grey),
-              ),
-            ],
+                const SizedBox(height: 6),
+                const Text(
+                  'Obs: upload/link real pode ser integrado depois com o backend.',
+                  style: TextStyle(fontSize: 10.5, color: Colors.grey),
+                ),
+              ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: poliedroBlue),
-            onPressed: () {
-              final titulo = tituloController.text.trim();
-              final disciplina = disciplinaController.text.trim();
-              final turma = turmaController.text.trim();
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: poliedroBlue,
+              ),
+              onPressed: () {
+                final titulo = tituloController.text.trim();
+                final disciplina = disciplinaController.text.trim();
+                final turma = turmaController.text.trim();
 
-              if (titulo.isNotEmpty &&
-                  disciplina.isNotEmpty &&
-                  turma.isNotEmpty) {
-                setState(() {
-                  _materiais.add({
-                    'titulo': titulo,
-                    'disciplina': disciplina,
-                    'tipo': tipoSelecionado,
-                    'turma': turma,
+                if (titulo.isNotEmpty &&
+                    disciplina.isNotEmpty &&
+                    turma.isNotEmpty) {
+                  setState(() {
+                    _materiais.add({
+                      'titulo': titulo,
+                      'disciplina': disciplina,
+                      'tipo': tipoSelecionado,
+                      'turma': turma,
+                    });
                   });
-                });
-                Navigator.pop(context);
-              }
-            },
-            child: const Text('Salvar'),
-          ),
-        ],
-      ),
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('Salvar'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -244,15 +244,17 @@ class _ProfessorMateriaisScreenState extends State<ProfessorMateriaisScreen> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Excluir material'),
-        content:
-            Text('Tem certeza que deseja excluir "$titulo" da lista de materiais?'),
+        content: Text(
+          'Tem certeza que deseja excluir "$titulo" da lista de materiais?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            style:
+                ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Excluir'),
           ),
@@ -311,6 +313,7 @@ class _ProfessorMateriaisScreenState extends State<ProfessorMateriaisScreen> {
         ],
       ),
 
+      // Botão de novo material (mesmo estilo da tela de turmas)
       floatingActionButton: SizedBox(
         height: isMobile ? 44 : 46,
         child: FloatingActionButton.extended(
@@ -413,11 +416,12 @@ class _ProfessorMateriaisScreenState extends State<ProfessorMateriaisScreen> {
                         ],
                       ),
                       onTap: () {
-                        // Aqui futuramente pode abrir o PDF/link/etc.
+                        // Futuro: abrir arquivo/link real
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
-                                'Ação de abrir material pode ser ligada ao backend depois.'),
+                              'Abertura do material pode ser integrada ao backend futuramente.',
+                            ),
                           ),
                         );
                       },
