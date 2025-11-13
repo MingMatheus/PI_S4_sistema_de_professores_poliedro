@@ -74,6 +74,9 @@ class _ProfessorAvisosScreenState extends State<ProfessorAvisosScreen> {
     await showDialog(
       context: context,
       builder: (dialogContext) {
+        final largura = MediaQuery.of(dialogContext).size.width;
+        final bool isMobile = largura < 600;
+
         return StatefulBuilder(
           builder: (ctx, setStateDialog) {
             void toggleTurma(String turma) {
@@ -101,86 +104,93 @@ class _ProfessorAvisosScreenState extends State<ProfessorAvisosScreen> {
             return AlertDialog(
               title: const Text('Novo aviso'),
               content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextField(
-                      controller: tituloController,
-                      decoration: const InputDecoration(
-                        labelText: 'Título',
-                        hintText: 'Ex: Aviso de prova, trabalho, recado geral...',
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: isMobile ? largura * 0.9 : 520,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: tituloController,
+                        decoration: const InputDecoration(
+                          labelText: 'Título',
+                          hintText:
+                              'Ex: Aviso de prova, trabalho, recado geral...',
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Turmas destino',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w600,
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Turmas destino',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
-                      children: _turmasDisponiveis.map((turma) {
-                        final selected =
-                            turmasSelecionadas.contains(turma);
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: _turmasDisponiveis.map((turma) {
+                          final selected =
+                              turmasSelecionadas.contains(turma);
 
-                        return FilterChip(
-                          label: Text(
-                            turma == 'Geral' ? 'Todos os alunos' : turma,
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              fontWeight:
-                                  selected ? FontWeight.w600 : FontWeight.w400,
+                          return FilterChip(
+                            label: Text(
+                              turma == 'Geral' ? 'Todos os alunos' : turma,
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: selected
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
+                              ),
+                            ),
+                            selected: selected,
+                            selectedColor: poliedroBlue.withOpacity(0.16),
+                            checkmarkColor: poliedroBlue,
+                            onSelected: (_) => toggleTurma(turma),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: mensagemController,
+                        maxLines: 4,
+                        decoration: const InputDecoration(
+                          labelText: 'Mensagem',
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: importante,
+                            activeColor: poliedroBlue,
+                            onChanged: (v) {
+                              setStateDialog(() {
+                                importante = v ?? false;
+                              });
+                            },
+                          ),
+                          const Flexible(
+                            child: Text(
+                              'Marcar como aviso importante',
+                              style: TextStyle(fontSize: 12.5),
                             ),
                           ),
-                          selected: selected,
-                          selectedColor: poliedroBlue.withOpacity(0.16),
-                          checkmarkColor: poliedroBlue,
-                          onSelected: (_) => toggleTurma(turma),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: mensagemController,
-                      maxLines: 4,
-                      decoration: const InputDecoration(
-                        labelText: 'Mensagem',
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: importante,
-                          activeColor: poliedroBlue,
-                          onChanged: (v) {
-                            setStateDialog(() {
-                              importante = v ?? false;
-                            });
-                          },
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Se nenhuma turma for selecionada, o aviso será marcado como geral (todos os alunos).',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          color: Colors.grey,
                         ),
-                        const Flexible(
-                          child: Text(
-                            'Marcar como aviso importante',
-                            style: TextStyle(fontSize: 12.5),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Se nenhuma turma for selecionada, o aviso será marcado como geral (todos os alunos).',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        color: Colors.grey,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               actions: [
@@ -219,8 +229,7 @@ class _ProfessorAvisosScreenState extends State<ProfessorAvisosScreen> {
                       _avisos.insert(0, {
                         'titulo': titulo,
                         'mensagem': mensagem,
-                        'turmas':
-                            List<String>.from(turmasSelecionadas),
+                        'turmas': List<String>.from(turmasSelecionadas),
                         'data': dataFormatada,
                         'importante': importante,
                       });
@@ -254,6 +263,9 @@ class _ProfessorAvisosScreenState extends State<ProfessorAvisosScreen> {
     await showDialog(
       context: context,
       builder: (dialogContext) {
+        final largura = MediaQuery.of(dialogContext).size.width;
+        final bool isMobile = largura < 600;
+
         return StatefulBuilder(
           builder: (ctx, setStateDialog) {
             void toggleTurma(String turma) {
@@ -280,77 +292,83 @@ class _ProfessorAvisosScreenState extends State<ProfessorAvisosScreen> {
             return AlertDialog(
               title: const Text('Editar aviso'),
               content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextField(
-                      controller: tituloController,
-                      decoration: const InputDecoration(
-                        labelText: 'Título',
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: isMobile ? largura * 0.9 : 520,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: tituloController,
+                        decoration: const InputDecoration(
+                          labelText: 'Título',
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Turmas destino',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w600,
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Turmas destino',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
-                      children: _turmasDisponiveis.map((turma) {
-                        final selected =
-                            turmasSelecionadas.contains(turma);
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: _turmasDisponiveis.map((turma) {
+                          final selected =
+                              turmasSelecionadas.contains(turma);
 
-                        return FilterChip(
-                          label: Text(
-                            turma == 'Geral' ? 'Todos os alunos' : turma,
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              fontWeight:
-                                  selected ? FontWeight.w600 : FontWeight.w400,
+                          return FilterChip(
+                            label: Text(
+                              turma == 'Geral' ? 'Todos os alunos' : turma,
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: selected
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
+                              ),
+                            ),
+                            selected: selected,
+                            selectedColor: poliedroBlue.withOpacity(0.16),
+                            checkmarkColor: poliedroBlue,
+                            onSelected: (_) => toggleTurma(turma),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: mensagemController,
+                        maxLines: 4,
+                        decoration: const InputDecoration(
+                          labelText: 'Mensagem',
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: importante,
+                            activeColor: poliedroBlue,
+                            onChanged: (v) {
+                              setStateDialog(() {
+                                importante = v ?? false;
+                              });
+                            },
+                          ),
+                          const Flexible(
+                            child: Text(
+                              'Marcar como aviso importante',
+                              style: TextStyle(fontSize: 12.5),
                             ),
                           ),
-                          selected: selected,
-                          selectedColor: poliedroBlue.withOpacity(0.16),
-                          checkmarkColor: poliedroBlue,
-                          onSelected: (_) => toggleTurma(turma),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: mensagemController,
-                      maxLines: 4,
-                      decoration: const InputDecoration(
-                        labelText: 'Mensagem',
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: importante,
-                          activeColor: poliedroBlue,
-                          onChanged: (v) {
-                            setStateDialog(() {
-                              importante = v ?? false;
-                            });
-                          },
-                        ),
-                        const Flexible(
-                          child: Text(
-                            'Marcar como aviso importante',
-                            style: TextStyle(fontSize: 12.5),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               actions: [
@@ -385,8 +403,7 @@ class _ProfessorAvisosScreenState extends State<ProfessorAvisosScreen> {
                       _avisos[index] = {
                         'titulo': titulo,
                         'mensagem': mensagem,
-                        'turmas':
-                            List<String>.from(turmasSelecionadas),
+                        'turmas': List<String>.from(turmasSelecionadas),
                         'data': aviso['data'],
                         'importante': importante,
                       };
@@ -423,8 +440,7 @@ class _ProfessorAvisosScreenState extends State<ProfessorAvisosScreen> {
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
-            style:
-                ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Excluir'),
           ),
@@ -443,6 +459,14 @@ class _ProfessorAvisosScreenState extends State<ProfessorAvisosScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final largura = MediaQuery.of(context).size.width;
+    final bool isMobile = largura < 800;
+
+    final EdgeInsets pagePadding = EdgeInsets.symmetric(
+      horizontal: isMobile ? 12 : 24,
+      vertical: 16,
+    );
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
@@ -487,148 +511,160 @@ class _ProfessorAvisosScreenState extends State<ProfessorAvisosScreen> {
         label: const Text('Novo aviso'),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: _avisos.isEmpty
-            ? const Center(
-                child: Text(
-                  'Nenhum aviso publicado até o momento.',
-                  style: TextStyle(color: Colors.grey),
-                ),
-              )
-            : ListView.builder(
-                itemCount: _avisos.length,
-                itemBuilder: (context, index) {
-                  final aviso = _avisos[index];
-                  final importante = aviso['importante'] == true;
-                  final turmas =
-                      List<String>.from(aviso['turmas'] ?? <String>[]);
+      body: Container(
+        color: const Color(0xFFF5F7FA),
+        child: Padding(
+          padding: pagePadding,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1100),
+              child: _avisos.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'Nenhum aviso publicado até o momento.',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: _avisos.length,
+                      itemBuilder: (context, index) {
+                        final aviso = _avisos[index];
+                        final importante = aviso['importante'] == true;
+                        final turmas =
+                            List<String>.from(aviso['turmas'] ?? <String>[]);
 
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 6),
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      leading: CircleAvatar(
-                        radius: 18,
-                        backgroundColor: importante
-                            ? Colors.redAccent.withOpacity(0.12)
-                            : poliedroBlue.withOpacity(0.10),
-                        child: Icon(
-                          importante
-                              ? Icons.notification_important_outlined
-                              : Icons.campaign_outlined,
-                          color:
-                              importante ? Colors.redAccent : poliedroBlue,
-                          size: 22,
-                        ),
-                      ),
-                      title: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              aviso['titulo'] ?? '',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 15,
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 6),
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            leading: CircleAvatar(
+                              radius: 18,
+                              backgroundColor: importante
+                                  ? Colors.redAccent.withOpacity(0.12)
+                                  : poliedroBlue.withOpacity(0.10),
+                              child: Icon(
+                                importante
+                                    ? Icons.notification_important_outlined
+                                    : Icons.campaign_outlined,
+                                color:
+                                    importante ? Colors.redAccent : poliedroBlue,
+                                size: 22,
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            aviso['data'] ?? '',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 4),
-                          Text(
-                            aviso['mensagem'] ?? '',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.group_outlined,
-                                size: 15,
-                                color: Colors.grey[700],
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                _turmasLabel(turmas),
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  color: Colors.grey[700],
-                                ),
-                              ),
-                              if (importante) ...[
-                                const SizedBox(width: 10),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.redAccent.withOpacity(0.12),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Text(
-                                    'IMPORTANTE',
-                                    style: TextStyle(
-                                      fontSize: 9.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.redAccent,
+                            title: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    aviso['titulo'] ?? '',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
                                     ),
                                   ),
                                 ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  aviso['data'] ?? '',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
                               ],
-                            ],
-                          ),
-                        ],
-                      ),
-                      trailing: Wrap(
-                        spacing: 4,
-                        children: [
-                          IconButton(
-                            tooltip: 'Editar aviso',
-                            icon: const Icon(
-                              Icons.edit_outlined,
-                              color: poliedroBlue,
-                              size: 20,
                             ),
-                            onPressed: () => _editarAviso(index),
-                          ),
-                          IconButton(
-                            tooltip: 'Excluir aviso',
-                            icon: const Icon(
-                              Icons.delete_outline,
-                              color: Colors.redAccent,
-                              size: 20,
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 4),
+                                Text(
+                                  aviso['mensagem'] ?? '',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.group_outlined,
+                                      size: 15,
+                                      color: Colors.grey[700],
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        _turmasLabel(turmas),
+                                        style: TextStyle(
+                                          fontSize: 11.5,
+                                          color: Colors.grey[700],
+                                        ),
+                                      ),
+                                    ),
+                                    if (importante) ...[
+                                      const SizedBox(width: 10),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.redAccent
+                                              .withOpacity(0.12),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        child: const Text(
+                                          'IMPORTANTE',
+                                          style: TextStyle(
+                                            fontSize: 9.5,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.redAccent,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ],
                             ),
-                            onPressed: () => _removerAviso(index),
+                            trailing: Wrap(
+                              spacing: 4,
+                              children: [
+                                IconButton(
+                                  tooltip: 'Editar aviso',
+                                  icon: const Icon(
+                                    Icons.edit_outlined,
+                                    color: poliedroBlue,
+                                    size: 20,
+                                  ),
+                                  onPressed: () => _editarAviso(index),
+                                ),
+                                IconButton(
+                                  tooltip: 'Excluir aviso',
+                                  icon: const Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.redAccent,
+                                    size: 20,
+                                  ),
+                                  onPressed: () => _removerAviso(index),
+                                ),
+                              ],
+                            ),
                           ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
+            ),
+          ),
+        ),
       ),
     );
   }
