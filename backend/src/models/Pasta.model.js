@@ -22,7 +22,7 @@ const pastaSchema = mongoose.Schema({
   }
 })
 
-folderSchema.index({pastaPai: 1, nome: 1}, {unique: true})
+pastaSchema.index({pastaPai: 1, nome: 1}, {unique: true})
 
 const Pasta = mongoose.model("Pasta", pastaSchema)
 
