@@ -5,6 +5,9 @@ const ERROR_CODES = {
   // Nomes de Erros do Mongoose
   MONGOOSE_VALIDATION_ERROR: 'ValidationError',
 
+  // Nomes de Erros do Multer
+  MULTER_LIMIT_FILE_SIZE: 'LIMIT_FILE_SIZE',
+
   // Nome de Erro Genérico
   NOME_DE_ERRO_GENERICO: "Error",
   

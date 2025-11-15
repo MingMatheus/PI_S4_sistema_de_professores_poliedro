@@ -120,6 +120,21 @@ const RESPONSE_MESSAGES = {
     ID_NAO_FORNECIDO: "O id da pasta não foi fornecido",
     ID_FORNECIDO_INVALIDO: "O id fornecido da pasta é inválido",
     SUBPASTAS_ENCONTRADAS: "Subpastas encontradas com sucesso"
+  },
+
+  ARQUIVO: {
+    CRIADO_COM_SUCESSO: "Arquivo criado com sucesso",
+    NOME_EM_USO: "Já existe um arquivo com esse nome nesse diretório",
+    ENCONTRADO_COM_SUCESSO: "Arquivo encontrado com sucesso",
+    NAO_ENCONTRADO: "Arquivo não encontrado",
+    TODOS_ARQUIVOS_ENCONTRADOS: "Arquivos encontrados com sucesso",
+    ATUALIZADO_COM_SUCESSO: "Arquivo atualizado com sucesso",
+    DELETADO_COM_SUCESSO: "Arquivo deletado com sucesso",
+    ID_NAO_FORNECIDO: "O id do arquivo não foi fornecido",
+    ID_FORNECIDO_INVALIDO: "O id fornecido do arquivo é inválido",
+    TIPO_DE_ARQUIVO_INVALIDO: "O tipo de arquivo fornecido não é válido",
+    ARQUIVO_NAO_ENVIADO: "O arquivo não foi enviado",
+    ARQUIVO_MUITO_GRANDE: "O arquivo enviado excede o limite de tamanho permitido"
   }
 }
 

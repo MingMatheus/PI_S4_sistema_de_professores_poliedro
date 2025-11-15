@@ -1,0 +1,197 @@
+const mongoose = require("mongoose")
+const Arquivo = require("../../models/Arquivo.model")
+
+const {
+  MONGO_DUPLICATE_KEY,
+  MONGOOSE_VALIDATION_ERROR,
+  MULTER_LIMIT_FILE_SIZE
+} = require("../../constants/error.constants")
+
+const {
+  ARQUIVO,
+  ERRO,
+  AUTH
+} = require("../../constants/responseMessages.constants")
+
+exports.createArquivo = async (req, res) => {
+  try {
+    if(!req.file)
+      return res.status(400).json({mensagem: ARQUIVO.ARQUIVO_NAO_ENVIADO});
+
+    const { pastaOndeSeEncontra } = req.body;
+    const { originalname, filename, size, mimetype, path } = req.file;
+
+    const url = `http://localhost:${process.env.API_PORT}/arquivos/${filename}`;
+
+    const arquivo = new Arquivo({
+      nomeOriginal: originalname,
+      nomeNoSistema: filename,
+      tamanho: size,
+      tipo: mimetype,
+      caminho: path,
+      url: url,
+      pastaOndeSeEncontra: pastaOndeSeEncontra || null,
+      professorQueFezOUpload: req.user.sub
+    });
+
+    await arquivo.save();
+
+    res.status(201).json({
+      mensagem: ARQUIVO.CRIADO_COM_SUCESSO,
+      arquivo: arquivo
+    });
+  } catch (error) {
+    if (error.code == MONGO_DUPLICATE_KEY) {
+      return res.status(409).json({ mensagem: ARQUIVO.NOME_EM_USO });
+    }
+
+    if (error.name == MONGOOSE_VALIDATION_ERROR) {
+      const errorMessages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        mensagem: ERRO.VALIDACAO,
+        erros: errorMessages
+      });
+    }
+
+    // O multer pode gerar erros (ex: tipo de arquivo inválido)
+    if(error instanceof multer.MulterError)
+    {
+      if(error.code === MULTER_LIMIT_FILE_SIZE)
+        return res.status(400).json({message: ARQUIVO.ARQUIVO_MUITO_GRANDE});
+    }
+
+    // O filtro de arquivo gera um erro padrão
+    if(error.message === ARQUIVO.TIPO_DE_ARQUIVO_INVALIDO)
+      return res.status(400).json({ message: ARQUIVO.TIPO_DE_ARQUIVO_INVALIDO });
+
+    return res.status(500).json({ mensagem: ERRO.ERRO_INTERNO_NO_SERVIDOR });
+  }
+};
+
+exports.getTodosArquivos = async (req, res) => {
+  try
+  {
+    // By default, fetches files in the root directory.
+    // A query param could be added to fetch files from a specific folder.
+    const arquivos = await Arquivo.find({ pastaOndeSeEncontra: null }).select("-__v")
+    res.status(200).json({
+      mensagem: ARQUIVO.TODOS_ARQUIVOS_ENCONTRADOS,
+      arquivos: arquivos
+    })
+  }
+  catch(error)
+  {
+    return res.status(500).json({mensagem: ERRO.ERRO_INTERNO_NO_SERVIDOR})
+  }
+}
+
+exports.getArquivoById = async (req, res) => {
+  try
+  {
+    const {id} = req.params
+
+    if(!id)
+      return res.status(400).json({mensagem: ARQUIVO.ID_NAO_FORNECIDO})
+
+    if(!mongoose.Types.ObjectId.isValid(id))
+      return res.status(400).json({mensagem: ARQUIVO.ID_FORNECIDO_INVALIDO})
+
+    const arquivo = await Arquivo.findById(id).select("-__v")
+
+    if (!arquivo)
+      return res.status(404).json({mensagem: ARQUIVO.NAO_ENCONTRADO})
+
+    res.status(200).json({
+      mensagem: ARQUIVO.ENCONTRADO_COM_SUCESSO,
+      arquivo: arquivo
+    })
+  }
+  catch(error)
+  {
+    return res.status(500).json({mensagem: ERRO.ERRO_INTERNO_NO_SERVIDOR})
+  }
+}
+
+exports.updateArquivoById = async (req, res) => {
+  try
+  {
+    const {id} = req.params
+
+    if(!id)
+      return res.status(400).json({mensagem: ARQUIVO.ID_NAO_FORNECIDO})
+
+    if(!mongoose.Types.ObjectId.isValid(id))
+      return res.status(400).json({mensagem: ARQUIVO.ID_FORNECIDO_INVALIDO})
+
+    const { nomeOriginal } = req.body
+
+    const arquivo = await Arquivo.findById(id)
+
+    if (!arquivo)
+      return res.status(404).json({mensagem: ARQUIVO.NAO_ENCONTRADO})
+
+    if(arquivo.professorQueFezOUpload.toString() !== req.user.sub)
+       return res.status(403).json({mensagem: AUTH.NAO_TEM_PERMISSAO})
+
+    if(nomeOriginal) arquivo.nomeOriginal = nomeOriginal
+
+    await arquivo.save()
+
+    res.status(200).json({
+      mensagem: ARQUIVO.ATUALIZADO_COM_SUCESSO,
+      arquivo: arquivo
+    })
+  }
+  catch(error)
+  {
+    if(error.code == MONGO_DUPLICATE_KEY)
+    {
+      return res.status(409).json({mensagem: ARQUIVO.NOME_EM_USO})
+    }
+
+    if(error.name == MONGOOSE_VALIDATION_ERROR)
+    {
+      const errorMessages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        mensagem: ERRO.VALIDACAO,
+        erros: errorMessages
+      })
+    }
+
+    return res.status(500).json({mensagem: ERRO.ERRO_INTERNO_NO_SERVIDOR})
+  }
+}
+
+exports.deleteArquivoById = async (req, res) => {
+  try
+  {
+    const {id} = req.params
+
+    if(!id)
+      return res.status(400).json({mensagem: ARQUIVO.ID_NAO_FORNECIDO})
+
+    if(!mongoose.Types.ObjectId.isValid(id))
+      return res.status(400).json({mensagem: ARQUIVO.ID_FORNECIDO_INVALIDO})
+      
+    const arquivo = await Arquivo.findById(id);
+
+    if (!arquivo)
+      return res.status(404).json({mensagem: ARQUIVO.NAO_ENCONTRADO});
+
+    if (arquivo.professorQueFezOUpload.toString() !== req.user.sub)
+      return res.status(403).json({mensagem: AUTH.NAO_TEM_PERMISSAO});
+
+    // To complete this, you would also need to delete the physical file from storage
+    // using a library like 'fs'. E.g., fs.unlinkSync(arquivo.caminho)
+    await Arquivo.findByIdAndDelete(id);
+
+    res.status(200).json({
+      mensagem: ARQUIVO.DELETADO_COM_SUCESSO,
+      arquivo: arquivo
+    })
+  }
+  catch(error)
+  {
+    return res.status(500).json({mensagem: ERRO.ERRO_INTERNO_NO_SERVIDOR})
+  }
+}
