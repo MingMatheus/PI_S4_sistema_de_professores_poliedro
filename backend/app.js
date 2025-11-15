@@ -17,13 +17,13 @@ const app = express()
 
 configuraExpress(app)
 
-app.use("/auth", authRoutes)
-app.use("/turmas", turmaRoutes)
-app.use("/series", serieRoutes)
-app.use("/alunos", alunoRoutes)
-app.use("/professores", professorRoutes)
-app.use("/pastas", pastaRoutes)
-app.use("/arquivos", arquivoRoutes)
+app.use("/api/auth", authRoutes)
+app.use("/api/turmas", turmaRoutes)
+app.use("/api/series", serieRoutes)
+app.use("/api/alunos", alunoRoutes)
+app.use("/api/professores", professorRoutes)
+app.use("/api/pastas", pastaRoutes)
+app.use("/api/arquivos", arquivoRoutes)
 
 // Exporta o app para uso dos testes de integração
 module.exports = app
