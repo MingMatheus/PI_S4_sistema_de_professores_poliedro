@@ -46,7 +46,7 @@ const arquivoSchema = mongoose.Schema({
   timestamps: true
 })
 
-folderSchema.index({pastaOndeSeEncontra: 1, nomeOriginal: 1}, {unique: true});
+arquivoSchema.index({pastaOndeSeEncontra: 1, nomeOriginal: 1}, {unique: true});
 
 const Arquivo = mongoose.model("Arquivo", arquivoSchema)
 
