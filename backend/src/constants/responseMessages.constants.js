@@ -107,6 +107,19 @@ const RESPONSE_MESSAGES = {
     DELETADA_COM_SUCESSO: "Série deletada com sucesso",
     ID_NAO_FORNECIDO: "O id da série não foi fornecido",
     ID_FORNECIDO_INVALIDO: "O id fornecido da série é inválido"
+  },
+
+  PASTA: {
+    CRIADA_COM_SUCESSO: "Pasta criada com sucesso",
+    NOME_EM_USO: "Já existe uma pasta com esse nome nesse diretório",
+    ENCONTRADA_COM_SUCESSO: "Pasta encontrada com sucesso",
+    NAO_ENCONTRADA: "Pasta não encontrada",
+    TODAS_PASTAS_ENCONTRADAS: "Pastas encontradas com sucesso",
+    ATUALIZADA_COM_SUCESSO: "Pasta atualizada com sucesso",
+    DELETADA_COM_SUCESSO: "Pasta deletada com sucesso",
+    ID_NAO_FORNECIDO: "O id da pasta não foi fornecido",
+    ID_FORNECIDO_INVALIDO: "O id fornecido da pasta é inválido",
+    SUBPASTAS_ENCONTRADAS: "Subpastas encontradas com sucesso"
   }
 }
 
