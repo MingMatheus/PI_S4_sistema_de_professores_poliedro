@@ -1,5 +1,8 @@
 const mongoose = require("mongoose")
+const fs = require('fs');
+
 const Pasta = require("../../models/Pasta.model")
+const Arquivo = require("../../models/Arquivo.model")
 
 const {
   MONGO_DUPLICATE_KEY,
@@ -11,6 +14,42 @@ const {
   ERRO,
   AUTH
 } = require("../../constants/responseMessages.constants")
+
+async function deletarPastaERecursos(pastaId) {
+  
+  // 1. Encontrar todas as subpastas diretas
+  // CORREÇÃO: Usando o campo 'pastaPai' do seu model 'Pasta'
+  const subpastas = await Pasta.find({ pastaPai: pastaId });
+
+  // 2. CHAMADA RECURSIVA: Para cada subpasta, chame esta mesma função.
+  // Isso garante que vamos "até o fundo" da árvore primeiro.
+  for (const sub of subpastas) {
+    await deletarPastaERecursos(sub._id);
+  }
+
+  // 3. Encontrar todos os arquivos (Materiais) dentro DESTA pasta
+  // CORREÇÃO: Usando o model 'Arquivo' e o campo 'pastaOndeSeEncontra'
+  const arquivos = await Arquivo.find({ pastaOndeSeEncontra: pastaId });
+
+  // 4. Deletar os ARQUIVOS FÍSICOS do servidor (da pasta /uploads)
+  for (const arq of arquivos) {
+    try {
+      // 'caminho' está correto de acordo com seu model 'Arquivo'
+      await fs.promises.unlink(arq.caminho); 
+    } catch (err) {
+      // Loga o erro, mas continua o processo.
+      // (Ex: o arquivo já foi deletado manualmente do disco)
+      console.warn(`Não foi possível deletar o arquivo físico: ${arq.caminho}`, err.message);
+    }
+  }
+
+  // 5. Deletar os DOCUMENTOS de 'Arquivo' do MongoDB
+  // CORREÇÃO: Usando 'Arquivo.deleteMany' e 'pastaOndeSeEncontra'
+  await Arquivo.deleteMany({ pastaOndeSeEncontra: pastaId });
+
+  // 6. Finalmente, deletar a própria pasta atual (que agora está vazia)
+  await Pasta.findByIdAndDelete(pastaId);
+}
 
 exports.createPasta = async (req, res) => {
   try
@@ -151,21 +190,19 @@ exports.deletePastaById = async (req, res) => {
     if(!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({mensagem: PASTA.ID_FORNECIDO_INVALIDO})
 
-    // Check for user permission if needed
     const pasta = await Pasta.findById(id)
-
+    if (!pasta)
+      return res.status(404).json({mensagem: PASTA.NAO_ENCONTRADA})
+    
+    // Check for user permission if needed
     if(pasta.criadorDaPasta.toString() !== req.user.id)
       return res.status(403).json({mensagem: AUTH.NAO_TEM_PERMISSAO})
 
-    // This is a simple delete. For recursive delete, a more complex function is needed.
-    const pastaDeletada = await Pasta.findByIdAndDelete(id).select("-__v")
-
-    if (!pastaDeletada)
-      return res.status(404).json({mensagem: PASTA.NAO_ENCONTRADA})
+    await deletarPastaERecursos(id);
 
     res.status(200).json({
       mensagem: PASTA.DELETADA_COM_SUCESSO,
-      pasta: pastaDeletada
+      pasta: pasta
     })
   }
   catch(error)
