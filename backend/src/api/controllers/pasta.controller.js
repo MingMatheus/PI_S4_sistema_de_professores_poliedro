@@ -55,7 +55,7 @@ exports.createPasta = async (req, res) => {
   try
   {
     const { nome, pastaPai } = req.body
-    const criadorDaPasta = req.user.id
+    const criadorDaPasta = req.user.sub
 
     const pasta = new Pasta({ nome, pastaPai: pastaPai || null, criadorDaPasta })
 
@@ -147,7 +147,7 @@ exports.updatePastaById = async (req, res) => {
       return res.status(404).json({mensagem: PASTA.NAO_ENCONTRADA})
 
     // Check for user permission if needed
-    if(pasta.criadorDaPasta.toString() !== req.user.id)
+    if(pasta.criadorDaPasta.toString() !== req.user.sub)
       return res.status(403).json({mensagem: AUTH.NAO_TEM_PERMISSAO})
 
     if(nome) pasta.nome = nome
@@ -195,7 +195,7 @@ exports.deletePastaById = async (req, res) => {
       return res.status(404).json({mensagem: PASTA.NAO_ENCONTRADA})
     
     // Check for user permission if needed
-    if(pasta.criadorDaPasta.toString() !== req.user.id)
+    if(pasta.criadorDaPasta.toString() !== req.user.sub)
       return res.status(403).json({mensagem: AUTH.NAO_TEM_PERMISSAO})
 
     await deletarPastaERecursos(id);
