@@ -41,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     try {
-      final url = Uri.parse("${getApiBaseUrl()}/auth/login");
+      final url = Uri.parse("${getApiBaseUrl()}/api/auth/login");
 
       final response = await http.post(
         url,
