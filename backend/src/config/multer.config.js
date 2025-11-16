@@ -6,6 +6,14 @@ const {
   ARQUIVO
 } = require("../constants/responseMessages.constants"); // Importa suas mensagens
 
+const tiposDeArquivoPermitidos = [
+  'image/png',                                                              // Imagem (.jpg, .jpeg)
+  'image/jpeg',                                                             // Imagem (.png)
+  'application/pdf',                                                        // PDF (.pdf)
+  'application/msword',                                                     // Arquivo do Microsoft Word (.doc)
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // Arquivo do Microsoft Word (.docx)
+]
+
 // Define onde os arquivos serão armazenados
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -34,13 +42,7 @@ const multerConfig = {
 
   // Filtro de tipos de arquivo
   fileFilter: (req, file, cb) => {
-    const allowedMimes = [
-      'image/jpeg',
-      'image/png',
-      'application/pdf',
-      'application/msword', // .doc
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // .docx
-    ];
+    const allowedMimes = tiposDeArquivoPermitidos;
 
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true); // Aceita o arquivo
