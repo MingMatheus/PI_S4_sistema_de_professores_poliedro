@@ -1,4 +1,6 @@
 const mongoose = require("mongoose")
+const fs = require('fs');
+
 const Arquivo = require("../../models/Arquivo.model")
 
 const {
@@ -181,17 +183,32 @@ exports.deleteArquivoById = async (req, res) => {
     if (arquivo.professorQueFezOUpload.toString() !== req.user.sub)
       return res.status(403).json({mensagem: AUTH.NAO_TEM_PERMISSAO});
 
-    // To complete this, you would also need to delete the physical file from storage
-    // using a library like 'fs'. E.g., fs.unlinkSync(arquivo.caminho)
-    await Arquivo.findByIdAndDelete(id);
+    const arquivoDeletadoDoDB =await Arquivo.findByIdAndDelete(id);
+
+    if (!arquivoDeletadoDoDB)
+      return res.status(404).json({mensagem: ARQUIVO.NAO_ENCONTRADO});
+
+    try
+    {
+      // Faz a remoção do arquivo no disco
+      await fs.promises.unlink(arquivo.caminho); 
+    }
+    catch(fsError)
+    {
+      console.warn(
+        `(AVISO) O registro do arquivo ${arquivo.nomeNoSistema} (ID: ${id}) foi deletado do DB, mas a deleção do arquivo físico em '${arquivo.caminho}' falhou.`, 
+        fsError.message
+      );
+    }
 
     res.status(200).json({
       mensagem: ARQUIVO.DELETADO_COM_SUCESSO,
-      arquivo: arquivo
+      arquivo: arquivoDeletadoDoDB
     })
   }
   catch(error)
   {
+    console.error('Erro ao deletar arquivo:', error);
     return res.status(500).json({mensagem: ERRO.ERRO_INTERNO_NO_SERVIDOR})
   }
 }
