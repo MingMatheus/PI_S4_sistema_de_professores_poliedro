@@ -1,3 +1,5 @@
+const Avaliacao = require("../models/Avaliacao.model")
+
 const {
   TAMANHO_MINIMO_SENHA,
   REGEX_EMAIL_GERAL,
@@ -28,9 +30,29 @@ const validaSenha = (senha) => {
   return senha.length >= TAMANHO_MINIMO_SENHA
 }
 
+const validaNotaObtida = async function(valorNota)
+{
+  const avaliacaoId = this.avaliacao
+
+  try
+  {
+    const avaliacao = await Avaliacao.findById(avaliacaoId)
+
+    if(!avaliacao) return false
+
+    return valorNota >= 0 && valorNota <= avaliacao.notaMaxima
+  }
+  catch(error)
+  {
+    console.error("Erro durante a validação assíncrona da nota:", error);
+    return false;
+  }
+}
+
 module.exports = {
   validaEmail,
   validaEmailAluno,
   validaEmailProfessor,
-  validaSenha
+  validaSenha,
+  validaNotaObtida
 }

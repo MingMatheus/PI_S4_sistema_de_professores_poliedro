@@ -67,7 +67,8 @@ const RESPONSE_MESSAGES = {
     NOTA: {
       NOTA_OBRIGATORIA: "A nota obtida é obrigatória",
       ALUNO_OBRIGATORIO: "O aluno que tirou a nota é obrigatório",
-      AVALIACAO_OBRIGATORIA: "A avaliação a qual essa nota se refere é obrigatória"
+      AVALIACAO_OBRIGATORIA: "A avaliação a qual essa nota se refere é obrigatória",
+      NOTA_INVALIDA: "Nota inválida. Por favor garanta que a nota esteja entre 0 e a nota máxima permitida por essa avaliação. Garanta também que a avaliação em questão exista"
     }
   },
 
