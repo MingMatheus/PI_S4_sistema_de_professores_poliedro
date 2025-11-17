@@ -62,6 +62,12 @@ const RESPONSE_MESSAGES = {
     PASTA: {
       NOME_OBRIGATORIO: "O nome da pasta é obrigatório",
       CRIADOR_OBRIGATORIO: "A pasta precisa do professor que a criou"
+    },
+
+    NOTA: {
+      NOTA_OBRIGATORIA: "A nota obtida é obrigatória",
+      ALUNO_OBRIGATORIO: "O aluno que tirou a nota é obrigatório",
+      AVALIACAO_OBRIGATORIA: "A avaliação a qual essa nota se refere é obrigatória"
     }
   },
 
