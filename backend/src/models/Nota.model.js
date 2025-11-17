@@ -22,3 +22,7 @@ const notaSchema = mongoose.Schema({
 })
 
 notaSchema.index({aluno: 1, avaliacao: 1}, {unique: true})
+
+const Nota = mongoose.model("Nota", notaSchema)
+
+module.exports = Nota
