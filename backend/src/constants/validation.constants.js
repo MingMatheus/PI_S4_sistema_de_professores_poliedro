@@ -10,6 +10,12 @@ const VALIDATION_CONSTANTS = {
   ROLES: {
     ALUNO: "aluno",
     PROFESSOR: "professor"
+  },
+
+  // Tipos de avaliação
+  TIPOS_DE_AVALIACAO: {
+    PROVA: "prova",
+    TRABALHO: "trabalho"
   }
 }
 

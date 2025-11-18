@@ -76,6 +76,12 @@ const RESPONSE_MESSAGES = {
       PESO_PROVA_OBRIGATORIO: "O peso das provas é obrigatório",
       PESO_TRABALHO_OBRIGATORIO: "O peso dos trabalhos é obrigatório",
       MEDIA_PARA_PASSAR_INVALIDA: "A média para passar não pode ser negativa e deve ser menor ou igual a nota máxima"
+    },
+
+    AVALIACAO: {
+      NOME_OBRIGATORIO: "O nome da avaliação é obrigatório",
+      TIPO_OBRIGATORIO: "O tipo da avaliação é obrigatório",
+      MATERIA_OBRIGATORIA: "A matéria da avaliação é obrigatória"
     }
   },
 
