@@ -49,10 +49,16 @@ const validaNotaObtida = async function(valorNota)
   }
 }
 
+const validaMediaParaPassar = function(mediaParaPassar)
+{
+  return mediaParaPassar >= 0 && mediaParaPassar <= this.notaMaxima
+}
+
 module.exports = {
   validaEmail,
   validaEmailAluno,
   validaEmailProfessor,
   validaSenha,
-  validaNotaObtida
+  validaNotaObtida,
+  validaMediaParaPassar
 }

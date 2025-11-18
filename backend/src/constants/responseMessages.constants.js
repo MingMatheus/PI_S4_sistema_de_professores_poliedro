@@ -69,6 +69,13 @@ const RESPONSE_MESSAGES = {
       ALUNO_OBRIGATORIO: "O aluno que tirou a nota é obrigatório",
       AVALIACAO_OBRIGATORIA: "A avaliação a qual essa nota se refere é obrigatória",
       NOTA_INVALIDA: "Nota inválida. Por favor garanta que a nota esteja entre 0 e a nota máxima permitida por essa avaliação. Garanta também que a avaliação em questão exista"
+    },
+    
+    MATERIA: {
+      NOME_OBRIGATORIO: "O nome da matéria é obrigatório",
+      PESO_PROVA_OBRIGATORIO: "O peso das provas é obrigatório",
+      PESO_TRABALHO_OBRIGATORIO: "O peso dos trabalhos é obrigatório",
+      MEDIA_PARA_PASSAR_INVALIDA: "A média para passar não pode ser negativa e deve ser menor ou igual a nota máxima"
     }
   },
 
