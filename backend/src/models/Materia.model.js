@@ -13,7 +13,8 @@ const materiaSchema = mongoose.Schema({
   nome: {
     type: String,
     required: [true, VALIDACAO.MATERIA.NOME_OBRIGATORIO],
-    unique
+    unique,
+    trim
   },
   pesoProva: {
     type: Number,
