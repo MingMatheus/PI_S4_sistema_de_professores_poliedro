@@ -13,6 +13,7 @@ const professorRoutes = require("./src/api/routes/professor.routes")
 const pastaRoutes = require("./src/api/routes/pasta.routes")
 const arquivoRoutes = require("./src/api/routes/arquivo.routes")
 const materiaRoutes = require("./src/api/routes/materia.routes")
+const avaliacaoRoutes = require("./src/api/routes/avaliacao.routes")
 
 const app = express()
 
@@ -26,6 +27,7 @@ app.use("/api/professores", professorRoutes)
 app.use("/api/pastas", pastaRoutes)
 app.use("/api/arquivos", arquivoRoutes)
 app.use("/api/materias", materiaRoutes)
+app.use("/api/avaliacoes", avaliacaoRoutes)
 
 // Exporta o app para uso dos testes de integração
 module.exports = app
