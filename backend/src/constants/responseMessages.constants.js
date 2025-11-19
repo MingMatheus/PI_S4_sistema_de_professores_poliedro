@@ -170,6 +170,18 @@ const RESPONSE_MESSAGES = {
     DELETADA_COM_SUCESSO: "Matéria deletada com sucesso",
     ID_NAO_FORNECIDO: "O id da matéria não foi fornecido",
     ID_FORNECIDO_INVALIDO: "O id fornecido da matéria é inválido"
+  },
+
+  AVALIACAO: {
+    CRIADA_COM_SUCESSO: "Avaliação criada com sucesso",
+    NOME_EM_USO: "Já existe uma avaliação com esse nome para essa matéria",
+    ENCONTRADA_COM_SUCESSO: "Avaliação encontrada com sucesso",
+    NAO_ENCONTRADA: "Avaliação não encontrada",
+    TODAS_AVALIACOES_ENCONTRADAS: "Avaliações encontradas com sucesso",
+    ATUALIZADA_COM_SUCESSO: "Avaliação atualizada com sucesso",
+    DELETADA_COM_SUCESSO: "Avaliação deletada com sucesso",
+    ID_NAO_FORNECIDO: "O id da avaliação não foi fornecido",
+    ID_FORNECIDO_INVALIDO: "O id fornecido da avaliação é inválido"
   }
 }
 
