@@ -1,6 +1,10 @@
 const mongoose = require("mongoose")
 
-const {validaMediaParaPassar} = require("../utils/validators.utils")
+const {
+  validaMediaParaPassar,
+  validaPeso,
+  validaNotaMaxima
+} = require("../utils/validators.utils")
 
 const {
   VALIDACAO
@@ -18,11 +22,19 @@ const materiaSchema = mongoose.Schema({
   },
   pesoProva: {
     type: Number,
-    required: [true, VALIDACAO.MATERIA.PESO_PROVA_OBRIGATORIO]
+    required: [true, VALIDACAO.MATERIA.PESO_PROVA_OBRIGATORIO],
+    validate: {
+      validator: validaPeso,
+      message: VALIDACAO.MATERIA.PESO_DE_PROVA_INVALIDO
+    }
   },
   pesoTrabalho: {
     type: Number,
-    required: [true, VALIDACAO.MATERIA.PESO_TRABALHO_OBRIGATORIO]
+    required: [true, VALIDACAO.MATERIA.PESO_TRABALHO_OBRIGATORIO],
+    validate: {
+      validator: validaPeso,
+      message: VALIDACAO.MATERIA.PESO_DE_TRABALHO_INVALIDO
+    }
   },
   mediaParaPassar: {
     type: Number,
@@ -34,7 +46,11 @@ const materiaSchema = mongoose.Schema({
   },
   notaMaxima: {
     type: Number,
-    default: NOTA_MAXIMA_DEFAULT
+    default: NOTA_MAXIMA_DEFAULT,
+    validate: {
+      validator: validaNotaMaxima,
+      message: VALIDACAO.MATERIA.NOTA_MAXIMA_INVALIDA
+    }
   }
 })
 

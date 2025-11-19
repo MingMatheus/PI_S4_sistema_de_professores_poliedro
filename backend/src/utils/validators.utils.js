@@ -54,11 +54,21 @@ const validaMediaParaPassar = function(mediaParaPassar)
   return mediaParaPassar >= 0 && mediaParaPassar <= this.notaMaxima
 }
 
+const validaPeso = (peso) => {
+  return peso >= 0
+}
+
+const validaNotaMaxima = (notaMaxima) => {
+  return notaMaxima >= 0
+}
+
 module.exports = {
   validaEmail,
   validaEmailAluno,
   validaEmailProfessor,
   validaSenha,
   validaNotaObtida,
-  validaMediaParaPassar
+  validaMediaParaPassar,
+  validaPeso,
+  validaNotaMaxima
 }

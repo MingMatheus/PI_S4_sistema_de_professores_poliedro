@@ -75,7 +75,10 @@ const RESPONSE_MESSAGES = {
       NOME_OBRIGATORIO: "O nome da matéria é obrigatório",
       PESO_PROVA_OBRIGATORIO: "O peso das provas é obrigatório",
       PESO_TRABALHO_OBRIGATORIO: "O peso dos trabalhos é obrigatório",
-      MEDIA_PARA_PASSAR_INVALIDA: "A média para passar não pode ser negativa e deve ser menor ou igual a nota máxima"
+      MEDIA_PARA_PASSAR_INVALIDA: "A média para passar não pode ser negativa e deve ser menor ou igual a nota máxima",
+      PESO_DE_PROVA_INVALIDO: "O peso de prova está inválido. Por favor digite um valor positivo",
+      PESO_DE_TRABALHO_INVALIDO: "O peso de trabalho está inválido. Por favor digite um valor positivo",
+      NOTA_MAXIMA_INVALIDA: "A nota máxima está inválida. Por favor digite um valor positivo"
     },
 
     AVALIACAO: {
@@ -155,6 +158,18 @@ const RESPONSE_MESSAGES = {
     TIPO_DE_ARQUIVO_INVALIDO: "O tipo de arquivo fornecido não é válido",
     ARQUIVO_NAO_ENVIADO: "O arquivo não foi enviado",
     ARQUIVO_MUITO_GRANDE: "O arquivo enviado excede o limite de tamanho permitido"
+  },
+
+  MATERIA: {
+    CRIADA_COM_SUCESSO: "Matéria criada com sucesso",
+    NOME_EM_USO: "Já existe uma matéria com esse nome",
+    ENCONTRADA_COM_SUCESSO: "Matéria encontrada com sucesso",
+    NAO_ENCONTRADA: "Matéria não encontrada",
+    TODAS_MATERIAS_ENCONTRADAS: "Matérias encontradas com sucesso",
+    ATUALIZADA_COM_SUCESSO: "Matéria atualizada com sucesso",
+    DELETADA_COM_SUCESSO: "Matéria deletada com sucesso",
+    ID_NAO_FORNECIDO: "O id da matéria não foi fornecido",
+    ID_FORNECIDO_INVALIDO: "O id fornecido da matéria é inválido"
   }
 }
 
