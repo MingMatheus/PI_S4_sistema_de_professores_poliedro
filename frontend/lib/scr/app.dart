@@ -32,12 +32,12 @@ class AppState extends State<App> {
 
       // rotas adicionadas apenas pro painel do professor
       routes: {
-        '/professor-home': (context) => const ProfessorHomeScreen(),
-        '/professor/turmas': (context) => const ProfessorTurmasScreen(),
-        '/professor/materiais': (context) => const ProfessorMateriaisScreen(),
-        '/professor/atividades': (context) => const ProfessorAtividadesScreen(),
-        '/professor/notas': (context) => const ProfessorNotasScreen(),
-        '/professor/avisos': (context) => const ProfessorAvisosScreen(),
+        '/professor-home': (context) => ProfessorHomeScreen(),
+        '/professor/turmas': (context) => ProfessorTurmasScreen(), // <-- AGORA CORRETO
+        '/professor/materiais': (context) => ProfessorMateriaisScreen(),
+        '/professor/atividades': (context) => ProfessorAtividadesScreen(),
+        '/professor/notas': (context) => ProfessorNotasScreen(),
+        '/professor/avisos': (context) => ProfessorAvisosScreen(),
       },
     );
   }
