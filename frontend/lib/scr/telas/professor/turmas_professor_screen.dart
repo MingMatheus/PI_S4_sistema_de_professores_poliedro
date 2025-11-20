@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import '../../constants/app_colors.dart';
 import '../home/professor_home_screen.dart';
 import '../login/login_screen.dart';
+import '../../utils/url.dart';
 
 class ProfessorTurmasScreen extends StatefulWidget {
   const ProfessorTurmasScreen({super.key});
@@ -20,18 +21,9 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
   final String baseSeries = "http://localhost:8080/api/series";
   final String baseTurmas = "http://localhost:8080/api/turmas";
   final String baseAlunos = "http://localhost:8080/api/alunos";
-  final String baseAuthCadastroAlunos =
-      "http://localhost:8080/api/auth/cadastro/alunos";
+  final String baseAuthCadastroAlunos = "http://localhost:8080/api/auth/cadastro/alunos";
 
-  // Token recebido do login (você me enviou este JSON)
-  // Atenção: o backend nos exemplos usa header "Authorization" com o token cru.
-  // Se no backend for necessário "Bearer <token>", altere para 'Bearer $tokenValue'.
-  final String tokenValue =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OTFkZmRkY2U2NjA1OTdmYTk5MDJlNGMiLCJub21lIjoiTmljb2xhcyIsInJvbGUiOiJwcm9mZXNzb3IiLCJpYXQiOjE3NjM2MDMzMjAsImV4cCI6MTc2MzYwNjkyMH0.-8xtgMsMKu-iNbR193cYYjHOJ-aILPFnEOyTxpiqC3M";
-  Map<String, String> get headers => {
-        "Authorization": "Bearer $tokenValue",
-        "Content-Type": "application/json",
-      };
+  Map<String, String>? headers;
 
   List<dynamic> series = [];
   List<dynamic> turmas = [];
@@ -42,7 +34,38 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
   @override
   void initState() {
     super.initState();
+    _inicializaTudo();
+  }
+
+  Future<void> _inicializaTudo() async {
+    await _configurarAutenticacao();
     carregarTudo();
+  }
+
+  Future<void> _configurarAutenticacao() async {
+    // Busca o token
+    final token = await getToken(); 
+
+    // Verificação de segurança: Se a tela foi fechada antes do token chegar, para tudo.
+    if (!mounted) return; 
+
+    if(token == null)
+    {
+      // --- CASO: NÃO TEM TOKEN (Redireciona) ---
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const LoginScreen())
+      );
+    }
+    else
+    {
+      // --- CASO: TEM TOKEN (Configura os headers) ---
+      setState(() {
+        headers = {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        };
+      });
+    }
   }
 
   // ----------------------

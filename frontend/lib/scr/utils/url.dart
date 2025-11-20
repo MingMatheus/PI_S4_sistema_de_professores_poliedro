@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:shared_preferences/shared_preferences.dart';
 
 String getApiBaseUrl() {
   if (kIsWeb) {
@@ -18,4 +19,9 @@ String getApiBaseUrl() {
     // Todos estes podem acessar o host usando localhost.
     return "http://localhost:8080";
   }
+}
+
+Future<String?> getToken() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('jwt_token'); 
 }
