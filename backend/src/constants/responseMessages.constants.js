@@ -182,6 +182,18 @@ const RESPONSE_MESSAGES = {
     DELETADA_COM_SUCESSO: "Avaliação deletada com sucesso",
     ID_NAO_FORNECIDO: "O id da avaliação não foi fornecido",
     ID_FORNECIDO_INVALIDO: "O id fornecido da avaliação é inválido"
+  },
+
+  NOTA: {
+    CRIADA_COM_SUCESSO: "Nota criada com sucesso",
+    JA_EXISTE: "Já existe uma nota para este aluno nesta avaliação",
+    ENCONTRADA_COM_SUCESSO: "Nota encontrada com sucesso",
+    NAO_ENCONTRADA: "Nota não encontrada",
+    TODAS_NOTAS_ENCONTRADAS: "Notas encontradas com sucesso",
+    ATUALIZADA_COM_SUCESSO: "Nota atualizada com sucesso",
+    DELETADA_COM_SUCESSO: "Nota deletada com sucesso",
+    ID_NAO_FORNECIDO: "O id da nota não foi fornecido",
+    ID_FORNECIDO_INVALIDO: "O id fornecido da nota é inválido"
   }
 }
 
