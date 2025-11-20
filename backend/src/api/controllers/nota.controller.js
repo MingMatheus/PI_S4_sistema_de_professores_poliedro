@@ -8,6 +8,7 @@ const {
 
 const {
   NOTA,
+  AVALIACAO,
   ERRO,
 } = require("../../constants/responseMessages.constants")
 
@@ -154,5 +155,29 @@ exports.deleteNotaById = async (req, res) => {
   catch(error)
   {
     return res.status(500).json({mensagem: ERRO.ERRO_INTERNO_NO_SERVIDOR})
+  }
+}
+
+exports.getNotasByAvaliacao = async (req, res) => {
+  try
+  {
+    const {id} = req.params
+
+    if(!id)
+      return res.status(400).json({mensagem: AVALIACAO.ID_NAO_FORNECIDO})
+
+    if(!mongoose.Types.ObjectId.isValid(id))
+      return res.status(400).json({mensagem: AVALIACAO.ID_FORNECIDO_INVALIDO})
+
+    const notas = await Nota.find({ avaliacao: id }).select("-__v");
+
+    res.status(200).json({
+      mensagem: NOTA.NOTAS_DA_AVALIACAO_ENCONTRADAS,
+      notas: notas
+    });
+  }
+  catch(error)
+  {
+    return res.status(500).json({mensagem: ERRO.ERRO_INTERNO_NO_SERVIDOR});
   }
 }
