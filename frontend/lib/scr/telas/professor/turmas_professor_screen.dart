@@ -387,7 +387,7 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
               // 1) Criar via rota de cadastro (auth)
               final resCadastro = await http.post(
                 Uri.parse(baseAuthCadastroAlunos),
-                headers: {"Content-Type": "application/json"},
+                headers: headers,
                 body: jsonEncode({"nome": nome, "email": email, "senha": senha, "ra": ra}),
               );
 
