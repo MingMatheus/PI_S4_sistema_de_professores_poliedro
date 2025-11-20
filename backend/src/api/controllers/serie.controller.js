@@ -1,4 +1,5 @@
 const Serie = require("../../models/Serie.model")
+const Turma = require("../../models/Turma.model")
 const mongoose = require("mongoose")
 
 const {
@@ -155,6 +156,11 @@ exports.deleteSerieById = async (req, res) => {
 
     if (!serieDeletada)
       return res.status(404).json({mensagem: SERIE.NAO_ENCONTRADA})
+
+    await Turma.updateMany(
+      { serie: id }, 
+      { $set: { serie: null } }
+    );
 
     res.status(200).json({
       mensagem: SERIE.DELETADA_COM_SUCESSO,

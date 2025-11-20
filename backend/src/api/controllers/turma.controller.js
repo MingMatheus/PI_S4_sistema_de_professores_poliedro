@@ -1,5 +1,6 @@
 const mongoose = require("mongoose")
 const Turma = require("../../models/Turma.model")
+const Aluno = require("../../models/Aluno.model")
 
 const {
   MONGO_DUPLICATE_KEY,
@@ -156,6 +157,11 @@ exports.deleteTurmaById = async (req, res) => {
 
     if (!turmaDeletada)
       return res.status(404).json({mensagem: TURMA.NAO_ENCONTRADA})
+
+    await Aluno.updateMany(
+      { turma: id }, 
+      { $set: { turma: null } }
+    )
 
     res.status(200).json({
       mensagem: TURMA.DELETADA_COM_SUCESSO,
