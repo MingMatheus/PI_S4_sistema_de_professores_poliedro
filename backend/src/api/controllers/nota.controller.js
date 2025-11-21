@@ -1,4 +1,6 @@
 const mongoose = require("mongoose")
+const Aluno = require("../../models/Aluno.model")
+const Avaliacao = require("../../models/Avaliacao.model")
 const Nota = require("../../models/Nota.model")
 
 const {
@@ -10,6 +12,7 @@ const {
   NOTA,
   AVALIACAO,
   ERRO,
+  ALUNO
 } = require("../../constants/responseMessages.constants")
 
 exports.createNota = async (req, res) => {
@@ -168,11 +171,45 @@ exports.getNotasByAvaliacao = async (req, res) => {
 
     if(!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({mensagem: AVALIACAO.ID_FORNECIDO_INVALIDO})
+    
+    const avaliacao = await Avaliacao.findById(id);
+    if (!avaliacao) {
+      return res.status(404).json({mensagem: AVALIACAO.NAO_ENCONTRADA});
+    }
 
     const notas = await Nota.find({ avaliacao: id }).select("-__v");
 
     res.status(200).json({
       mensagem: NOTA.NOTAS_DA_AVALIACAO_ENCONTRADAS,
+      notas: notas
+    });
+  }
+  catch(error)
+  {
+    return res.status(500).json({mensagem: ERRO.ERRO_INTERNO_NO_SERVIDOR});
+  }
+}
+
+exports.getNotasByAluno = async (req, res) => {
+  try
+  {
+    const {id} = req.params
+
+    if(!id)
+      return res.status(400).json({mensagem: ALUNO.ID_NAO_FORNECIDO})
+
+    if(!mongoose.Types.ObjectId.isValid(id))
+      return res.status(400).json({mensagem: ALUNO.ID_FORNECIDO_INVALIDO})
+
+    const aluno = await Aluno.findById(id);
+    if (!aluno) {
+      return res.status(404).json({mensagem: ALUNO.NAO_ENCONTRADO});
+    }
+
+    const notas = await Nota.find({ aluno: id }).select("-__v");
+
+    res.status(200).json({
+      mensagem: NOTA.NOTAS_DO_ALUNO_ENCONTRADAS,
       notas: notas
     });
   }

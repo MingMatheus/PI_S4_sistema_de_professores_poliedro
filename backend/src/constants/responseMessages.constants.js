@@ -194,7 +194,8 @@ const RESPONSE_MESSAGES = {
     DELETADA_COM_SUCESSO: "Nota deletada com sucesso",
     ID_NAO_FORNECIDO: "O id da nota não foi fornecido",
     ID_FORNECIDO_INVALIDO: "O id fornecido da nota é inválido",
-    NOTAS_DA_AVALIACAO_ENCONTRADAS: "Notas da avaliação encontradas com sucesso"
+    NOTAS_DA_AVALIACAO_ENCONTRADAS: "Notas da avaliação encontradas com sucesso",
+    NOTAS_DO_ALUNO_ENCONTRADAS: "Notas do aluno encontradas com sucesso"
   }
 }
 

@@ -42,6 +42,13 @@ router.get(
   notaController.getNotasByAvaliacao
 )
 
+router.get(
+  "/por-aluno/:id",
+  authMiddleware,
+  checkRole([ROLES.PROFESSOR]),
+  notaController.getNotasByAluno
+)
+
 router.put(
   "/:id",
   authMiddleware,
