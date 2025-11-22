@@ -195,7 +195,9 @@ const RESPONSE_MESSAGES = {
     ID_NAO_FORNECIDO: "O id da nota não foi fornecido",
     ID_FORNECIDO_INVALIDO: "O id fornecido da nota é inválido",
     NOTAS_DA_AVALIACAO_ENCONTRADAS: "Notas da avaliação encontradas com sucesso",
-    NOTAS_DO_ALUNO_ENCONTRADAS: "Notas do aluno encontradas com sucesso"
+    NOTAS_DO_ALUNO_ENCONTRADAS: "Notas do aluno encontradas com sucesso",
+    MINHAS_NOTAS_ENCONTRADAS: "Suas notas foram encontradas com sucesso",
+    VOCE_NAO_EH_ALUNO: "Você não é um aluno, portanto, não possui notas"
   }
 }
 

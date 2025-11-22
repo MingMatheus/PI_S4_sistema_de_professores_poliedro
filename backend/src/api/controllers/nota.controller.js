@@ -9,10 +9,15 @@ const {
 } = require("../../constants/error.constants")
 
 const {
+  ROLES
+} = require("../../constants/validation.constants")
+
+const {
   NOTA,
   AVALIACAO,
   ERRO,
-  ALUNO
+  ALUNO,
+  AUTH
 } = require("../../constants/responseMessages.constants")
 
 exports.createNota = async (req, res) => {
@@ -210,6 +215,39 @@ exports.getNotasByAluno = async (req, res) => {
 
     res.status(200).json({
       mensagem: NOTA.NOTAS_DO_ALUNO_ENCONTRADAS,
+      notas: notas
+    });
+  }
+  catch(error)
+  {
+    return res.status(500).json({mensagem: ERRO.ERRO_INTERNO_NO_SERVIDOR});
+  }
+}
+
+exports.getMinhasNotas = async (req, res) => {
+  try
+  {
+    const alunoId = req.user.sub
+    const userRole = req.user.role
+
+    if(userRole != ROLES.ALUNO)
+      return res.status(400).json({mensagem: NOTA.VOCE_NAO_EH_ALUNO})
+
+    if(!alunoId)
+      return res.status(400).json({mensagem: AUTH.TOKEN_NAO_ENCONTRADO})
+
+    if(!mongoose.Types.ObjectId.isValid(alunoId))
+      return res.status(400).json({mensagem: AUTH.TOKEN_INVALIDO})
+
+    const aluno = await Aluno.findById(alunoId);
+    if (!aluno) {
+      return res.status(404).json({mensagem: ALUNO.NAO_ENCONTRADO});
+    }
+
+    const notas = await Nota.find({ aluno: alunoId }).select("-__v");
+
+    res.status(200).json({
+      mensagem: NOTA.MINHAS_NOTAS_ENCONTRADAS,
       notas: notas
     });
   }

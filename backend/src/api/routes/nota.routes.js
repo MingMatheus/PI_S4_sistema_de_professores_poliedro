@@ -12,6 +12,11 @@ const {
 // Rotas públicas
 
 // Rotas protegidas
+router.get(
+  "/minhas",
+  authMiddleware,
+  notaController.getMinhasNotas
+)
 
 // Rotas restritas
 router.post(
