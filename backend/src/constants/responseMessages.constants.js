@@ -205,6 +205,17 @@ const RESPONSE_MESSAGES = {
     NOTAS_DO_ALUNO_ENCONTRADAS: "Notas do aluno encontradas com sucesso",
     MINHAS_NOTAS_ENCONTRADAS: "Suas notas foram encontradas com sucesso",
     VOCE_NAO_EH_ALUNO: "Você não é um aluno, portanto, não possui notas"
+  },
+
+  AVISO: {
+    CRIADO_COM_SUCESSO: "Aviso criado com sucesso",
+    ENCONTRADO_COM_SUCESSO: "Aviso encontrado com sucesso",
+    NAO_ENCONTRADO: "Aviso não encontrado",
+    TODOS_AVISOS_ENCONTRADOS: "Avisos encontrados com sucesso",
+    ATUALIZADO_COM_SUCESSO: "Aviso atualizado com sucesso",
+    DELETADO_COM_SUCESSO: "Aviso deletado com sucesso",
+    ID_NAO_FORNECIDO: "O id do aviso não foi fornecido",
+    ID_FORNECIDO_INVALIDO: "O id fornecido do aviso é inválido"
   }
 }
 

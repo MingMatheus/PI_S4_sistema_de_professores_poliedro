@@ -21,4 +21,32 @@ router.post(
   avisoController.createAviso
 )
 
+router.get(
+  "/",
+  authMiddleware,
+  checkRole([ROLES.PROFESSOR]),
+  avisoController.getTodosAvisos
+)
+
+router.get(
+  "/:id",
+  authMiddleware,
+  checkRole([ROLES.PROFESSOR]),
+  avisoController.getAvisoById
+)
+
+router.put(
+  "/:id",
+  authMiddleware,
+  checkRole([ROLES.PROFESSOR]),
+  avisoController.updateAvisoById
+)
+
+router.delete(
+  "/:id",
+  authMiddleware,
+  checkRole([ROLES.PROFESSOR]),
+  avisoController.deleteAvisoById
+)
+
 module.exports = router
