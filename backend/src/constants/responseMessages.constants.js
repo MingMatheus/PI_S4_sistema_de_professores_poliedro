@@ -85,6 +85,13 @@ const RESPONSE_MESSAGES = {
       NOME_OBRIGATORIO: "O nome da avaliação é obrigatório",
       TIPO_OBRIGATORIO: "O tipo da avaliação é obrigatório",
       MATERIA_OBRIGATORIA: "A matéria da avaliação é obrigatória"
+    },
+
+    AVISO: {
+      TITULO_OBRIGATORIO: "O título do aviso é obrigatório",
+      CONTEUDO_OBRIGATORIO: "O conteúdo do aviso é obrigatório",
+      AUTOR_OBRIGATORIO: "O autor do aviso é obrigatório",
+      DESTINATARIO_OBRIGATORIO: "O aviso deve ter pelo menos um destinatário (Série, Turma ou Aluno)"
     }
   },
 
