@@ -4,32 +4,12 @@ const express = require("express")
 
 const conectaAoBancoDeDados = require("./src/config/database")
 const configuraExpress = require("./src/config/express")
-
-const authRoutes = require("./src/api/routes/auth.routes")
-const turmaRoutes = require("./src/api/routes/turma.routes")
-const serieRoutes = require("./src/api/routes/serie.routes")
-const alunoRoutes = require("./src/api/routes/aluno.routes")
-const professorRoutes = require("./src/api/routes/professor.routes")
-const pastaRoutes = require("./src/api/routes/pasta.routes")
-const arquivoRoutes = require("./src/api/routes/arquivo.routes")
-const materiaRoutes = require("./src/api/routes/materia.routes")
-const avaliacaoRoutes = require("./src/api/routes/avaliacao.routes")
-const notaRoutes = require("./src/api/routes/nota.routes")
+const configuraRotas = require("./src/config/rotas.config")
 
 const app = express()
 
 configuraExpress(app)
-
-app.use("/api/auth", authRoutes)
-app.use("/api/turmas", turmaRoutes)
-app.use("/api/series", serieRoutes)
-app.use("/api/alunos", alunoRoutes)
-app.use("/api/professores", professorRoutes)
-app.use("/api/pastas", pastaRoutes)
-app.use("/api/arquivos", arquivoRoutes)
-app.use("/api/materias", materiaRoutes)
-app.use("/api/avaliacoes", avaliacaoRoutes)
-app.use("/api/notas", notaRoutes)
+configuraRotas(app)
 
 // Exporta o app para uso dos testes de integração
 module.exports = app
