@@ -39,10 +39,15 @@ class DesktopDashboardView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const _CappedHeight(child: NotasCard()),
+              //  Notas clicável → index 2
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onSectionTap(2),
+                child: const _CappedHeight(child: NotasCard()),
+              ),
               const SizedBox(height: gap),
 
-              //  Materiais clicável
+              // Materiais clicável → index 1
               GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => onSectionTap(1),
@@ -52,7 +57,7 @@ class DesktopDashboardView extends StatelessWidget {
           ),
         );
 
-        // COLUNA DIREITA — Avisos já clicável
+        // COLUNA DIREITA — Avisos clicável → index 3
         final rightBlock = SizedBox(
           width: rightWidth,
           child: Padding(
@@ -72,7 +77,7 @@ class DesktopDashboardView extends StatelessWidget {
           alignment: Alignment.topCenter,
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(
-              outerGutterH, outerGutterTop, outerGutterH, outerGutterBottom),
+                outerGutterH, outerGutterTop, outerGutterH, outerGutterBottom),
             child: Transform.scale(
               alignment: Alignment.topCenter,
               scale: scale,

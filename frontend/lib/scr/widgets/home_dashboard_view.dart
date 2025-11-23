@@ -29,7 +29,7 @@ class HomeDashboardView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              //  Materiais clicável
+              // Materiais clicável → index 1
               GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => onSectionTap(1),
@@ -37,11 +37,15 @@ class HomeDashboardView extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              // Notas (ainda não clicável)
-              const NotasCard(),
+              // Notas clicável → index 2
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onSectionTap(2),
+                child: const NotasCard(),
+              ),
               const SizedBox(height: 12),
 
-              // Avisos (clicável)
+              // Avisos clicável → index 3
               GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => onSectionTap(3),
