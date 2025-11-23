@@ -51,7 +51,18 @@ exports.getTodasNotas = async (req, res) => {
   {
     // Note: In a real application, you'd likely want to filter these,
     // e.g., by alunoId or avaliacaoId.
-    const notas = await Nota.find().select("-__v")
+    const notas = await Nota.find()
+      .select("-__v")
+      .populate("aluno", "nome ra")
+      .populate({
+        path: "avaliacao",
+        select: "-__v -peso",
+        populate: {
+          path: "materia",
+          select: "nome"
+        }
+      })
+
     res.status(200).json({
       mensagem: NOTA.TODAS_NOTAS_ENCONTRADAS,
       notas: notas
@@ -59,6 +70,7 @@ exports.getTodasNotas = async (req, res) => {
   }
   catch(error)
   {
+    console.log(error)
     return res.status(500).json({mensagem: ERRO.ERRO_INTERNO_NO_SERVIDOR})
   }
 }
@@ -74,7 +86,17 @@ exports.getNotaById = async (req, res) => {
     if(!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({mensagem: NOTA.ID_FORNECIDO_INVALIDO})
 
-    const nota = await Nota.findById(id).select("-__v")
+    const nota = await Nota.findById(id)
+      .select("-__v")
+      .populate("aluno", "nome ra")
+      .populate({
+        path: "avaliacao",
+        select: "-__v -peso",
+        populate: {
+          path: "materia",
+          select: "nome"
+        }
+      })
 
     if (!nota)
       return res.status(404).json({mensagem: NOTA.NAO_ENCONTRADA})
@@ -150,7 +172,17 @@ exports.deleteNotaById = async (req, res) => {
     if(!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({mensagem: NOTA.ID_FORNECIDO_INVALIDO})
       
-    const nota = await Nota.findByIdAndDelete(id).select("-__v");
+    const nota = await Nota.findByIdAndDelete(id)
+      .select("-__v")
+      .populate("aluno", "nome ra")
+      .populate({
+        path: "avaliacao",
+        select: "-__v -peso",
+        populate: {
+          path: "materia",
+          select: "nome"
+        }
+      })
 
     if (!nota)
       return res.status(404).json({mensagem: NOTA.NAO_ENCONTRADA});
@@ -182,7 +214,9 @@ exports.getNotasByAvaliacao = async (req, res) => {
       return res.status(404).json({mensagem: AVALIACAO.NAO_ENCONTRADA});
     }
 
-    const notas = await Nota.find({ avaliacao: id }).select("-__v");
+    const notas = await Nota.find({ avaliacao: id })
+      .select("-__v -avaliacao")
+      .populate("aluno", "nome ra")
 
     res.status(200).json({
       mensagem: NOTA.NOTAS_DA_AVALIACAO_ENCONTRADAS,
@@ -211,7 +245,16 @@ exports.getNotasByAluno = async (req, res) => {
       return res.status(404).json({mensagem: ALUNO.NAO_ENCONTRADO});
     }
 
-    const notas = await Nota.find({ aluno: id }).select("-__v");
+    const notas = await Nota.find({ aluno: id })
+      .select("-__v -aluno")
+      .populate({
+        path: "avaliacao",
+        select: "-__v -peso",
+        populate: {
+          path: "materia",
+          select: "nome"
+        }
+      })
 
     res.status(200).json({
       mensagem: NOTA.NOTAS_DO_ALUNO_ENCONTRADAS,
@@ -244,7 +287,16 @@ exports.getMinhasNotas = async (req, res) => {
       return res.status(404).json({mensagem: ALUNO.NAO_ENCONTRADO});
     }
 
-    const notas = await Nota.find({ aluno: alunoId }).select("-__v");
+    const notas = await Nota.find({ aluno: alunoId })
+      .select("-__v -aluno")
+      .populate({
+        path: "avaliacao",
+        select: "-__v -peso",
+        populate: {
+          path: "materia",
+          select: "nome"
+        }
+      })
 
     res.status(200).json({
       mensagem: NOTA.MINHAS_NOTAS_ENCONTRADAS,
