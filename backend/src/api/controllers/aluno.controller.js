@@ -26,7 +26,16 @@ exports.getAlunoById = async (req, res) => {
     if(!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({mensagem: ALUNO.ID_FORNECIDO_INVALIDO})
 
-    const aluno = await Aluno.findById(id).select("-__v")
+    const aluno = await Aluno.findById(id)
+      .select("-__v")
+      .populate({
+        path: "turma",
+        select: "-__v",
+        populate: {
+          path: "serie",
+          select: "-__v"
+        }
+      })
 
     if (!aluno)
       return res.status(404).json({mensagem: ALUNO.NAO_ENCONTRADO})
@@ -45,7 +54,17 @@ exports.getAlunoById = async (req, res) => {
 exports.getTodosAlunos = async (req, res) => {
   try
   {
-    const alunos = await Aluno.find({}).select("-__v")
+    const alunos = await Aluno.find({})
+      .select("-__v")
+      .populate({
+        path: "turma",
+        select: "-__v",
+        populate: {
+          path: "serie",
+          select: "-__v"
+        }
+      })
+
     res.status(200).json({
       mensagem: ALUNO.TODOS_ALUNOS_ENCONTRADOS,
       alunos: alunos
@@ -139,7 +158,16 @@ exports.deleteAlunoById = async (req, res) => {
     if(!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({mensagem: ALUNO.ID_FORNECIDO_INVALIDO})
 
-    const alunoDeletado = await Aluno.findByIdAndDelete(id).select("-__v")
+    const alunoDeletado = await Aluno.findByIdAndDelete(id)
+      .select("-__v")
+      .populate({
+        path: "turma",
+        select: "-__v",
+        populate: {
+          path: "serie",
+          select: "-__v"
+        }
+      })
 
     if (!alunoDeletado)
       return res.status(404).json({mensagem: ALUNO.NAO_ENCONTRADO})
