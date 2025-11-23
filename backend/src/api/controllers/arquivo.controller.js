@@ -2,6 +2,7 @@ const mongoose = require("mongoose")
 const fs = require('fs');
 
 const Arquivo = require("../../models/Arquivo.model")
+const Pasta = require("../../models/Pasta.model")
 
 const {
   MONGO_DUPLICATE_KEY,
@@ -11,6 +12,7 @@ const {
 
 const {
   ARQUIVO,
+  PASTA,
   ERRO,
   AUTH
 } = require("../../constants/responseMessages.constants")
@@ -233,6 +235,45 @@ exports.deleteArquivoById = async (req, res) => {
   catch(error)
   {
     console.error('Erro ao deletar arquivo:', error);
+    return res.status(500).json({mensagem: ERRO.ERRO_INTERNO_NO_SERVIDOR})
+  }
+}
+
+exports.getArquivoByPasta = async (req, res) => {
+  try
+  {
+    const {id} = req.params
+
+    if(!id)
+      return res.status(400).json({mensagem: PASTA.ID_NAO_FORNECIDO})
+
+    if(!mongoose.Types.ObjectId.isValid(id))
+      return res.status(400).json({mensagem: PASTA.ID_FORNECIDO_INVALIDO})
+
+    const pasta = await Pasta.findById(id).select("nome")
+
+    if(!pasta)
+      return res.status(404).json({mensagem: PASTA.NAO_ENCONTRADA})
+
+    const arquivos = await Arquivo.find({pastaOndeSeEncontra: id})
+      .select("-__v -nomeNoSistema -caminho")
+      .populate("professorQueFezOUpload", "nome -_id")
+      .populate({
+        path: "pastaOndeSeEncontra",
+        select: "nome pastaPai",
+        populate: {
+          path: "pastaPai",
+          select: "nome"
+        }
+      })
+
+    res.status(200).json({
+      mensagem: ARQUIVO.ARQUIVOS_DA_PASTA_ENCONTRADOS_COM_SUCESSO,
+      arquivo: arquivos
+    })
+  }
+  catch(error)
+  {
     return res.status(500).json({mensagem: ERRO.ERRO_INTERNO_NO_SERVIDOR})
   }
 }

@@ -27,6 +27,12 @@ router.get(
   arquivoController.getArquivoById
 )
 
+router.get(
+  "/por-pasta/:id",
+  authMiddleware,
+  arquivoController.getArquivoByPasta
+)
+
 // Rotas restritas
 router.post(
   "/",

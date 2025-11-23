@@ -164,7 +164,8 @@ const RESPONSE_MESSAGES = {
     ID_FORNECIDO_INVALIDO: "O id fornecido do arquivo é inválido",
     TIPO_DE_ARQUIVO_INVALIDO: "O tipo de arquivo fornecido não é válido",
     ARQUIVO_NAO_ENVIADO: "O arquivo não foi enviado",
-    ARQUIVO_MUITO_GRANDE: "O arquivo enviado excede o limite de tamanho permitido"
+    ARQUIVO_MUITO_GRANDE: "O arquivo enviado excede o limite de tamanho permitido",
+    ARQUIVOS_DA_PASTA_ENCONTRADOS_COM_SUCESSO: "Os arquivos da pasta foram encontrados com sucesso"
   },
 
   MATERIA: {
