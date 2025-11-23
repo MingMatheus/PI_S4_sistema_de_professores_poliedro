@@ -75,7 +75,10 @@ exports.getTodosArquivos = async (req, res) => {
   {
     // By default, fetches files in the root directory.
     // A query param could be added to fetch files from a specific folder.
-    const arquivos = await Arquivo.find({ pastaOndeSeEncontra: null }).select("-__v")
+    const arquivos = await Arquivo.find({ pastaOndeSeEncontra: null })
+      .select("-__v -nomeNoSistema -caminho")
+      .populate("professorQueFezOUpload", "nome -_id")
+
     res.status(200).json({
       mensagem: ARQUIVO.TODOS_ARQUIVOS_ENCONTRADOS,
       arquivos: arquivos
@@ -98,7 +101,17 @@ exports.getArquivoById = async (req, res) => {
     if(!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({mensagem: ARQUIVO.ID_FORNECIDO_INVALIDO})
 
-    const arquivo = await Arquivo.findById(id).select("-__v")
+    const arquivo = await Arquivo.findById(id)
+      .select("-__v -nomeNoSistema -caminho")
+      .populate("professorQueFezOUpload", "nome -_id")
+      .populate({
+        path: "pastaOndeSeEncontra",
+        select: "nome pastaPai",
+        populate: {
+          path: "pastaPai",
+          select: "nome"
+        }
+      })
 
     if (!arquivo)
       return res.status(404).json({mensagem: ARQUIVO.NAO_ENCONTRADO})
@@ -175,7 +188,8 @@ exports.deleteArquivoById = async (req, res) => {
     if(!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({mensagem: ARQUIVO.ID_FORNECIDO_INVALIDO})
       
-    const arquivo = await Arquivo.findById(id);
+    const arquivo = await Arquivo.findById(id)
+      .select("professorQueFezOUpload nomeNoSistema caminho")
 
     if (!arquivo)
       return res.status(404).json({mensagem: ARQUIVO.NAO_ENCONTRADO});
@@ -183,7 +197,17 @@ exports.deleteArquivoById = async (req, res) => {
     if (arquivo.professorQueFezOUpload.toString() !== req.user.sub)
       return res.status(403).json({mensagem: AUTH.NAO_TEM_PERMISSAO});
 
-    const arquivoDeletadoDoDB =await Arquivo.findByIdAndDelete(id);
+    const arquivoDeletadoDoDB =await Arquivo.findByIdAndDelete(id)
+      .select("-__v -nomeNoSistema -caminho")
+      .populate("professorQueFezOUpload", "nome -_id")
+      .populate({
+        path: "pastaOndeSeEncontra",
+        select: "nome pastaPai",
+        populate: {
+          path: "pastaPai",
+          select: "nome"
+        }
+      })
 
     if (!arquivoDeletadoDoDB)
       return res.status(404).json({mensagem: ARQUIVO.NAO_ENCONTRADO});
