@@ -7,3 +7,5 @@ backend/uploads/
 # FRONTEND
 frontend/.env
 !frontend/.env.example
+
+GEMINI.md
