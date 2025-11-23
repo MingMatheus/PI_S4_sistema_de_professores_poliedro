@@ -200,8 +200,10 @@ class _NotaCard extends StatelessWidget {
 
     final titleStyle = txt.titleLarge?.copyWith(
       fontWeight: FontWeight.bold,
-      fontSize: compact ? 16 : 18,
+      fontSize: compact ? 18 : 20, // Aumenta o tamanho da fonte
     );
+    
+    final double iconSize = compact ? 22 : 26; // Aumenta o tamanho do ícone
 
     return Card(
       elevation: 6,
@@ -222,27 +224,22 @@ class _NotaCard extends StatelessWidget {
         },
         child: Padding(
           padding: pad,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Row( // Usar Row para alinhar texto e ícone
+            mainAxisAlignment: MainAxisAlignment.spaceBetween, // Espaça texto e ícone
+            crossAxisAlignment: CrossAxisAlignment.center, // Centraliza verticalmente
             children: [
-              Text(
-                materia.nome,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: titleStyle,
-              ),
-              const SizedBox(height: 8),
-
-              const Spacer(),
-
-              Align(
-                alignment: Alignment.bottomRight,
-                child: Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: compact ? 18 : 22,
-                  color: poliedroBlue.withOpacity(0.8),
+              Expanded( // Permite que o texto ocupe o espaço disponível
+                child: Text(
+                  materia.nome,
+                  maxLines: 2, // Permite mais de uma linha se o nome for longo
+                  overflow: TextOverflow.ellipsis,
+                  style: titleStyle,
                 ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: iconSize,
+                color: poliedroBlue.withOpacity(0.8),
               ),
             ],
           ),
