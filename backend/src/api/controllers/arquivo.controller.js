@@ -25,7 +25,7 @@ exports.createArquivo = async (req, res) => {
     const { pastaOndeSeEncontra } = req.body;
     const { originalname, filename, size, mimetype, path } = req.file;
 
-    const url = `http://localhost:${process.env.API_PORT}/files/${filename}`;
+    const url = `/files/${filename}`;
 
     const arquivo = new Arquivo({
       nomeOriginal: originalname,

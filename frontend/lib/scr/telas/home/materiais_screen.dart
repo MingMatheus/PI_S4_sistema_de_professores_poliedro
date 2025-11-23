@@ -1,118 +1,119 @@
+import 'dart:io';
+import 'dart:math';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import '../../constants/app_colors.dart';
+import 'package:intl/intl.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-class MateriaisScreen extends StatelessWidget {
+import '../../constants/app_colors.dart';
+import '../../models/arquivo.dart';
+import '../../models/pasta.dart';
+import '../../services/materiais_service.dart';
+
+class MateriaisScreen extends StatefulWidget {
   const MateriaisScreen({super.key});
+
+  @override
+  State<MateriaisScreen> createState() => _MateriaisScreenState();
+}
+
+class _MateriaisScreenState extends State<MateriaisScreen> {
+  final MateriaisService _materiaisService = MateriaisService();
+  late Future<Map<String, List<dynamic>>> _contentFuture;
+  final List<Map<String, String?>> _history = [{'id': null, 'nome': 'Início'}];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchConteudo();
+  }
+
+  void _fetchConteudo({String? pastaId}) {
+    setState(() {
+      _contentFuture = _materiaisService.getConteudoPasta(pastaId: pastaId);
+    });
+  }
+
+  void _navigateToPasta(Pasta pasta) {
+    setState(() {
+      _history.add({'id': pasta.id, 'nome': pasta.nome});
+    });
+    _fetchConteudo(pastaId: pasta.id);
+  }
+
+  void _navigateToHistory(int index) {
+    if (index == _history.length - 1) return;
+    setState(() {
+      _history.removeRange(index + 1, _history.length);
+    });
+    _fetchConteudo(pastaId: _history.last['id']);
+  }
 
   @override
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
-
-    // ===== fundo diagonal =====
-    final bool isWide   = w >= 1200;
-    final bool isPhoneNarrow = w < 420;
-
-    final double imgScale   = isWide ? 1.32 : (isPhoneNarrow ? 1.42 : 1.12);
-    final double imgOffsetY = isWide ? 195  : (isPhoneNarrow ? 5 : -10);
-    final double imgOffsetX = 0.0;
-
     const bg = Color(0xFFF2F4F7);
 
     return Container(
       color: bg,
       child: Stack(
         children: [
-          Positioned.fill(
-            child: IgnorePointer(
-              child: Align(
-                alignment: Alignment.bottomRight,
-                child: OverflowBox(
-                  minWidth: 0, minHeight: 0,
-                  maxWidth: double.infinity, maxHeight: double.infinity,
-                  alignment: Alignment.bottomRight,
-                  child: Transform.translate(
-                    offset: Offset(imgOffsetX, imgOffsetY),
-                    child: Transform.scale(
-                      scale: imgScale,
-                      alignment: Alignment.bottomRight,
-                      child: Image.asset(
-                        'assets/images/poliedro_diagonal.png',
-                        filterQuality: FilterQuality.medium,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // =================== conteúdo ===================
           SafeArea(
             bottom: false,
             child: LayoutBuilder(
               builder: (context, c) {
-                final w = c.maxWidth;
-
-                // breakpoints (desktop intacto)
-                late int cross;
-                late double aspect;
-                EdgeInsets pagePad = const EdgeInsets.fromLTRB(24, 18, 24, 28);
-                double hSpace = 12, vSpace = 12;
-
-                if (w >= 1400) {
-                  cross = 4; aspect = 2.8;
-                } else if (w >= 1080) {
-                  cross = 4; aspect = 2.6;
-                } else if (w >= 740) {
-                  cross = 2; aspect = 2.2;
-                } else if (w >= 420) {
-                  // phones/mini-tablets “largos”: 2 colunas
-                  cross = 2; aspect = 2.35;
-                  pagePad = const EdgeInsets.fromLTRB(20, 16, 20, 24);
-                  hSpace = 10; vSpace = 10;
-                } else {
-                  //  very-narrow phones (ex.: 320px): 1 coluna = sem overflow
-                  cross = 1; aspect = 3.6;
-                  pagePad = const EdgeInsets.fromLTRB(16, 14, 16, 24);
-                  hSpace = 10; vSpace = 10;
-                }
-
-                final titleStyle = Theme.of(context)
-                    .textTheme
-                    .headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.w700,
-                               color: Colors.black.withOpacity(0.85));
-
-                // Garante que o conteúdo ocupe no mínimo a altura da tela
-                final double minBodyHeight = c.maxHeight - pagePad.vertical;
-
-                return SingleChildScrollView(
+                final pagePad = EdgeInsets.fromLTRB(w > 420 ? 24 : 16, 18, w > 420 ? 24 : 16, 0);
+                return Padding(
                   padding: pagePad,
-                  physics: const BouncingScrollPhysics(),
-                  child: Container(
-                    constraints: BoxConstraints(minHeight: minBodyHeight),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Materiais de aula', style: titleStyle),
-                        const SizedBox(height: 10),
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: _materias.length,
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: cross,
-                            childAspectRatio: aspect,
-                            crossAxisSpacing: hSpace,
-                            mainAxisSpacing:  vSpace,
-                          ),
-                          itemBuilder: (_, i) => _MateriaCard(
-                            m: _materias[i],
-                            compact: w < 420, // modo compacto só no cel estreito
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildBreadcrumb(),
+                      const SizedBox(height: 12),
+                      Expanded(
+                        child: RefreshIndicator(
+                          onRefresh: () async => _fetchConteudo(pastaId: _history.last['id']),
+                          child: FutureBuilder<Map<String, List<dynamic>>>(
+                            future: _contentFuture,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const Center(child: CircularProgressIndicator());
+                              }
+                              if (snapshot.hasError) {
+                                return Center(child: Text('Erro: ${snapshot.error}'));
+                              }
+                              if (!snapshot.hasData) {
+                                return const Center(child: Text('Nenhum conteúdo encontrado.'));
+                              }
+                              final List<Pasta> pastas = snapshot.data!['pastas'] as List<Pasta>;
+                              final List<Arquivo> arquivos = snapshot.data!['arquivos'] as List<Arquivo>;
+                              if (pastas.isEmpty && arquivos.isEmpty) {
+                                return const Center(child: Text('Esta pasta está vazia.'));
+                              }
+                              return ListView.builder(
+                                padding: const EdgeInsets.only(bottom: 28),
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                itemCount: pastas.length + arquivos.length,
+                                itemBuilder: (ctx, index) {
+                                  if (index < pastas.length) {
+                                    return _PastaCard(
+                                      pasta: pastas[index],
+                                      onTap: () => _navigateToPasta(pastas[index]),
+                                    );
+                                  } else {
+                                    return _ArquivoCard(
+                                      arquivo: arquivos[index - pastas.length],
+                                    );
+                                  }
+                                },
+                              );
+                            },
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 );
               },
@@ -122,93 +123,249 @@ class MateriaisScreen extends StatelessWidget {
       ),
     );
   }
-}
 
-// -------- MOCK --------
-class _Materia {
-  final String nome, professor, quando;
-  const _Materia(this.nome, this.professor, this.quando);
-}
-
-const _materias = <_Materia>[
-  _Materia('Matemática', 'Carlos de Almeida', 'Hoje 09:15'),
-  _Materia('Português', 'Ângela dos Santos', 'Ontem 16:30'),
-  _Materia('Geografia', 'Alexandre Matos', 'Ontem 11:22'),
-  _Materia('História', 'Roberto Montenegro', 'Sex 14:00'),
-  _Materia('Química', 'Isabelle Vieira', 'Hoje 11:05'),
-  _Materia('Física', 'Paulo Machado', 'Qui 18:00'),
-  _Materia('Biologia', 'Maria Conceição', 'Sex 08:47'),
-  _Materia('Filosofia', 'Ricardo Oliveira', 'Hoje 10:30'),
-  _Materia('Sociologia', 'Juliana Costa', 'Ontem 14:00'),
-];
-
-// -------- CARD --------
-class _MateriaCard extends StatelessWidget {
-  final _Materia m;
-  final bool compact; // ← ativa no cel estreito (<420)
-  const _MateriaCard({required this.m, this.compact = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final txt = Theme.of(context).textTheme;
-
-    final EdgeInsets pad = compact
-        ? const EdgeInsets.fromLTRB(12, 10, 10, 8)
-        : const EdgeInsets.fromLTRB(12, 10, 10, 8);
-
-    final titleStyle = txt.titleMedium?.copyWith(
-      fontWeight: FontWeight.w700,
-      fontSize: compact ? 14 : txt.titleMedium?.fontSize,
-      height: compact ? 1.08 : null,
-    );
-
-    final bodyStyle = txt.bodySmall!.copyWith(
-      color: Colors.black.withOpacity(0.75),
-      fontSize: compact ? 12 : 13,
-      height: compact ? 1.18 : 1.22,
-    );
-
-    final double iconSize = compact ? 18 : 18;
-
-    return Card(
-      elevation: 6,
-      shadowColor: Colors.black.withOpacity(0.08),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: () {},
-        child: Padding(
-          padding: pad,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildBreadcrumb() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: List.generate(_history.length, (index) {
+          final item = _history[index];
+          final isLast = index == _history.length - 1;
+          return Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(m.nome,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: titleStyle),
-              const SizedBox(height: 4),
-              Expanded(
-                child: DefaultTextStyle(
-                  style: bodyStyle,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Prof. ${m.professor}',
-                          maxLines: 1, overflow: TextOverflow.ellipsis),
-                      const SizedBox(height: 2),
-                      Text(m.quando,
-                          maxLines: 2, overflow: TextOverflow.ellipsis),
-                    ],
+              InkWell(
+                onTap: () => _navigateToHistory(index),
+                borderRadius: BorderRadius.circular(4),
+                child: Text(
+                  item['nome']!,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: isLast ? FontWeight.bold : FontWeight.normal,
+                    color: isLast ? poliedroBlue : Colors.grey[700],
                   ),
                 ),
               ),
-              Align(
-                alignment: Alignment.bottomRight,
-                child: Icon(Icons.open_in_new_rounded,
-                    size: iconSize, color: poliedroBlue),
+              if (!isLast)
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4.0),
+                  child: Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+                ),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class _PastaCard extends StatelessWidget {
+  final Pasta pasta;
+  final VoidCallback onTap;
+  const _PastaCard({required this.pasta, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4.0),
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            children: [
+              const Icon(Icons.folder, color: poliedroBlue, size: 28),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(pasta.nome, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               ),
+              const Icon(Icons.chevron_right, color: Colors.grey),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ArquivoCard extends StatefulWidget {
+  final Arquivo arquivo;
+  const _ArquivoCard({required this.arquivo});
+
+  @override
+  State<_ArquivoCard> createState() => _ArquivoCardState();
+}
+
+class _ArquivoCardState extends State<_ArquivoCard> {
+  bool _isDownloading = false;
+  double _progress = 0.0;
+  
+  Future<void> _downloadFile() async {
+    // Em versões modernas do Android, permissão não é necessária para salvar na pasta Downloads.
+    // A lógica de permissão foi removida.
+    
+    final Directory? downloadsDir = await getDownloadsDirectory();
+    if (downloadsDir == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Não foi possível encontrar o diretório de downloads.')),
+        );
+      }
+      return;
+    }
+    final savePath = '${downloadsDir.path}/${widget.arquivo.nomeOriginal}';
+    print('Arquivo salvo em: $savePath');
+    
+    setState(() {
+      _isDownloading = true;
+      _progress = 0.0;
+    });
+
+    try {
+      final dio = Dio();
+      await dio.download(
+        widget.arquivo.url,
+        savePath,
+        onReceiveProgress: (received, total) {
+          if (total != -1) {
+            setState(() {
+              _progress = received / total;
+            });
+          }
+        },
+      );
+
+      setState(() { _isDownloading = false; });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Download de "${widget.arquivo.nomeOriginal}" concluído!'),
+            action: SnackBarAction(
+              label: 'Abrir',
+              onPressed: () => OpenFilex.open(savePath),
+            ),
+          ),
+        );
+      }
+
+    } catch (e) {
+      setState(() { _isDownloading = false; });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro no download: $e')),
+        );
+      }
+    }
+  }
+
+  void _showImagePreview() {
+     showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(10),
+        child: Stack(
+          alignment: Alignment.topRight,
+          children: [
+            InteractiveViewer(
+              panEnabled: true,
+              minScale: 0.5,
+              maxScale: 4,
+              child: Image.network(widget.arquivo.url),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close, color: Colors.white, size: 30),
+              onPressed: () => Navigator.of(ctx).pop(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _getIconForMimeType(String mime) {
+    if (mime.startsWith('image/')) return Icons.image_outlined;
+    if (mime == 'application/pdf') return Icons.picture_as_pdf_rounded;
+    if (mime.contains('word')) return Icons.description_rounded;
+    return Icons.insert_drive_file_rounded;
+  }
+  
+  String _formatBytes(int bytes) {
+    if (bytes <= 0) return "0 B";
+    const suffixes = ["B", "KB", "MB", "GB", "TB"];
+    int i = (log(bytes) / log(1024)).floor();
+    return '${(bytes / pow(1024, i)).toStringAsFixed(1)} ${suffixes[i]}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isImage = widget.arquivo.tipo.startsWith('image/');
+    
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4.0),
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(_getIconForMimeType(widget.arquivo.tipo), color: Colors.grey[700], size: 32),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(widget.arquivo.nomeOriginal, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${_formatBytes(widget.arquivo.tamanho)} • ${DateFormat('dd/MM/yy \'às\' HH:mm', 'pt_BR').format(widget.arquivo.createdAt)}',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                       Text('Enviado por: ${widget.arquivo.nomeProfessor}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: _isDownloading
+                    ? CircularProgressIndicator(value: _progress > 0 ? _progress : null, strokeWidth: 3)
+                    : IconButton(
+                        padding: EdgeInsets.zero,
+                        tooltip: 'Baixar arquivo',
+                        icon: const Icon(Icons.download_rounded, color: poliedroBlue, size: 28),
+                        onPressed: _downloadFile,
+                      ),
+                ),
+              ],
+            ),
+            if (isImage)
+              Padding(
+                padding: const EdgeInsets.only(top: 12.0),
+                child: GestureDetector(
+                  onTap: _showImagePreview,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      widget.arquivo.url,
+                      height: 150,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (ctx, child, progress) => progress == null ? child : const SizedBox(height: 150, child: Center(child: CircularProgressIndicator())),
+                      errorBuilder: (ctx, err, stack) => const SizedBox(height: 150, child: Center(child: Text('Não foi possível carregar a imagem.'))),
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
