@@ -56,7 +56,9 @@ exports.getTurmaById = async (req, res) => {
     if(!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({mensagem: TURMA.ID_FORNECIDO_INVALIDO})
 
-    const turma = await Turma.findById(id).select("-__v")
+    const turma = await Turma.findById(id)
+      .select("-__v")
+      .populate("serie", "nome")
 
     if (!turma)
       return res.status(404).json({mensagem: TURMA.NAO_ENCONTRADA})
@@ -75,7 +77,10 @@ exports.getTurmaById = async (req, res) => {
 exports.getTodasTurmas = async (req, res) => {
   try
   {
-    const turmas = await Turma.find().select("-__v")
+    const turmas = await Turma.find()
+      .select("-__v")
+      .populate("serie", "nome")
+
     res.status(200).json({
       mensagem: TURMA.TODAS_TURMAS_ENCONTRADAS,
       turmas: turmas
@@ -153,7 +158,9 @@ exports.deleteTurmaById = async (req, res) => {
     if(!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({mensagem: TURMA.ID_FORNECIDO_INVALIDO})
 
-    const turmaDeletada = await Turma.findByIdAndDelete(id).select("-__v")
+    const turmaDeletada = await Turma.findByIdAndDelete(id)
+      .select("-__v")
+      .populate("serie", "nome")
 
     if (!turmaDeletada)
       return res.status(404).json({mensagem: TURMA.NAO_ENCONTRADA})
