@@ -51,7 +51,14 @@ exports.createAviso = async (req, res) => {
 exports.getTodosAvisos = async (req, res) => {
   try
   {
-    const avisos = await Aviso.find().select("-__v")
+    const avisos = await Aviso.find()
+      .sort({createdAt: -1})
+      .select("-__v")
+      .populate("autor", "nome")
+      .populate("seriesAlvo", "nome")
+      .populate("turmasAlvo", "nome")
+      .populate("alunosAlvo", "nome ra")
+
     res.status(200).json({
       mensagem: AVISO.TODOS_AVISOS_ENCONTRADOS,
       avisos: avisos
@@ -74,7 +81,12 @@ exports.getAvisoById = async (req, res) => {
     if(!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({mensagem: AVISO.ID_FORNECIDO_INVALIDO})
 
-    const aviso = await Aviso.findById(id).select("-__v")
+    const aviso = await Aviso.findById(id)
+      .select("-__v")
+      .populate("autor", "nome")
+      .populate("seriesAlvo", "nome")
+      .populate("turmasAlvo", "nome")
+      .populate("alunosAlvo", "nome ra")
 
     if (!aviso)
       return res.status(404).json({mensagem: AVISO.NAO_ENCONTRADO})
@@ -159,7 +171,12 @@ exports.deleteAvisoById = async (req, res) => {
     if (aviso.autor.toString() !== req.user.sub)
       return res.status(403).json({ mensagem: AUTH.NAO_TEM_PERMISSAO });
 
-    const avisoDeletado = await Aviso.findByIdAndDelete(id).select("-__v");
+    const avisoDeletado = await Aviso.findByIdAndDelete(id)
+      .select("-__v")
+      .populate("autor", "nome")
+      .populate("seriesAlvo", "nome")
+      .populate("turmasAlvo", "nome")
+      .populate("alunosAlvo", "nome ra")
 
     res.status(200).json({
       mensagem: AVISO.DELETADO_COM_SUCESSO,
@@ -188,7 +205,10 @@ exports.getMeusAvisos = async (req, res) => {
 
     if(userRole === ROLES.ALUNO)
     {
-      const aluno = await Aluno.findById(userId).select("turma -_id").populate("turma", "serie")
+      const aluno = await Aluno.findById(userId)
+        .select("turma -_id")
+        .populate("turma", "serie")
+
       if(!aluno)
         return res.status(404).json({mensagem: ALUNO.NAO_ENCONTRADO})
 
@@ -213,11 +233,11 @@ exports.getMeusAvisos = async (req, res) => {
     {
       const query = { autor: userId }
       avisos = await Aviso.find(query)
-      .sort({ createdAt: -1 })
+      .sort({createdAt: -1})
       .select("-__v -autor")
       .populate("seriesAlvo", "nome")
       .populate("turmasAlvo", "nome")
-      .populate("alunosAlvo", "nome")
+      .populate("alunosAlvo", "nome ra")
     }
 
     res.status(200).json({
