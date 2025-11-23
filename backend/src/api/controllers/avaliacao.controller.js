@@ -42,7 +42,10 @@ exports.getTodasAvaliacoes = async (req, res) => {
   {
     // Note: In a real application, you'd likely want to filter these by materia.
     // e.g., /api/materias/:materiaId/avaliacoes
-    const avaliacoes = await Avaliacao.find().select("-__v")
+    const avaliacoes = await Avaliacao.find()
+      .select("-__v")
+      .populate("materia", "nome")
+
     res.status(200).json({
       mensagem: AVALIACAO.TODAS_AVALIACOES_ENCONTRADAS,
       avaliacoes: avaliacoes
@@ -65,7 +68,9 @@ exports.getAvaliacaoById = async (req, res) => {
     if(!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({mensagem: AVALIACAO.ID_FORNECIDO_INVALIDO})
 
-    const avaliacao = await Avaliacao.findById(id).select("-__v")
+    const avaliacao = await Avaliacao.findById(id)
+      .select("-__v")
+      .populate("materia", "nome")
 
     if (!avaliacao)
       return res.status(404).json({mensagem: AVALIACAO.NAO_ENCONTRADA})
@@ -146,7 +151,9 @@ exports.deleteAvaliacaoById = async (req, res) => {
     if(!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({mensagem: AVALIACAO.ID_FORNECIDO_INVALIDO})
       
-    const avaliacao = await Avaliacao.findByIdAndDelete(id).select("-__v");
+    const avaliacao = await Avaliacao.findByIdAndDelete(id)
+      .select("-__v")
+      .populate("materia", "nome")
 
     if (!avaliacao)
       return res.status(404).json({mensagem: AVALIACAO.NAO_ENCONTRADA});
