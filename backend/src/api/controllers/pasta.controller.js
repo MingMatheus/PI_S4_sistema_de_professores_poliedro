@@ -89,7 +89,11 @@ exports.createPasta = async (req, res) => {
 exports.getTodasPastas = async (req, res) => {
   try
   {
-    const pastas = await Pasta.find({ pastaPai: null }).select("-__v") // Find root folders
+     // Find root folders
+    const pastas = await Pasta.find({ pastaPai: null })
+      .select("-__v")
+      .populate("criadorDaPasta", "nome")
+
     res.status(200).json({
       mensagem: PASTA.TODAS_PASTAS_ENCONTRADAS,
       pastas: pastas
@@ -112,7 +116,10 @@ exports.getPastaById = async (req, res) => {
     if(!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({mensagem: PASTA.ID_FORNECIDO_INVALIDO})
 
-    const pasta = await Pasta.findById(id).select("-__v")
+    const pasta = await Pasta.findById(id)
+      .select("-__v")
+      .populate("pastaPai", "nome")
+      .populate("criadorDaPasta", "nome")
 
     if (!pasta)
       return res.status(404).json({mensagem: PASTA.NAO_ENCONTRADA})
@@ -227,7 +234,9 @@ exports.getPastasByPaiId = async (req, res) => {
       return res.status(404).json({mensagem: PASTA.NAO_ENCONTRADA});
     }
 
-    const subPastas = await Pasta.find({ pastaPai: id }).select("-__v");
+    const subPastas = await Pasta.find({ pastaPai: id })
+      .select("-__v -pastaPai")
+      .populate("criadorDaPasta", "nome")
 
     res.status(200).json({
       mensagem: PASTA.SUBPASTAS_ENCONTRADAS,
