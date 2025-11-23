@@ -1,19 +1,37 @@
 // lib/scr/telas/home/notas_screen.dart
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
+import '../../models/materia.dart';
+import '../../models/nota.dart';
+import '../../services/nota_service.dart';
+import 'notas_detalhes_screen.dart';
 
-class NotasScreen extends StatelessWidget {
+class NotasScreen extends StatefulWidget {
   const NotasScreen({super.key});
+
+  @override
+  State<NotasScreen> createState() => _NotasScreenState();
+}
+
+class _NotasScreenState extends State<NotasScreen> {
+  late Future<List<Nota>> _notasFuture;
+  final NotaService _notaService = NotaService();
+
+  @override
+  void initState() {
+    super.initState();
+    _notasFuture = _notaService.getMinhasNotas();
+  }
 
   @override
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
 
     // ===== fundo diagonal =====
-    final bool isWide = w >= 1200;            // desktop/notebook
-    final bool isPhoneNarrow = w < 420;       // celulares estreitos
-    final double imgScale   = isWide ? 1.32 : (isPhoneNarrow ? 1.42 : 1.12);
-    final double imgOffsetY = isWide ? 195  : (isPhoneNarrow ? 5 : -10);
+    final bool isWide = w >= 1200;
+    final bool isPhoneNarrow = w < 420;
+    final double imgScale = isWide ? 1.32 : (isPhoneNarrow ? 1.42 : 1.12);
+    final double imgOffsetY = isWide ? 195 : (isPhoneNarrow ? 5 : -10);
     final double imgOffsetX = 0.0;
 
     const bg = Color(0xFFF2F4F7);
@@ -27,8 +45,10 @@ class NotasScreen extends StatelessWidget {
               child: Align(
                 alignment: Alignment.bottomRight,
                 child: OverflowBox(
-                  minWidth: 0, minHeight: 0,
-                  maxWidth: double.infinity, maxHeight: double.infinity,
+                  minWidth: 0,
+                  minHeight: 0,
+                  maxWidth: double.infinity,
+                  maxHeight: double.infinity,
                   alignment: Alignment.bottomRight,
                   child: Transform.translate(
                     offset: Offset(imgOffsetX, imgOffsetY),
@@ -53,28 +73,32 @@ class NotasScreen extends StatelessWidget {
               builder: (context, c) {
                 final w = c.maxWidth;
 
-                // breakpoints — desktop intacto; mobile com 1 coluna e card mais baixo
                 late int cross;
                 late double aspect;
                 EdgeInsets pagePad = const EdgeInsets.fromLTRB(24, 18, 24, 28);
                 double hSpace = 12, vSpace = 12;
 
                 if (w >= 1400) {
-                  cross = 4; aspect = 2.8;
+                  cross = 4;
+                  aspect = 2.8;
                 } else if (w >= 1080) {
-                  cross = 4; aspect = 2.6;
+                  cross = 4;
+                  aspect = 2.6;
                 } else if (w >= 740) {
-                  cross = 2; aspect = 2.2;
+                  cross = 2;
+                  aspect = 2.2;
                 } else if (w >= 420) {
-                  // phones "largos" → 1 coluna, card mais baixinho
-                  cross = 1; aspect = 3.4;
+                  cross = 1;
+                  aspect = 3.4;
                   pagePad = const EdgeInsets.fromLTRB(20, 16, 20, 24);
-                  hSpace = 10; vSpace = 10;
+                  hSpace = 10;
+                  vSpace = 10;
                 } else {
-                  // very-narrow phones (ex.: 320) → 1 coluna e ainda mais compacto
-                  cross = 1; aspect = 3.6;
+                  cross = 1;
+                  aspect = 3.6;
                   pagePad = const EdgeInsets.fromLTRB(16, 14, 16, 24);
-                  hSpace = 10; vSpace = 10;
+                  hSpace = 10;
+                  vSpace = 10;
                 }
 
                 final titleStyle = Theme.of(context)
@@ -91,23 +115,60 @@ class NotasScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Notas e Médias', style: titleStyle),
+                      Text('Matérias', style: titleStyle),
                       const SizedBox(height: 10),
+                      
+                      FutureBuilder<List<Nota>>(
+                        future: _notasFuture,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(32.0),
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          }
 
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _materias.length,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: cross,
-                          childAspectRatio: aspect,
-                          crossAxisSpacing: hSpace,
-                          mainAxisSpacing:  vSpace,
-                        ),
-                        itemBuilder: (_, i) => _NotaCard(
-                          m: _materias[i],
-                          compact: w < 420, // modo compacto só no cel estreito
-                        ),
+                          if (snapshot.hasError) {
+                            return Center(
+                              child: Text('Erro ao carregar as matérias.\n${snapshot.error}'),
+                            );
+                          }
+
+                          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                            return const Center(
+                              child: Text('Nenhuma matéria com nota encontrada.'),
+                            );
+                          }
+
+                          final allNotes = snapshot.data!;
+                          // Extrai a lista de matérias únicas
+                          final materiasMap = <String, Materia>{};
+                          for (var nota in allNotes) {
+                            materiasMap[nota.avaliacao.materia.id] = nota.avaliacao.materia;
+                          }
+                          final materias = materiasMap.values.toList();
+
+
+                          return GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: materias.length,
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: cross,
+                              childAspectRatio: aspect,
+                              crossAxisSpacing: hSpace,
+                              mainAxisSpacing: vSpace,
+                            ),
+                            itemBuilder: (_, i) => _NotaCard(
+                              materia: materias[i],
+                              allNotes: allNotes,
+                              compact: w < 420,
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -121,29 +182,13 @@ class NotasScreen extends StatelessWidget {
   }
 }
 
-// === dados ===
-class _Materia {
-  final String nome, professor, quando;
-  const _Materia(this.nome, this.professor, this.quando);
-}
-
-const _materias = <_Materia>[
-  _Materia('Matemática', 'Carlos de Almeida', 'Hoje 09:15'),
-  _Materia('Português', 'Ângela dos Santos', 'Ontem 16:30'),
-  _Materia('Geografia', 'Alexandre Matos', 'Ontem 11:22'),
-  _Materia('História', 'Roberto Montenegro', 'Sex 14:00'),
-  _Materia('Química', 'Isabelle Vieira', 'Hoje 11:05'),
-  _Materia('Física', 'Paulo Machado', 'Qui 18:00'),
-  _Materia('Biologia', 'Maria Conceição', 'Sex 08:47'),
-  _Materia('Filosofia', 'Ricardo Oliveira', 'Hoje 10:30'),
-  _Materia('Sociologia', 'Juliana Costa', 'Ontem 14:00'),
-];
-
 // === card ===
 class _NotaCard extends StatelessWidget {
-  final _Materia m;
+  final Materia materia;
+  final List<Nota> allNotes;
   final bool compact;
-  const _NotaCard({required this.m, this.compact = false});
+
+  const _NotaCard({required this.materia, required this.allNotes, this.compact = false});
 
   @override
   Widget build(BuildContext context) {
@@ -151,21 +196,12 @@ class _NotaCard extends StatelessWidget {
 
     final EdgeInsets pad = compact
         ? const EdgeInsets.fromLTRB(12, 10, 10, 8)
-        : const EdgeInsets.fromLTRB(12, 10, 10, 8);
+        : const EdgeInsets.fromLTRB(16, 14, 14, 12);
 
-    final titleStyle = txt.titleMedium?.copyWith(
-      fontWeight: FontWeight.w700,
-      fontSize: compact ? 14 : txt.titleMedium?.fontSize,
-      height: compact ? 1.08 : null,
+    final titleStyle = txt.titleLarge?.copyWith(
+      fontWeight: FontWeight.bold,
+      fontSize: compact ? 16 : 18,
     );
-
-    final bodyStyle = txt.bodySmall!.copyWith(
-      color: Colors.black.withOpacity(0.75),
-      fontSize: compact ? 12 : 13,
-      height: compact ? 1.18 : 1.22,
-    );
-
-    final double iconSize = compact ? 20 : 24;
 
     return Card(
       elevation: 6,
@@ -173,41 +209,39 @@ class _NotaCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
-        onTap: () {},
+        onTap: () {
+          // Navega para a tela de detalhes, passando a matéria e a lista de notas
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => NotasDetalhesScreen(
+                materia: materia,
+                allNotes: allNotes,
+              ),
+            ),
+          );
+        },
         child: Padding(
           padding: pad,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                m.nome,
+                materia.nome,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: titleStyle,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 8),
 
-              Expanded(
-                child: DefaultTextStyle(
-                  style: bodyStyle,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Prof. ${m.professor}',
-                          maxLines: 1, overflow: TextOverflow.ellipsis),
-                      const SizedBox(height: 2),
-                      Text(m.quando, maxLines: 2, overflow: TextOverflow.ellipsis),
-                    ],
-                  ),
-                ),
-              ),
+              const Spacer(),
 
               Align(
                 alignment: Alignment.bottomRight,
                 child: Icon(
-                  Icons.bar_chart_rounded,
-                  size: iconSize,
-                  color: poliedroBlue,
+                  Icons.arrow_forward_ios_rounded,
+                  size: compact ? 18 : 22,
+                  color: poliedroBlue.withOpacity(0.8),
                 ),
               ),
             ],

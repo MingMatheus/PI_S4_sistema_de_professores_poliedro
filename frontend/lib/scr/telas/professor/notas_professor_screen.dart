@@ -545,7 +545,8 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
                           }
 
                           try {
-                            await NotaService.salvarNotasDaAtividade(
+                            final notaService = NotaService();
+                            await notaService.salvarNotasDaAtividade(
                                 atividade);
                             Navigator.pop(ctx);
                             setState(() {});

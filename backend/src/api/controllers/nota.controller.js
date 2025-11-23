@@ -56,10 +56,9 @@ exports.getTodasNotas = async (req, res) => {
       .populate("aluno", "nome ra")
       .populate({
         path: "avaliacao",
-        select: "-__v -peso",
+        select: "-__v",
         populate: {
-          path: "materia",
-          select: "nome"
+          path: "materia"
         }
       })
 
@@ -91,10 +90,9 @@ exports.getNotaById = async (req, res) => {
       .populate("aluno", "nome ra")
       .populate({
         path: "avaliacao",
-        select: "-__v -peso",
+        select: "-__v",
         populate: {
-          path: "materia",
-          select: "nome"
+          path: "materia"
         }
       })
 
@@ -177,10 +175,9 @@ exports.deleteNotaById = async (req, res) => {
       .populate("aluno", "nome ra")
       .populate({
         path: "avaliacao",
-        select: "-__v -peso",
+        select: "-__v",
         populate: {
-          path: "materia",
-          select: "nome"
+          path: "materia"
         }
       })
 
@@ -249,10 +246,9 @@ exports.getNotasByAluno = async (req, res) => {
       .select("-__v -aluno")
       .populate({
         path: "avaliacao",
-        select: "-__v -peso",
+        select: "-__v",
         populate: {
-          path: "materia",
-          select: "nome"
+          path: "materia"
         }
       })
 
@@ -288,13 +284,12 @@ exports.getMinhasNotas = async (req, res) => {
     }
 
     const notas = await Nota.find({ aluno: alunoId })
-      .select("-__v -aluno")
+      .select("-__v")
       .populate({
         path: "avaliacao",
-        select: "-__v -peso",
+        select: "-__v",
         populate: {
-          path: "materia",
-          select: "nome"
+          path: "materia"
         }
       })
 
