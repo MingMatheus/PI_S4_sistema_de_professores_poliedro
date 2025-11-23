@@ -18,10 +18,10 @@ class ProfessorTurmasScreen extends StatefulWidget {
 
 class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
   // BASE URLs (ajuste se necessário)
-  final String baseSeries = "http://localhost:8080/api/series";
-  final String baseTurmas = "http://localhost:8080/api/turmas";
-  final String baseAlunos = "http://localhost:8080/api/alunos";
-  final String baseAuthCadastroAlunos = "http://localhost:8080/api/auth/cadastro/alunos";
+  late final String baseSeries;
+  late final String baseTurmas;
+  late final String baseAlunos;
+  late final String baseAuthCadastroAlunos;
 
   Map<String, String>? headers;
 
@@ -38,8 +38,19 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
   }
 
   Future<void> _inicializaTudo() async {
+    setaURLs();
     await _configurarAutenticacao();
     carregarTudo();
+  }
+
+  void setaURLs()
+  {
+    final apiBaseUrl = getApiBaseUrl();
+
+    baseSeries = "$apiBaseUrl/api/series";
+    baseTurmas = "$apiBaseUrl/api/turmas";
+    baseAlunos = "$apiBaseUrl/api/alunos";
+    baseAuthCadastroAlunos = "$apiBaseUrl/api/auth/cadastro/alunos";
   }
 
   Future<void> _configurarAutenticacao() async {
