@@ -108,69 +108,75 @@ class _NotasScreenState extends State<NotasScreen> {
                       fontWeight: FontWeight.w700,
                       color: Colors.black.withOpacity(0.85),
                     );
+                
+                // Garante que o conteúdo ocupe no mínimo a altura da tela
+                final double minBodyHeight = c.maxHeight - pagePad.vertical;
 
                 return SingleChildScrollView(
                   padding: pagePad,
                   physics: const BouncingScrollPhysics(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Matérias', style: titleStyle),
-                      const SizedBox(height: 10),
-                      
-                      FutureBuilder<List<Nota>>(
-                        future: _notasFuture,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(32.0),
-                                child: CircularProgressIndicator(),
+                  child: Container(
+                    constraints: BoxConstraints(minHeight: minBodyHeight),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Matérias', style: titleStyle),
+                        const SizedBox(height: 10),
+                        
+                        FutureBuilder<List<Nota>>(
+                          future: _notasFuture,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(32.0),
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            }
+
+                            if (snapshot.hasError) {
+                              return Center(
+                                child: Text('Erro ao carregar as matérias.\n${snapshot.error}'),
+                              );
+                            }
+
+                            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                              return const Center(
+                                child: Text('Nenhuma matéria com nota encontrada.'),
+                              );
+                            }
+
+                            final allNotes = snapshot.data!;
+                            // Extrai a lista de matérias únicas
+                            final materiasMap = <String, Materia>{};
+                            for (var nota in allNotes) {
+                              materiasMap[nota.avaliacao.materia.id] = nota.avaliacao.materia;
+                            }
+                            final materias = materiasMap.values.toList();
+
+
+                            return GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: materias.length,
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: cross,
+                                childAspectRatio: aspect,
+                                crossAxisSpacing: hSpace,
+                                mainAxisSpacing: vSpace,
+                              ),
+                              itemBuilder: (_, i) => _NotaCard(
+                                materia: materias[i],
+                                allNotes: allNotes,
+                                compact: w < 420,
                               ),
                             );
-                          }
-
-                          if (snapshot.hasError) {
-                            return Center(
-                              child: Text('Erro ao carregar as matérias.\n${snapshot.error}'),
-                            );
-                          }
-
-                          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                            return const Center(
-                              child: Text('Nenhuma matéria com nota encontrada.'),
-                            );
-                          }
-
-                          final allNotes = snapshot.data!;
-                          // Extrai a lista de matérias únicas
-                          final materiasMap = <String, Materia>{};
-                          for (var nota in allNotes) {
-                            materiasMap[nota.avaliacao.materia.id] = nota.avaliacao.materia;
-                          }
-                          final materias = materiasMap.values.toList();
-
-
-                          return GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: materias.length,
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: cross,
-                              childAspectRatio: aspect,
-                              crossAxisSpacing: hSpace,
-                              mainAxisSpacing: vSpace,
-                            ),
-                            itemBuilder: (_, i) => _NotaCard(
-                              materia: materias[i],
-                              allNotes: allNotes,
-                              compact: w < 420,
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },

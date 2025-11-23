@@ -83,30 +83,36 @@ class MateriaisScreen extends StatelessWidget {
                     ?.copyWith(fontWeight: FontWeight.w700,
                                color: Colors.black.withOpacity(0.85));
 
+                // Garante que o conteúdo ocupe no mínimo a altura da tela
+                final double minBodyHeight = c.maxHeight - pagePad.vertical;
+
                 return SingleChildScrollView(
                   padding: pagePad,
                   physics: const BouncingScrollPhysics(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Materiais de aula', style: titleStyle),
-                      const SizedBox(height: 10),
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _materias.length,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: cross,
-                          childAspectRatio: aspect,
-                          crossAxisSpacing: hSpace,
-                          mainAxisSpacing:  vSpace,
+                  child: Container(
+                    constraints: BoxConstraints(minHeight: minBodyHeight),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Materiais de aula', style: titleStyle),
+                        const SizedBox(height: 10),
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: _materias.length,
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: cross,
+                            childAspectRatio: aspect,
+                            crossAxisSpacing: hSpace,
+                            mainAxisSpacing:  vSpace,
+                          ),
+                          itemBuilder: (_, i) => _MateriaCard(
+                            m: _materias[i],
+                            compact: w < 420, // modo compacto só no cel estreito
+                          ),
                         ),
-                        itemBuilder: (_, i) => _MateriaCard(
-                          m: _materias[i],
-                          compact: w < 420, // modo compacto só no cel estreito
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               },
