@@ -1,7 +1,10 @@
+// lib/src/screens/professor/professor_notas_screen.dart
 import 'package:flutter/material.dart';
+
 import '../../constants/app_colors.dart';
 import '../home/professor_home_screen.dart';
 import '../login/login_screen.dart';
+import '../../services/nota_service.dart';
 
 class ProfessorNotasScreen extends StatefulWidget {
   const ProfessorNotasScreen({super.key});
@@ -12,51 +15,18 @@ class ProfessorNotasScreen extends StatefulWidget {
 
 class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
   /// Estrutura:
-  /// turmas -> atividades -> notas (aluno, nota)
+  /// turmas -> atividades -> notas (alunoId, nomeAluno, nota, notaId)
+  ///
+  /// Aqui já deixo DUAS turmas criadas, mas SEM atividades e SEM notas.
+  /// O professor cria as atividades na hora pelo botão "Nova atividade".
   final List<Map<String, dynamic>> _turmas = [
     {
       'nome': '1º Ano A',
-      'atividades': [
-        {
-          'titulo': 'Prova Bimestral 1',
-          'peso': 2.0,
-          'notas': [
-            {'aluno': 'Ana Souza', 'nota': 8.5},
-            {'aluno': 'Lucas Ferreira', 'nota': 7.8},
-            {'aluno': 'Marcos Lima', 'nota': 6.5},
-          ],
-        },
-        {
-          'titulo': 'Atividade - Funções Afins',
-          'peso': 1.0,
-          'notas': [
-            {'aluno': 'Ana Souza', 'nota': 9.0},
-            {'aluno': 'Lucas Ferreira', 'nota': 8.0},
-            {'aluno': 'Marcos Lima', 'nota': 7.0},
-          ],
-        },
-      ],
+      'atividades': <Map<String, dynamic>>[],
     },
     {
       'nome': '2º Ano B',
-      'atividades': [
-        {
-          'titulo': 'Prova - Revolução Francesa',
-          'peso': 2.0,
-          'notas': [
-            {'aluno': 'Mariana Costa', 'nota': 9.2},
-            {'aluno': 'João Pedro', 'nota': 7.9},
-          ],
-        },
-        {
-          'titulo': 'Trabalho em Grupo - História',
-          'peso': 1.5,
-          'notas': [
-            {'aluno': 'Mariana Costa', 'nota': 10.0},
-            {'aluno': 'João Pedro', 'nota': 8.5},
-          ],
-        },
-      ],
+      'atividades': <Map<String, dynamic>>[],
     },
   ];
 
@@ -67,6 +37,7 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
   Future<void> _adicionarAtividade(int turmaIndex) async {
     final tituloController = TextEditingController();
     final pesoController = TextEditingController(text: '1.0');
+    final avaliacaoIdController = TextEditingController();
     String tipoSelecionado = _tipos.first;
 
     await showDialog(
@@ -88,7 +59,12 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
               DropdownButtonFormField<String>(
                 value: tipoSelecionado,
                 items: _tipos
-                    .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                    .map(
+                      (t) => DropdownMenuItem(
+                        value: t,
+                        child: Text(t),
+                      ),
+                    )
                     .toList(),
                 onChanged: (v) => tipoSelecionado = v ?? _tipos.first,
                 decoration: const InputDecoration(labelText: 'Tipo (visual)'),
@@ -103,10 +79,18 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
                   hintText: 'Ex: 1.0',
                 ),
               ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: avaliacaoIdController,
+                decoration: const InputDecoration(
+                  labelText: 'ID da Avaliação (MongoDB)',
+                  hintText: 'Ex: 664f0a... (ObjectId)',
+                ),
+              ),
               const SizedBox(height: 8),
               const Text(
-                'Depois podemos vincular automaticamente os alunos da turma.\n'
-                'Por enquanto, edite as notas direto na tabela.',
+                'No uso real, esse ID viria da avaliação selecionada em outra tela.\n'
+                'Por enquanto, você pode colar manualmente o _id da avaliação.',
                 style: TextStyle(fontSize: 11, color: Colors.grey),
               ),
             ],
@@ -123,6 +107,7 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
               final titulo = tituloController.text.trim();
               final pesoText = pesoController.text.trim().replaceAll(',', '.');
               final peso = double.tryParse(pesoText) ?? 1.0;
+              final avaliacaoId = avaliacaoIdController.text.trim();
 
               if (titulo.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -133,10 +118,20 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
                 return;
               }
 
+              if (avaliacaoId.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Informe o ID da avaliação.'),
+                  ),
+                );
+                return;
+              }
+
               setState(() {
                 (_turmas[turmaIndex]['atividades'] as List).add({
                   'titulo': titulo,
                   'peso': peso,
+                  'avaliacaoId': avaliacaoId,
                   'notas': <Map<String, dynamic>>[],
                 });
               });
@@ -151,14 +146,17 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
   }
 
   Future<void> _editarAtividade(int turmaIndex, int atividadeIndex) async {
-    final atividade = (_turmas[turmaIndex]['atividades'] as List)[atividadeIndex]
-        as Map<String, dynamic>;
+    final atividade =
+        (_turmas[turmaIndex]['atividades'] as List)[atividadeIndex]
+            as Map<String, dynamic>;
 
     final tituloController =
         TextEditingController(text: atividade['titulo'] as String? ?? '');
     final pesoController = TextEditingController(
       text: (atividade['peso'] as num?)?.toString() ?? '1.0',
     );
+    final avaliacaoIdController =
+        TextEditingController(text: atividade['avaliacaoId'] as String? ?? '');
 
     await showDialog(
       context: context,
@@ -178,6 +176,12 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
                   const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(labelText: 'Peso'),
             ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: avaliacaoIdController,
+              decoration:
+                  const InputDecoration(labelText: 'ID da Avaliação (MongoDB)'),
+            ),
           ],
         ),
         actions: [
@@ -192,12 +196,14 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
               final pesoText =
                   pesoController.text.trim().replaceAll(',', '.');
               final peso = double.tryParse(pesoText) ?? 1.0;
+              final avaliacaoId = avaliacaoIdController.text.trim();
 
-              if (titulo.isEmpty) return;
+              if (titulo.isEmpty || avaliacaoId.isEmpty) return;
 
               setState(() {
                 atividade['titulo'] = titulo;
                 atividade['peso'] = peso;
+                atividade['avaliacaoId'] = avaliacaoId;
               });
 
               Navigator.pop(context);
@@ -210,8 +216,9 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
   }
 
   Future<void> _removerAtividade(int turmaIndex, int atividadeIndex) async {
-    final atividade = (_turmas[turmaIndex]['atividades'] as List)[atividadeIndex]
-        as Map<String, dynamic>;
+    final atividade =
+        (_turmas[turmaIndex]['atividades'] as List)[atividadeIndex]
+            as Map<String, dynamic>;
     final titulo = atividade['titulo'] as String? ?? '';
 
     final confirmar = await showDialog<bool>(
@@ -219,7 +226,7 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
       builder: (_) => AlertDialog(
         title: const Text('Excluir atividade'),
         content: Text(
-          'Deseja excluir "$titulo" e todas as notas associadas?',
+          'Deseja excluir "$titulo" e todas as notas associadas (no front)?',
         ),
         actions: [
           TextButton(
@@ -270,16 +277,15 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
             left: isMobile ? 10 : 16,
             right: isMobile ? 10 : 16,
             top: 14,
-            bottom: (isMobile ? 10 : 16) +
-                MediaQuery.of(ctx).viewInsets.bottom,
+            bottom:
+                (isMobile ? 10 : 16) + MediaQuery.of(ctx).viewInsets.bottom,
           ),
           child: StatefulBuilder(
             builder: (ctx, setModalState) {
               return ConstrainedBox(
                 constraints: BoxConstraints(
-                  maxHeight: isMobile
-                      ? size.height * 0.85
-                      : size.height * 0.75,
+                  maxHeight:
+                      isMobile ? size.height * 0.85 : size.height * 0.75,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,8 +307,7 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
                                 ),
                               ),
                               Text(
-                                atividade['titulo'] as String? ??
-                                    'Atividade',
+                                atividade['titulo'] as String? ?? 'Atividade',
                                 style: TextStyle(
                                   fontSize: isMobile ? 16 : 18,
                                   fontWeight: FontWeight.bold,
@@ -363,6 +368,14 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'ID da Avaliação: ${atividade['avaliacaoId'] ?? ''}',
+                      style: TextStyle(
+                        fontSize: isMobile ? 10 : 11,
+                        color: Colors.grey[700],
+                      ),
+                    ),
                     const SizedBox(height: 12),
 
                     // Tabela
@@ -419,7 +432,8 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
                                 padding: const EdgeInsets.all(16),
                                 child: Text(
                                   'Nenhum aluno cadastrado para esta atividade.\n'
-                                  'No futuro isso virá da turma automaticamente.',
+                                  'No uso real, essa lista virá da turma/avaliação do backend\n'
+                                  'com alunoId, nome e nota atual.',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: isMobile ? 11 : 12,
@@ -435,10 +449,9 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
                                     final linha =
                                         notas[i] as Map<String, dynamic>;
                                     final nome =
-                                        linha['aluno']?.toString() ?? '';
+                                        linha['nomeAluno']?.toString() ?? '';
                                     final notaAtual =
-                                        (linha['nota'] as num?)
-                                                ?.toString() ??
+                                        (linha['nota'] as num?)?.toString() ??
                                             '';
 
                                     return Container(
@@ -515,15 +528,41 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: poliedroBlue,
                         ),
-                        onPressed: () {
-                          Navigator.pop(ctx);
-                          setState(() {});
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  'Notas salvas para esta atividade.'),
-                            ),
-                          );
+                        onPressed: () async {
+                          final avaliacaoId =
+                              (atividade['avaliacaoId'] as String?) ?? '';
+
+                          if (avaliacaoId.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Esta atividade está sem avaliacaoId.\n'
+                                  'Edite a atividade e preencha o ID da Avaliação.',
+                                ),
+                              ),
+                            );
+                            return;
+                          }
+
+                          try {
+                            await NotaService.salvarNotasDaAtividade(
+                                atividade);
+                            Navigator.pop(ctx);
+                            setState(() {});
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text('Notas salvas no servidor.'),
+                              ),
+                            );
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content:
+                                    Text('Erro ao salvar notas: $e'),
+                              ),
+                            );
+                          }
                         },
                         icon: const Icon(Icons.save_outlined),
                         label: Text(
