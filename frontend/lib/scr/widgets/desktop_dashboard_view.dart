@@ -19,38 +19,40 @@ class DesktopDashboardView extends StatelessWidget {
       builder: (context, constraints) {
         final w = constraints.maxWidth;
 
-        // escala leve
         double scale = 1.0;
         if (w < 1366) scale = 0.96;
         if (w < 1180) scale = 0.90;
 
-        // gutters e gap
         const double outerGutterH = 0;
         const double outerGutterTop = 8;
         const double outerGutterBottom = 12;
         const double gap = 8.0;
 
-        // proporções
         final double rightWidth = (w * 0.30).clamp(360.0, 520.0);
         final double leftWidth = w - rightWidth - gap;
 
-        // altura de avisos (pra alinhar melhor com Materiais)
         final double avisosMinHeight = w < 1366 ? 600 : 560;
 
-        // COLUNA ESQUERDA (Notas em cima, Materiais embaixo)
+        // COLUNA ESQUERDA (Notas e Materiais)
         final leftBlock = SizedBox(
           width: leftWidth,
-          child: const Column(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _CappedHeight(child: NotasCard()),
-              SizedBox(height: gap),
-              MateriaisCard(),
+              const _CappedHeight(child: NotasCard()),
+              const SizedBox(height: gap),
+
+              //  Materiais clicável
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onSectionTap(1),
+                child: const MateriaisCard(),
+              ),
             ],
           ),
         );
 
-        // COLUNA DIREITA – Avisos (CLICÁVEL AGORA)
+        // COLUNA DIREITA — Avisos já clicável
         final rightBlock = SizedBox(
           width: rightWidth,
           child: Padding(
@@ -59,7 +61,7 @@ class DesktopDashboardView extends StatelessWidget {
               constraints: BoxConstraints(minHeight: avisosMinHeight),
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () => onSectionTap(3), //  vai para Avisos
+                onTap: () => onSectionTap(3),
                 child: const AvisosCard(),
               ),
             ),
@@ -78,7 +80,6 @@ class DesktopDashboardView extends StatelessWidget {
                 constraints: BoxConstraints(minWidth: w),
                 child: Stack(
                   children: [
-                    // base das colunas
                     SizedBox(
                       width: w,
                       child: Row(
@@ -90,8 +91,6 @@ class DesktopDashboardView extends StatelessWidget {
                         ],
                       ),
                     ),
-
-                    // avisos colado na direita
                     Positioned(
                       top: 0,
                       right: 0,

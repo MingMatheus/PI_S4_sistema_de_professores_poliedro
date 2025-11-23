@@ -3,7 +3,7 @@ import 'dashboard/materiais_card.dart';
 import 'dashboard/notas_card.dart';
 import 'dashboard/avisos_card.dart';
 
-/// Dashboard MOBILE (Mensagens removido)
+/// Dashboard MOBILE
 /// 1) Materiais de aula
 /// 2) Notas e Médias
 /// 3) Últimos avisos
@@ -29,13 +29,19 @@ class HomeDashboardView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const MateriaisCard(),
+              //  Materiais clicável
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onSectionTap(1),
+                child: const MateriaisCard(),
+              ),
               const SizedBox(height: 12),
 
+              // Notas (ainda não clicável)
               const NotasCard(),
               const SizedBox(height: 12),
 
-              //  card Avisos clicável (leva para aba 3)
+              // Avisos (clicável)
               GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => onSectionTap(3),
