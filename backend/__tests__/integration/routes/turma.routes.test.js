@@ -55,7 +55,7 @@ afterEach(() => {
 
 describe("Rotas de relacionadas a turmas", () => {
   // 1. Testes relacionados ao cadastro de turmas
-  describe("POST /turmas", () => {
+  describe("POST /api/turmas", () => {
     let profToken, alunoToken, turmaValida
 
     // Cria um professor antes dos testes de cadastro de turmas, pq o cadastro de turmas necessita de uma professor logado
@@ -97,7 +97,7 @@ describe("Rotas de relacionadas a turmas", () => {
 
       // 2. Act
       const response = await request(app)
-        .post("/turmas")
+        .post("/api/turmas")
         // .set("Authorization", `Bearer ${profToken}`)
         .send(turmaValida)
 
@@ -112,7 +112,7 @@ describe("Rotas de relacionadas a turmas", () => {
 
       // 2. Act
       const response = await request(app)
-        .post("/turmas")
+        .post("/api/turmas")
         .set("Authorization", `${profToken}`)
         .send(turmaValida)
 
@@ -130,7 +130,7 @@ describe("Rotas de relacionadas a turmas", () => {
 
       // 2. Act
       const response = await request(app)
-        .post("/turmas")
+        .post("/api/turmas")
         .set("Authorization", `Bearer ${tokenExpirado}`)
         .send(turmaValida)
 
@@ -147,7 +147,7 @@ describe("Rotas de relacionadas a turmas", () => {
 
       // 2. Act
       const response = await request(app)
-        .post("/turmas")
+        .post("/api/turmas")
         .set("Authorization", `Bearer ${tokenInvalido}`)
         .send(turmaValida)
 
@@ -163,7 +163,7 @@ describe("Rotas de relacionadas a turmas", () => {
 
       // 2. Act
       const response = await request(app)
-        .post("/turmas")
+        .post("/api/turmas")
         .set("Authorization", `Bearer ${alunoToken}`)
         .send(turmaValida)
 
@@ -178,7 +178,7 @@ describe("Rotas de relacionadas a turmas", () => {
 
       // 2. Act
       const response = await request(app)
-        .post("/turmas")
+        .post("/api/turmas")
         .set("Authorization", `Bearer ${profToken}`)
         .send(turmaValida)
 
@@ -200,13 +200,13 @@ describe("Rotas de relacionadas a turmas", () => {
       }
 
       await request(app)
-        .post("/turmas")
+        .post("/api/turmas")
         .set("Authorization", `Bearer ${profToken}`)
         .send(turmaValida)
 
       // 2. Act
       const response = await request(app)
-        .post("/turmas")
+        .post("/api/turmas")
         .set("Authorization", `Bearer ${profToken}`)
         .send(turmaJaCadastrada)
 
@@ -222,7 +222,7 @@ describe("Rotas de relacionadas a turmas", () => {
 
       // 2. Act
       const response = await request(app)
-        .post("/turmas")
+        .post("/api/turmas")
         .set("Authorization", `Bearer ${profToken}`)
         .send(turmaSemNome)
 

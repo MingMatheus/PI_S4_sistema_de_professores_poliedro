@@ -52,7 +52,7 @@ afterEach(() => {
 
 describe("Rotas de autenticação", () => {
   // 1. Testes relacionados ao cadastro de alunos
-  describe("POST /auth/cadastro/alunos", () => {
+  describe("POST /api/auth/cadastro/alunos", () => {
     let profToken, alunoToken
 
     // Cria um professor antes dos testes de cadastro de alunos, pq o cadastro de alunos necessita de uma professor logado
@@ -93,7 +93,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act (Agir) - Faz a requisição para a API
       const response = await request(app)
-        .post('/auth/cadastro/alunos')
+        .post('/api/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`) // Adiciona o token de autenticação
         .send(novoAluno); // Envia os dados do novo aluno no corpo da requisição
 
@@ -119,7 +119,7 @@ describe("Rotas de autenticação", () => {
 
       // Act
       const response = await request(app)
-        .post('/auth/cadastro/alunos')
+        .post('/api/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno);
 
@@ -140,7 +140,7 @@ describe("Rotas de autenticação", () => {
 
       // Act
       const response = await request(app)
-        .post('/auth/cadastro/alunos')
+        .post('/api/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno);
 
@@ -168,13 +168,13 @@ describe("Rotas de autenticação", () => {
 
       // Cadastra o primeiro aluno
       await request(app)
-        .post('/auth/cadastro/alunos')
+        .post('/api/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno1)
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/alunos')
+        .post('/api/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno2);
 
@@ -202,13 +202,13 @@ describe("Rotas de autenticação", () => {
 
       // Cadastra o primeiro aluno
       await request(app)
-        .post('/auth/cadastro/alunos')
+        .post('/api/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno1)
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/alunos')
+        .post('/api/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno2);
 
@@ -229,7 +229,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/alunos')
+        .post('/api/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno);
 
@@ -250,7 +250,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/alunos')
+        .post('/api/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno);
 
@@ -271,7 +271,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/alunos')
+        .post('/api/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno);
 
@@ -292,7 +292,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/alunos')
+        .post('/api/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno);
 
@@ -313,7 +313,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/alunos')
+        .post('/api/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${profToken}`)
         .send(aluno);
 
@@ -334,7 +334,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/alunos')
+        .post('/api/auth/cadastro/alunos')
         // .set('Authorization', `Bearer ${profToken}`)
         .send(aluno);
 
@@ -355,7 +355,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/alunos')
+        .post('/api/auth/cadastro/alunos')
         .set('Authorization', `${profToken}`)
         .send(aluno);
 
@@ -388,7 +388,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/alunos')
+        .post('/api/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${tokenExpirado}`)
         .send(aluno);
 
@@ -420,7 +420,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/alunos')
+        .post('/api/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${tokenInvalido}`)
         .send(aluno);
 
@@ -442,7 +442,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/alunos')
+        .post('/api/auth/cadastro/alunos')
         .set('Authorization', `Bearer ${alunoToken}`)
         .send(aluno);
 
@@ -453,7 +453,7 @@ describe("Rotas de autenticação", () => {
   })
 
   // 2. Testes relacionados ao cadastro de professores
-  describe("POST /auth/cadastro/professores", () => {
+  describe("POST /api/auth/cadastro/professores", () => {
     let profToken, alunoToken
 
     // Cria um professor antes dos testes de cadastro de professores, pq o cadastro de professores necessita de uma professor logado
@@ -491,7 +491,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act (Agir) - Faz a requisição para a API
       const response = await request(app)
-        .post("/auth/cadastro/professores")
+        .post("/api/auth/cadastro/professores")
         .set("Authorization", `Bearer ${profToken}`) // Adiciona o token de autenticação
         .send(novoProfessor); // Envia os dados do novo aluno no corpo da requisição
 
@@ -522,13 +522,13 @@ describe("Rotas de autenticação", () => {
 
       // Cadastra o primeiro professor
       await request(app)
-        .post('/auth/cadastro/professores')
+        .post('/api/auth/cadastro/professores')
         .set('Authorization', `Bearer ${profToken}`)
         .send(professor1)
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/professores')
+        .post('/api/auth/cadastro/professores')
         .set('Authorization', `Bearer ${profToken}`)
         .send(professor2);
 
@@ -548,7 +548,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/professores')
+        .post('/api/auth/cadastro/professores')
         .set('Authorization', `Bearer ${profToken}`)
         .send(professor);
 
@@ -568,7 +568,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/professores')
+        .post('/api/auth/cadastro/professores')
         .set('Authorization', `Bearer ${profToken}`)
         .send(professor);
 
@@ -588,7 +588,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/professores')
+        .post('/api/auth/cadastro/professores')
         .set('Authorization', `Bearer ${profToken}`)
         .send(professor);
 
@@ -608,7 +608,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/professores')
+        .post('/api/auth/cadastro/professores')
         .set('Authorization', `Bearer ${profToken}`)
         .send(professor);
 
@@ -628,7 +628,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/professores')
+        .post('/api/auth/cadastro/professores')
         .set('Authorization', `Bearer ${profToken}`)
         .send(professor);
 
@@ -648,7 +648,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/professores')
+        .post('/api/auth/cadastro/professores')
         .set('Authorization', `Bearer ${profToken}`)
         .send(professor);
 
@@ -668,7 +668,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/professores')
+        .post('/api/auth/cadastro/professores')
         // .set('Authorization', `Bearer ${profToken}`)
         .send(professor);
 
@@ -688,7 +688,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/professores')
+        .post('/api/auth/cadastro/professores')
         .set('Authorization', `${profToken}`)
         .send(professor);
 
@@ -720,7 +720,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/professores')
+        .post('/api/auth/cadastro/professores')
         .set('Authorization', `Bearer ${tokenExpirado}`)
         .send(professor);
 
@@ -751,7 +751,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/professores')
+        .post('/api/auth/cadastro/professores')
         .set('Authorization', `Bearer ${tokenInvalido}`)
         .send(professor);
 
@@ -772,7 +772,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-        .post('/auth/cadastro/professores')
+        .post('/api/auth/cadastro/professores')
         .set('Authorization', `Bearer ${alunoToken}`)
         .send(professor);
 
@@ -812,7 +812,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-      .post("/auth/login")
+      .post("/api/auth/login")
       .send(aluno)
 
       // 3. Assert
@@ -838,7 +838,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-      .post("/auth/login")
+      .post("/api/auth/login")
       .send(professor)
 
       // 3. Assert
@@ -864,7 +864,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-      .post("/auth/login")
+      .post("/api/auth/login")
       .send(professor)
 
       // 3. Assert
@@ -882,7 +882,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-      .post("/auth/login")
+      .post("/api/auth/login")
       .send(professor)
 
       // 3. Assert
@@ -900,7 +900,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-      .post("/auth/login")
+      .post("/api/auth/login")
       .send(professor)
 
       // 3. Assert
@@ -918,7 +918,7 @@ describe("Rotas de autenticação", () => {
 
       // 2. Act
       const response = await request(app)
-      .post("/auth/login")
+      .post("/api/auth/login")
       .send(professor)
 
       // 3. Assert

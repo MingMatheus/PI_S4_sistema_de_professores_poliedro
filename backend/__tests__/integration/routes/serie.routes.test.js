@@ -55,7 +55,7 @@ afterEach(() => {
 
 describe("Rotas de relacionadas a series", () => {
   // 1. Testes relacionados ao cadastro de series
-  describe("POST /series", () => {
+  describe("POST /api/series", () => {
     let profToken, alunoToken, serieValida
 
     // Cria um professor antes dos testes de cadastro de séries, pq o cadastro de séries necessita de uma professor logado
@@ -97,7 +97,7 @@ describe("Rotas de relacionadas a series", () => {
 
       // 2. Act
       const response = await request(app)
-        .post("/series")
+        .post("/api/series")
         // .set("Authorization", `Bearer ${profToken}`)
         .send(serieValida)
 
@@ -112,7 +112,7 @@ describe("Rotas de relacionadas a series", () => {
 
       // 2. Act
       const response = await request(app)
-        .post("/series")
+        .post("/api/series")
         .set("Authorization", `${profToken}`)
         .send(serieValida)
 
@@ -130,7 +130,7 @@ describe("Rotas de relacionadas a series", () => {
 
       // 2. Act
       const response = await request(app)
-        .post("/series")
+        .post("/api/series")
         .set("Authorization", `Bearer ${tokenExpirado}`)
         .send(serieValida)
 
@@ -147,7 +147,7 @@ describe("Rotas de relacionadas a series", () => {
 
       // 2. Act
       const response = await request(app)
-        .post("/series")
+        .post("/api/series")
         .set("Authorization", `Bearer ${tokenInvalido}`)
         .send(serieValida)
 
@@ -163,7 +163,7 @@ describe("Rotas de relacionadas a series", () => {
 
       // 2. Act
       const response = await request(app)
-        .post("/series")
+        .post("/api/series")
         .set("Authorization", `Bearer ${alunoToken}`)
         .send(serieValida)
 
@@ -178,7 +178,7 @@ describe("Rotas de relacionadas a series", () => {
 
       // 2. Act
       const response = await request(app)
-        .post("/series")
+        .post("/api/series")
         .set("Authorization", `Bearer ${profToken}`)
         .send(serieValida)
 
@@ -200,13 +200,13 @@ describe("Rotas de relacionadas a series", () => {
       }
 
       await request(app)
-        .post("/series")
+        .post("/api/series")
         .set("Authorization", `Bearer ${profToken}`)
         .send(serieValida)
 
       // 2. Act
       const response = await request(app)
-        .post("/series")
+        .post("/api/series")
         .set("Authorization", `Bearer ${profToken}`)
         .send(serieJaCadastrada)
 
@@ -222,7 +222,7 @@ describe("Rotas de relacionadas a series", () => {
 
       // 2. Act
       const response = await request(app)
-        .post("/series")
+        .post("/api/series")
         .set("Authorization", `Bearer ${profToken}`)
         .send(serieSemNome)
 
