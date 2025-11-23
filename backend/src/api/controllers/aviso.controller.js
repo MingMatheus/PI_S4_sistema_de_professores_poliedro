@@ -1,5 +1,6 @@
 const mongoose = require("mongoose")
 const Aviso = require("../../models/Aviso.model")
+const Aluno = require("../../models/Aluno.model")
 
 const {
   MONGOOSE_VALIDATION_ERROR
@@ -12,7 +13,8 @@ const {
 const {
   AVISO,
   ERRO,
-  AUTH
+  AUTH,
+  ALUNO
 } = require("../../constants/responseMessages.constants")
 
 exports.createAviso = async (req, res) => {
@@ -138,7 +140,7 @@ exports.updateAvisoById = async (req, res) => {
   }
 }
 
-exports.deleteAvisoById = async (req, res) => {
+exports.deleteAvisoById = async (req, res) => { 
   try
   {
     const {id} = req.params
@@ -162,6 +164,65 @@ exports.deleteAvisoById = async (req, res) => {
     res.status(200).json({
       mensagem: AVISO.DELETADO_COM_SUCESSO,
       aviso: avisoDeletado
+    })
+  }
+  catch(error)
+  {
+    return res.status(500).json({mensagem: ERRO.ERRO_INTERNO_NO_SERVIDOR})
+  }
+}
+
+exports.getMeusAvisos = async (req, res) => {
+  try
+  {
+    const userId = req.user.sub
+    const userRole = req.user.role
+
+    if(!userId)
+      return res.status(400).json({mensagem: AUTH.TOKEN_NAO_ENCONTRADO})
+
+    if(!mongoose.Types.ObjectId.isValid(userId))
+      return res.status(400).json({mensagem: AUTH.TOKEN_INVALIDO})
+
+    let avisos = []
+
+    if(userRole === ROLES.ALUNO)
+    {
+      const aluno = await Aluno.findById(userId).select("turma -_id").populate("turma", "serie")
+      if(!aluno)
+        return res.status(404).json({mensagem: ALUNO.NAO_ENCONTRADO})
+
+      const orConditions = [{ alunosAlvo: userId }]
+
+      if (aluno.turma) {
+        orConditions.push({ turmasAlvo: aluno.turma._id })
+        if (aluno.turma.serie) {
+          orConditions.push({ seriesAlvo: aluno.turma.serie })
+        }
+      }
+
+      const query = { $or: orConditions }
+
+      avisos = await Aviso
+        .find(query)
+        .sort({createdAt: -1})
+        .select("-__v -seriesAlvo -turmasAlvo -alunosAlvo")
+        .populate("autor", "nome -_id")
+    }
+    else if(userRole === ROLES.PROFESSOR)
+    {
+      const query = { autor: userId }
+      avisos = await Aviso.find(query)
+      .sort({ createdAt: -1 })
+      .select("-__v -autor")
+      .populate("seriesAlvo", "nome")
+      .populate("turmasAlvo", "nome")
+      .populate("alunosAlvo", "nome")
+    }
+
+    res.status(200).json({
+      mensagem: AVISO.MEUS_AVISOS_ENCONTRADOS,
+      avisos: avisos
     })
   }
   catch(error)

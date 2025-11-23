@@ -12,6 +12,11 @@ const {
 // Rotas públicas
 
 // Rotas protegidas
+router.get(
+  "/meus",
+  authMiddleware,
+  avisoController.getMeusAvisos
+)
 
 // Rotas restritas
 router.post(

@@ -215,7 +215,8 @@ const RESPONSE_MESSAGES = {
     ATUALIZADO_COM_SUCESSO: "Aviso atualizado com sucesso",
     DELETADO_COM_SUCESSO: "Aviso deletado com sucesso",
     ID_NAO_FORNECIDO: "O id do aviso não foi fornecido",
-    ID_FORNECIDO_INVALIDO: "O id fornecido do aviso é inválido"
+    ID_FORNECIDO_INVALIDO: "O id fornecido do aviso é inválido",
+    MEUS_AVISOS_ENCONTRADOS: "Seus avisos foram encontrados com sucesso"
   }
 }
 
