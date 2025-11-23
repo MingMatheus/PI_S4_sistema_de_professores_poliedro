@@ -8,7 +8,7 @@ import '../login/login_screen.dart';
 // telas
 import 'materiais_screen.dart';
 import 'notas_screen.dart';
-import 'avisos_screen.dart'; // ✅ Avisos
+import 'avisos_screen.dart'; // Avisos
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -30,12 +30,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width >= 720;
 
-    // ✅ páginas das abas
+    // páginas das abas (DESKTOP)
     final List<Widget> pages = [
-      const DesktopDashboardView(), // 0 Início
-      const MateriaisScreen(),      // 1 Materiais
-      const NotasScreen(),          // 2 Notas
-      const AvisosScreen(),         // 3 Avisos
+      DesktopDashboardView(
+        onSectionTap: _onItemTapped, // <- home com cards clicáveis
+      ),                              // 0 Início
+      const MateriaisScreen(),        // 1 Materiais
+      const NotasScreen(),            // 2 Notas
+      const AvisosScreen(),           // 3 Avisos
     ];
 
     final int safeIndex = _selectedIndex.clamp(0, pages.length - 1);
@@ -52,11 +54,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Scaffold _buildMobileLayout(int safeIndex) {
+    // páginas das abas (MOBILE)
     final List<Widget> mobileWidgetOptions = [
-      const HomeDashboardView(), // 0 Início
-      const MateriaisScreen(),   // 1 Materiais
-      const NotasScreen(),       // 2 Notas
-      const AvisosScreen(),      // 3 Avisos
+      HomeDashboardView(
+        onSectionTap: _onItemTapped, // <- home com cards clicáveis
+      ),                              // 0 Início
+      const MateriaisScreen(),        // 1 Materiais
+      const NotasScreen(),            // 2 Notas
+      const AvisosScreen(),           // 3 Avisos
     ];
 
     return Scaffold(
@@ -90,27 +95,29 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: _onItemTapped,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(_selectedIndex == 0
-                ? Icons.home
-                : Icons.home_outlined),
+            icon: Icon(
+              _selectedIndex == 0 ? Icons.home : Icons.home_outlined,
+            ),
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(_selectedIndex == 1
-                ? Icons.folder
-                : Icons.folder_outlined),
+            icon: Icon(
+              _selectedIndex == 1 ? Icons.folder : Icons.folder_outlined,
+            ),
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(_selectedIndex == 2
-                ? Icons.bar_chart
-                : Icons.bar_chart_outlined),
+            icon: Icon(
+              _selectedIndex == 2 ? Icons.bar_chart : Icons.bar_chart_outlined,
+            ),
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(_selectedIndex == 3
-                ? Icons.notifications
-                : Icons.notifications_none_outlined),
+            icon: Icon(
+              _selectedIndex == 3
+                  ? Icons.notifications
+                  : Icons.notifications_none_outlined,
+            ),
             label: '',
           ),
         ],

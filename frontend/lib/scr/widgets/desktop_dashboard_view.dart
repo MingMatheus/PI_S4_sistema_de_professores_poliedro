@@ -4,7 +4,14 @@ import 'dashboard/materiais_card.dart';
 import 'dashboard/avisos_card.dart';
 
 class DesktopDashboardView extends StatelessWidget {
-  const DesktopDashboardView({super.key});
+  const DesktopDashboardView({
+    super.key,
+    required this.onSectionTap,
+  });
+
+  /// callback para mudar a aba no HomeScreen
+  /// 1 = Materiais, 2 = Notas, 3 = Avisos
+  final void Function(int index) onSectionTap;
 
   @override
   Widget build(BuildContext context) {
@@ -30,12 +37,12 @@ class DesktopDashboardView extends StatelessWidget {
         // altura de avisos (pra alinhar melhor com Materiais)
         final double avisosMinHeight = w < 1366 ? 600 : 560;
 
-        // COLUNA ESQUERDA (sem Mensagens): Notas em cima, Materiais embaixo
+        // COLUNA ESQUERDA (Notas em cima, Materiais embaixo)
         final leftBlock = SizedBox(
           width: leftWidth,
-          child: Column(
+          child: const Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: const [
+            children: [
               _CappedHeight(child: NotasCard()),
               SizedBox(height: gap),
               MateriaisCard(),
@@ -43,14 +50,18 @@ class DesktopDashboardView extends StatelessWidget {
           ),
         );
 
-        // COLUNA DIREITA: Últimos avisos
+        // COLUNA DIREITA – Avisos (CLICÁVEL AGORA)
         final rightBlock = SizedBox(
           width: rightWidth,
           child: Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: avisosMinHeight),
-              child: const AvisosCard(),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onSectionTap(3), //  vai para Avisos
+                child: const AvisosCard(),
+              ),
             ),
           ),
         );
@@ -79,6 +90,7 @@ class DesktopDashboardView extends StatelessWidget {
                         ],
                       ),
                     ),
+
                     // avisos colado na direita
                     Positioned(
                       top: 0,
