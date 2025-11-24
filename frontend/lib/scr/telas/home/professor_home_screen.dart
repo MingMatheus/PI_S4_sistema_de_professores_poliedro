@@ -7,6 +7,7 @@ import '../../widgets/professor/materiais_card.dart';
 import '../../widgets/professor/atividades_card.dart';
 import '../../widgets/professor/notas_card.dart';
 import '../../widgets/professor/avisos_card.dart';
+import '../../widgets/professor/criar_materiais_card.dart';
 
 class ProfessorHomeScreen extends StatelessWidget {
   const ProfessorHomeScreen({super.key});
@@ -81,6 +82,7 @@ class ProfessorHomeScreen extends StatelessWidget {
                       ProfessorAtividadesCard(),
                       ProfessorNotasCard(),
                       ProfessorAvisosCard(),
+                      ProfessorCriarMateriaisCard(),
                     ],
                   ),
                 ),
@@ -163,6 +165,8 @@ class ProfessorHomeScreen extends StatelessWidget {
                 ProfessorNotasCard(),
                 SizedBox(height: 10),
                 ProfessorAvisosCard(),
+                SizedBox(height: 10),
+                ProfessorCriarMateriaisCard(),
               ],
             ),
           ),
