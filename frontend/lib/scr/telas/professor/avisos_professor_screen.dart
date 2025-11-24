@@ -143,16 +143,10 @@ class _ProfessorAvisosScreenState extends State<ProfessorAvisosScreen> {
     Set<String> selectedAlunos = {};
 
     if (isEditing) {
-      // Robust mapping to handle both String IDs and and Maps from the Aviso model
-      selectedSeries = (aviso!.seriesAlvo.map((e) {
-        return e is String ? e : e['_id'] as String;
-      }).toSet() as Set<String>);
-      selectedTurmas = (aviso!.turmasAlvo.map((e) {
-        return e is String ? e : e['_id'] as String;
-      }).toSet() as Set<String>);
-      selectedAlunos = (aviso!.alunosAlvo.map((e) {
-        return e is String ? e : e['_id'] as String;
-      }).toSet() as Set<String>);
+      // The Aviso model now guarantees ...Alvo is always List<Map<String, dynamic>>
+      selectedSeries = aviso!.seriesAlvo.map<String>((e) => e['_id'] as String).toSet();
+      selectedTurmas = aviso!.turmasAlvo.map<String>((e) => e['_id'] as String).toSet();
+      selectedAlunos = aviso!.alunosAlvo.map<String>((e) => e['_id'] as String).toSet();
     }
 
     final formKey = GlobalKey<FormState>();
