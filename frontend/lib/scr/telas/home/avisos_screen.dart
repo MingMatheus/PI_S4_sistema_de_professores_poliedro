@@ -1,27 +1,43 @@
 import 'package:flutter/material.dart';
-import '../../constants/app_colors.dart';
+import 'package:intl/intl.dart';
 
-class AvisosScreen extends StatelessWidget {
+import '../../constants/app_colors.dart';
+import '../../models/aviso.dart';
+import '../../services/aviso_service.dart';
+import 'aviso_detalhes_screen.dart';
+
+class AvisosScreen extends StatefulWidget {
   const AvisosScreen({super.key});
+
+  @override
+  State<AvisosScreen> createState() => _AvisosScreenState();
+}
+
+class _AvisosScreenState extends State<AvisosScreen> {
+  late Future<List<Aviso>> _avisosFuture;
+  final _avisoService = AvisoService();
+
+  @override
+  void initState() {
+    super.initState();
+    _avisosFuture = _avisoService.getMeusAvisos();
+  }
 
   @override
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
 
-    // === Fundo diagonal ===
-    final bool isWide        = w >= 1200;            // desktop/notebook
-    final bool isPhoneNarrow = w < 420;              // celulares estreitos
-    final double imgScale    = isWide ? 1.32 : (isPhoneNarrow ? 1.42 : 1.12);
-    final double imgOffsetY  = isWide ? 0 : (isPhoneNarrow ? 5 : -10);
-    final double imgOffsetX  = 0.0;
-
+    // Fundo diagonal
+    final bool isWide = w >= 1200;
+    final bool isPhoneNarrow = w < 420;
+    final double imgScale = isWide ? 1.32 : (isPhoneNarrow ? 1.42 : 1.12);
+    final double imgOffsetY = isWide ? 0 : (isPhoneNarrow ? 5 : -10);
     const bg = Color(0xFFF2F4F7);
 
     return Container(
       color: bg,
       child: Stack(
         children: [
-          //  fundo (ancorado no canto inferior-direito)
           Positioned.fill(
             child: IgnorePointer(
               child: Align(
@@ -30,15 +46,12 @@ class AvisosScreen extends StatelessWidget {
                   minWidth: 0, minHeight: 0,
                   maxWidth: double.infinity, maxHeight: double.infinity,
                   alignment: Alignment.bottomRight,
-                  child: Transform.translate(
-                    offset: Offset(imgOffsetX, imgOffsetY),
-                    child: Transform.scale(
-                      scale: imgScale,
-                      alignment: Alignment.bottomRight,
-                      child: Image.asset(
-                        'assets/images/poliedro_diagonal.png',
-                        filterQuality: FilterQuality.medium,
-                      ),
+                  child: Transform.scale(
+                    scale: imgScale,
+                    alignment: Alignment.bottomRight,
+                    child: Image.asset(
+                      'assets/images/poliedro_diagonal.png',
+                      filterQuality: FilterQuality.medium,
                     ),
                   ),
                 ),
@@ -52,8 +65,6 @@ class AvisosScreen extends StatelessWidget {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final cw = constraints.maxWidth;
-
-                // paddings iguais aos da Notas
                 EdgeInsets pagePad = const EdgeInsets.fromLTRB(24, 18, 24, 28);
                 double vSpace = 12;
                 if (cw < 740 && cw >= 420) {
@@ -69,33 +80,47 @@ class AvisosScreen extends StatelessWidget {
                       color: Colors.black.withOpacity(0.85),
                     );
 
-                // FIX: garante altura mínima = viewport
-                final double minBodyHeight =
-                    constraints.maxHeight - pagePad.vertical;
-
-                return SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: pagePad,
-                  child: Container(
-                    constraints: BoxConstraints(minHeight: minBodyHeight),
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    setState(() {
+                      _avisosFuture = _avisoService.getMeusAvisos();
+                    });
+                  },
+                  child: Padding(
+                    padding: pagePad,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Avisos', style: titleStyle),
                         const SizedBox(height: 10),
-
-                        ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: _avisos.length,
-                          separatorBuilder: (_, __) => SizedBox(height: vSpace),
-                          itemBuilder: (_, i) => _AvisoCard(
-                            aviso: _avisos[i],
-                            compact: cw < 420,
+                        Expanded(
+                          child: FutureBuilder<List<Aviso>>(
+                            future: _avisosFuture,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const Center(child: CircularProgressIndicator());
+                              }
+                              if (snapshot.hasError) {
+                                return Center(child: Text('Erro ao carregar avisos: ${snapshot.error}'));
+                              }
+                              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                                return const Center(child: Text('Nenhum aviso encontrado.'));
+                              }
+                              
+                              final avisos = snapshot.data!;
+                              
+                              return ListView.separated(
+                                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                                itemCount: avisos.length,
+                                separatorBuilder: (_, __) => SizedBox(height: vSpace),
+                                itemBuilder: (_, i) => _AvisoCard(
+                                  aviso: avisos[i],
+                                  compact: cw < 420,
+                                ),
+                              );
+                            },
                           ),
                         ),
-
-                        // respiro pra não encostar no bottom bar
                         const SizedBox(height: 8),
                       ],
                     ),
@@ -110,54 +135,9 @@ class AvisosScreen extends StatelessWidget {
   }
 }
 
-// ===== dados =====
-class _Aviso {
-  final String titulo;
-  final String corpo;
-  final String quando;
-  final bool lido; // false = não lido (preto) | true = lido (azul)
-  const _Aviso({
-    required this.titulo,
-    required this.corpo,
-    required this.quando,
-    required this.lido,
-  });
-}
-
-const _avisos = <_Aviso>[
-  _Aviso(
-    titulo: 'Prof. Silva — Física',
-    corpo:
-        'Olá João. Recebi seu trabalho e gostei muito da sua análise. Continue assim!',
-    quando: 'Hoje — 15:20',
-    lido: false,
-  ),
-  _Aviso(
-    titulo: 'Prof. Marina — Matemática',
-    corpo:
-        'Corrigi sua lista. Você melhorou muito nas últimas atividades, continue praticando!',
-    quando: 'Ontem — 18:45',
-    lido: false,
-  ),
-  _Aviso(
-    titulo: 'Prof. Lucas — Química',
-    corpo:
-        'Ótimo desempenho no laboratório, sua explicação das ligações covalentes foi ótima.',
-    quando: 'Ontem — 09:10',
-    lido: true,
-  ),
-  _Aviso(
-    titulo: 'Coordenação — Poliedro',
-    corpo:
-        'Lembrando que o prazo para entrega dos trabalhos de revisão termina sexta-feira.',
-    quando: '01/10 — 11:00',
-    lido: true,
-  ),
-];
-
-// ===== card =====
+// Card para Aviso
 class _AvisoCard extends StatelessWidget {
-  final _Aviso aviso;
+  final Aviso aviso;
   final bool compact;
   const _AvisoCard({required this.aviso, this.compact = false});
 
@@ -166,56 +146,59 @@ class _AvisoCard extends StatelessWidget {
     final txt = Theme.of(context).textTheme;
 
     final EdgeInsets pad = compact
-        ? const EdgeInsets.fromLTRB(12, 10, 10, 8)
-        : const EdgeInsets.fromLTRB(12, 10, 10, 8);
+        ? const EdgeInsets.fromLTRB(16, 12, 12, 12)
+        : const EdgeInsets.fromLTRB(16, 12, 12, 12);
 
     final titleStyle = txt.titleMedium?.copyWith(
       fontWeight: FontWeight.w700,
       fontSize: compact ? 14 : txt.titleMedium?.fontSize,
-      height: compact ? 1.08 : null,
-    );
-
-    final bodyStyle = txt.bodySmall!.copyWith(
-      color: Colors.black.withOpacity(0.78),
-      fontSize: compact ? 12 : 13,
-      height: 1.22,
     );
 
     final infoStyle = txt.bodySmall!.copyWith(
-      color: Colors.black.withOpacity(0.55),
-      fontSize: compact ? 12 : 13,
+      color: Colors.black.withOpacity(0.65),
+      fontSize: compact ? 11 : 12,
     );
-
-    final double iconSize = compact ? 20 : 22;
-    final Color iconColor = aviso.lido ? poliedroBlue : Colors.black87;
+    
+    // Converte a data para o fuso horário de Brasília (UTC-3)
+    final dataBrasilia = aviso.createdAt.subtract(const Duration(hours: 3));
+    final dataFormatada = DateFormat('dd/MM/yyyy \'às\' HH:mm', 'pt_BR').format(dataBrasilia);
 
     return Card(
-      elevation: 6,
-      shadowColor: Colors.black.withOpacity(0.08),
+      elevation: 4,
+      shadowColor: Colors.black.withOpacity(0.06),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: Padding(
-        padding: pad,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(aviso.titulo,
-                      maxLines: 1, overflow: TextOverflow.ellipsis, style: titleStyle),
-                ),
-                Icon(Icons.notifications_rounded, size: iconSize, color: iconColor),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(aviso.corpo,
-                style: bodyStyle, maxLines: 3, overflow: TextOverflow.ellipsis),
-            const SizedBox(height: 8),
-            Container(height: 1, color: Colors.black.withOpacity(0.06)),
-            const SizedBox(height: 6),
-            Text(aviso.quando, style: infoStyle),
-          ],
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => AvisoDetalhesScreen(aviso: aviso),
+          ));
+        },
+        borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: pad,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(aviso.titulo, style: titleStyle, maxLines: 2, overflow: TextOverflow.ellipsis,),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.notifications, size: 20, color: poliedroBlue),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Por: ${aviso.nomeAutor}', style: infoStyle),
+                  Text(dataFormatada, style: infoStyle),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
