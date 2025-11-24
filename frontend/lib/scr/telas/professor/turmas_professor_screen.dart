@@ -233,32 +233,38 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
 
     await showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text("Nova Turma"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: nomeCtrl, decoration: const InputDecoration(hintText: "Nome da turma")),
-            const SizedBox(height: 8),
-            if (series.isNotEmpty)
-              DropdownButtonFormField<String>(
-                value: serieId,
-                items: series.map<DropdownMenuItem<String>>((s) => DropdownMenuItem(value: s["_id"], child: Text(s["nome"]))).toList(),
-                onChanged: (v) => serieId = v,
-                decoration: const InputDecoration(labelText: "Série"),
-              )
-            else
-              const Text("Crie uma série primeiro."),
-          ],
+        content: Container(
+          height: MediaQuery.of(dialogContext).size.height * 0.3, // Altura ajustada
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(controller: nomeCtrl, decoration: const InputDecoration(labelText: "Nome da turma")),
+                const SizedBox(height: 8),
+                if (series.isNotEmpty)
+                  DropdownButtonFormField<String>(
+                    value: serieId,
+                    items: series.map<DropdownMenuItem<String>>((s) => DropdownMenuItem(value: s["_id"], child: Text(s["nome"]))).toList(),
+                    onChanged: (v) => serieId = v,
+                    decoration: const InputDecoration(labelText: "Série"),
+                  )
+                else
+                  const Text("Crie uma série primeiro."),
+              ],
+            ),
+          ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text("Cancelar")),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: poliedroBlue),
             onPressed: () async {
               final nome = nomeCtrl.text.trim();
               if (nome.isEmpty) return;
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               final res = await http.post(Uri.parse(baseTurmas), headers: headers, body: jsonEncode({"nome": nome, "serie": serieId}));
               if (res.statusCode == 201) {
                 await carregarTurmas();
@@ -355,35 +361,45 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
     final emailCtrl = TextEditingController();
     final senhaCtrl = TextEditingController();
     final raCtrl = TextEditingController();
-    String? selectedTurmaId = turmaId ?? (turmas.isNotEmpty ? turmas.first["_id"] : null);
+    String? selectedTurmaId = turmaId;
 
     await showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text("Novo Aluno"),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: nomeCtrl, decoration: const InputDecoration(hintText: "Nome")),
-              TextField(controller: emailCtrl, decoration: const InputDecoration(hintText: "Email")),
-              TextField(controller: senhaCtrl, decoration: const InputDecoration(hintText: "Senha")),
-              TextField(controller: raCtrl, decoration: const InputDecoration(hintText: "RA")),
-              const SizedBox(height: 8),
-              if (turmas.isNotEmpty)
-                DropdownButtonFormField<String>(
-                  value: selectedTurmaId,
-                  items: turmas.map<DropdownMenuItem<String>>((t) => DropdownMenuItem(value: t["_id"], child: Text(t["nome"]))).toList(),
-                  onChanged: (v) => selectedTurmaId = v,
-                  decoration: const InputDecoration(labelText: "Turma (opcional)"),
-                )
-              else
-                const Text("Nenhuma turma cadastrada. Crie uma turma primeiro."),
-            ],
+        content: Container(
+          height: MediaQuery.of(dialogContext).size.height * 0.4,
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(controller: nomeCtrl, decoration: const InputDecoration(labelText: "Nome")),
+                TextField(controller: emailCtrl, decoration: const InputDecoration(labelText: "Email")),
+                TextField(controller: senhaCtrl, obscureText: true, decoration: const InputDecoration(labelText: "Senha")),
+                TextField(controller: raCtrl, decoration: const InputDecoration(labelText: "RA")),
+                const SizedBox(height: 8),
+                if (turmas.isNotEmpty)
+                  DropdownButtonFormField<String?>(
+                    value: selectedTurmaId,
+                    items: [
+                      const DropdownMenuItem<String?>(
+                        value: null,
+                        child: const Text("Nenhuma"),
+                      ),
+                      ...turmas.map<DropdownMenuItem<String?>>((t) => DropdownMenuItem(value: t["_id"], child: Text(t["nome"]))),
+                    ],
+                    onChanged: (v) => selectedTurmaId = v,
+                    decoration: const InputDecoration(labelText: "Turma (opcional)"),
+                  )
+                else
+                  const Text("Nenhuma turma cadastrada. Crie uma turma primeiro."),
+              ],
+            ),
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text("Cancelar")),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: poliedroBlue),
             onPressed: () async {
@@ -393,7 +409,7 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
               final ra = raCtrl.text.trim();
               if (nome.isEmpty || email.isEmpty || senha.isEmpty || ra.isEmpty) return;
 
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
 
               // 1) Criar via rota de cadastro (auth)
               final resCadastro = await http.post(
@@ -403,20 +419,21 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
               );
 
               if (resCadastro.statusCode == 201 || resCadastro.statusCode == 200) {
-                // 2) Recarrega alunos e vincula turma se necessário
-                await carregarAlunos();
+                await carregarAlunos(); // Recarrega alunos após a criação (sempre)
+
                 final novo = alunos.firstWhere((a) => (a["ra"]?.toString() ?? "") == ra, orElse: () => null);
                 if (novo != null && selectedTurmaId != null) {
                   final resUpd = await http.put(Uri.parse("$baseAlunos/${novo['_id']}"), headers: headers, body: jsonEncode({"turma": selectedTurmaId}));
                   if (resUpd.statusCode == 200) {
-                    await carregarAlunos();
+                    await carregarAlunos(); // Recarrega novamente se houve vinculação
                     _showSnack("Aluno criado e vinculado");
                     return;
                   } else {
                     debugPrint("vincular turma: ${resUpd.statusCode} ${resUpd.body}");
+                    _showSnack("Aluno criado, mas falha ao vincular turma"); // Feedback mais específico
                   }
                 }
-                _showSnack("Aluno criado");
+                _showSnack("Aluno criado com sucesso"); // Feedback genérico
               } else {
                 debugPrint("adicionarAluno: ${resCadastro.statusCode} ${resCadastro.body}");
                 _showSnack("Falha ao criar aluno (${resCadastro.statusCode})");
@@ -510,6 +527,125 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
+  Widget _buildActionButton({
+    required double screenWidth, // Passar a largura da tela
+    required VoidCallback onPressed,
+    required IconData icon,
+    required String label,
+    Color? color,
+  }) {
+    final btnColor = color ?? poliedroBlue;
+    final bool isSmallMobile = screenWidth < 360; // Novo breakpoint
+    final bool isMobile = screenWidth < 800; // Já existente
+
+    if (isSmallMobile) {
+      return IconButton(
+        visualDensity: VisualDensity.compact,
+        padding: const EdgeInsets.all(4),
+        icon: Icon(icon, color: btnColor, size: 18),
+        onPressed: onPressed,
+        tooltip: label, // Tooltip ainda é importante
+      );
+    } else if (isMobile) {
+      return TextButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, color: btnColor, size: 18),
+        label: Text(
+          label,
+          style: TextStyle(
+            color: btnColor,
+            fontSize: 10,
+            fontWeight: FontWeight.normal,
+          ),
+        ),
+        style: TextButton.styleFrom(
+          visualDensity: VisualDensity.compact,
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        ),
+      );
+    } else { // Desktop
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: TextButton.icon(
+          onPressed: onPressed,
+          icon: Icon(icon, color: btnColor, size: 22),
+          label: Text(label, style: TextStyle(color: btnColor, fontSize: 14, fontWeight: FontWeight.w600)),
+        ),
+      );
+    }
+  }
+
+  Widget _buildTurmasSemSerieCard(bool isMobile, List<dynamic> turmasSemSerie) {
+    return Card(
+      margin: EdgeInsets.symmetric(vertical: isMobile ? 12 : 16, horizontal: isMobile ? 0 : 4),
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ExpansionTile(
+        initiallyExpanded: true,
+        leading: const Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent),
+        title: Text('Turmas Sem Série (${turmasSemSerie.length})', style: const TextStyle(fontWeight: FontWeight.bold)),
+        childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        children: turmasSemSerie.map((turma) {
+          return ListTile(
+            dense: true,
+            title: Text(turma['nome']),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, color: poliedroBlue),
+                  onPressed: () => editarTurma(turma),
+                  tooltip: 'Editar/Vincular Turma',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                  onPressed: () => removerTurma(turma),
+                  tooltip: 'Excluir Turma',
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildAlunosSemTurmaCard(bool isMobile, List<dynamic> alunosSemTurma) {
+    return Card(
+      margin: EdgeInsets.symmetric(vertical: isMobile ? 12 : 16, horizontal: isMobile ? 0 : 4),
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ExpansionTile(
+        initiallyExpanded: true,
+        leading: const Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent),
+        title: Text('Alunos Sem Turma (${alunosSemTurma.length})', style: const TextStyle(fontWeight: FontWeight.bold)),
+        childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        children: alunosSemTurma.map((aluno) {
+          return ListTile(
+            dense: true,
+            title: Text(aluno["nome"] ?? aluno["email"] ?? "—"),
+            subtitle: Text("RA: ${aluno["ra"] ?? '-'}"),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, color: poliedroBlue),
+                  onPressed: () => editarAluno(aluno),
+                  tooltip: 'Editar/Vincular Aluno',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                  onPressed: () => removerAluno(aluno),
+                  tooltip: 'Excluir Aluno',
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   // ----------------------
   // BUILD - tela única hierárquica
   // ----------------------
@@ -517,6 +653,10 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final bool isMobile = size.width < 800;
+
+    final turmasSemSerie = turmas.where((t) => t['serie'] == null).toList();
+    final alunosSemTurma = alunos.where((a) => a['turma'] == null).toList();
+    final bool hasContent = series.isNotEmpty || turmasSemSerie.isNotEmpty || alunosSemTurma.isNotEmpty;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -532,7 +672,7 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
             );
           },
         ),
-        title: const Text('Gerenciar: Séries · Turmas · Alunos', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(isMobile ? 'Gerenciar' : 'Gerenciar: Séries · Turmas · Alunos', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             onPressed: () {
@@ -561,106 +701,139 @@ class _ProfessorTurmasScreenState extends State<ProfessorTurmasScreen> {
           : RefreshIndicator(
               onRefresh: carregarTudo,
               child: Padding(
-                padding: EdgeInsets.all(isMobile ? 10 : 16),
-                child: series.isEmpty
+                padding: EdgeInsets.fromLTRB(isMobile ? 8 : 16, isMobile ? 8 : 16, isMobile ? 8 : 16, 80),
+                child: !hasContent
                     ? Center(
                         child: Column(mainAxisSize: MainAxisSize.min, children: [
-                          const Text('Nenhuma série cadastrada.'),
+                          const Text('Nenhum item para gerenciar.'),
                           const SizedBox(height: 12),
                           ElevatedButton.icon(onPressed: adicionarSerie, icon: const Icon(Icons.add), label: const Text('Criar primeira série'), style: ElevatedButton.styleFrom(backgroundColor: poliedroBlue)),
                         ]),
                       )
-                    : ListView.builder(
-                        itemCount: series.length,
-                        itemBuilder: (context, sIndex) {
-                          final serie = series[sIndex];
-                          final serieId = serie["_id"];
-                          final turmasDaSerie = turmas.where((t) {
-                            final s = t["serie"];
-                            final id = s is Map ? s["_id"] : s;
-                            return id == serieId;
-                          }).toList();
+                    : ListView(
+                        children: [
+                          ...series.map((serie) {
+                            final serieId = serie["_id"];
+                            final turmasDaSerie = turmas.where((t) {
+                              final s = t["serie"];
+                              final id = s is Map ? s["_id"] : s;
+                              return id == serieId;
+                            }).toList();
+                            
+                            final serieActions = [
+                              _buildActionButton(screenWidth: size.width, onPressed: () => adicionarTurma(presetSerieId: serieId), icon: Icons.class_outlined, label: 'Nova turma'),
+                              if(!isMobile) const SizedBox(width: 4),
+                              _buildActionButton(screenWidth: size.width, onPressed: () => editarSerie(serie), icon: Icons.edit_outlined, label: 'Editar série'),
+                               if(!isMobile) const SizedBox(width: 4),
+                              _buildActionButton(screenWidth: size.width, onPressed: () => removerSerie(serie), icon: Icons.delete_outline, label: 'Excluir série', color: Colors.redAccent),
+                            ];
 
-                          return Card(
-                            margin: EdgeInsets.symmetric(vertical: isMobile ? 6 : 8),
-                            elevation: 3,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            child: ExpansionTile(
-                              tilePadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 16, vertical: 6),
-                              leading: const Icon(Icons.school, color: poliedroBlue),
-                              title: Text(serie["nome"], style: TextStyle(fontWeight: FontWeight.w600, fontSize: isMobile ? 14 : 16)),
-                              childrenPadding: EdgeInsets.fromLTRB(isMobile ? 12 : 16, 8, isMobile ? 12 : 16, 10),
-                              children: [
-                                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                                  Text('Turmas (${turmasDaSerie.length})', style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 13 : 14)),
-                                  Row(children: [
-                                    TextButton.icon(onPressed: () => adicionarTurma(presetSerieId: serieId), icon: Icon(Icons.class_outlined, color: poliedroBlue), label: Text('Nova turma', style: TextStyle(color: poliedroBlue))),
-                                    const SizedBox(width: 8),
-                                    TextButton.icon(onPressed: () => editarSerie(serie), icon: Icon(Icons.edit_outlined, color: poliedroBlue), label: Text('Editar série', style: TextStyle(color: poliedroBlue))),
-                                    const SizedBox(width: 8),
-                                    TextButton.icon(onPressed: () => removerSerie(serie), icon: Icon(Icons.delete_outline, color: Colors.redAccent), label: Text('Excluir série', style: TextStyle(color: Colors.redAccent))),
-                                  ])
-                                ]),
-                                const SizedBox(height: 6),
+                            return Card(
+                              margin: EdgeInsets.symmetric(vertical: isMobile ? 6 : 8),
+                              elevation: 3,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              child: ExpansionTile(
+                                tilePadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 16, vertical: 6),
+                                leading: const Icon(Icons.school, color: poliedroBlue),
+                                title: Text(serie["nome"], style: TextStyle(fontWeight: FontWeight.w600, fontSize: isMobile ? 14 : 16)),
+                                childrenPadding: EdgeInsets.fromLTRB(isMobile ? 12 : 16, 8, isMobile ? 12 : 16, 10),
+                                children: [
+                                  if (isMobile) 
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                          child: Text('Turmas (${turmasDaSerie.length})', style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 13 : 14)),
+                                        ),
+                                        Wrap(spacing: 4, runSpacing: 4, alignment: WrapAlignment.start, children: serieActions)
+                                      ],
+                                    ) 
+                                  else 
+                                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                                      Text('Turmas (${turmasDaSerie.length})', style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 13 : 14)),
+                                      Row(children: serieActions)
+                                    ]),
+                                  
+                                  const SizedBox(height: 6),
 
-                                if (turmasDaSerie.isEmpty)
-                                  Padding(padding: EdgeInsets.only(bottom: isMobile ? 4 : 6), child: Text('Nenhuma turma nesta série.', style: TextStyle(fontSize: isMobile ? 11 : 12, color: Colors.grey)))
-                                else
-                                  ...turmasDaSerie.map((turma) {
-                                    final turmaId = turma["_id"];
-                                    final alunosDaTurma = alunos.where((a) {
-                                      final t = a["turma"];
-                                      final id = t is Map ? t["_id"] : t;
-                                      return id == turmaId;
-                                    }).toList();
+                                  if (turmasDaSerie.isEmpty)
+                                    Padding(padding: EdgeInsets.only(bottom: isMobile ? 4 : 6), child: Text('Nenhuma turma nesta série.', style: TextStyle(fontSize: isMobile ? 11 : 12, color: Colors.grey)))
+                                  else
+                                    ...turmasDaSerie.map((turma) {
+                                      final turmaId = turma["_id"];
+                                      final alunosDaTurma = alunos.where((a) {
+                                        final t = a["turma"];
+                                        final id = t is Map ? t["_id"] : t;
+                                        return id == turmaId;
+                                      }).toList();
+                                      
+                                      final turmaActions = [
+                                        _buildActionButton(screenWidth: size.width, onPressed: () => adicionarAluno(turmaId: turmaId), icon: Icons.person_add_alt_1_outlined, label: 'Adicionar aluno'),
+                                        if(!isMobile) const SizedBox(width: 4),
+                                        _buildActionButton(screenWidth: size.width, onPressed: () => editarTurma(turma), icon: Icons.edit_outlined, label: 'Editar turma'),
+                                        if(!isMobile) const SizedBox(width: 4),
+                                        _buildActionButton(screenWidth: size.width, onPressed: () => removerTurma(turma), icon: Icons.delete_outline, label: 'Excluir turma', color: Colors.redAccent),
+                                      ];
 
-                                    return Card(
-                                      margin: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 12, vertical: 6),
-                                      child: ExpansionTile(
-                                        tilePadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 16, vertical: 6),
-                                        leading: const Icon(Icons.class_, color: poliedroBlue),
-                                        title: Text(turma["nome"], style: TextStyle(fontWeight: FontWeight.w600, fontSize: isMobile ? 13 : 14)),
-                                        childrenPadding: EdgeInsets.fromLTRB(isMobile ? 12 : 16, 8, isMobile ? 12 : 16, 10),
-                                        children: [
-                                          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                                            Text('Alunos (${alunosDaTurma.length})', style: TextStyle(fontWeight: FontWeight.bold)),
-                                            Row(children: [
-                                              TextButton.icon(onPressed: () => adicionarAluno(turmaId: turmaId), icon: Icon(Icons.person_add_alt_1_outlined, color: poliedroBlue), label: Text('Adicionar aluno', style: TextStyle(color: poliedroBlue))),
-                                              const SizedBox(width: 8),
-                                              TextButton.icon(onPressed: () => editarTurma(turma), icon: Icon(Icons.edit_outlined, color: poliedroBlue), label: Text('Editar turma', style: TextStyle(color: poliedroBlue))),
-                                              const SizedBox(width: 8),
-                                              TextButton.icon(onPressed: () => removerTurma(turma), icon: Icon(Icons.delete_outline, color: Colors.redAccent), label: Text('Excluir turma', style: TextStyle(color: Colors.redAccent))),
-                                            ])
-                                          ]),
-                                          const SizedBox(height: 6),
-                                          if (alunosDaTurma.isEmpty)
-                                            const Padding(padding: EdgeInsets.all(12), child: Text('Nenhum aluno nesta turma.', style: TextStyle(color: Colors.grey)))
-                                          else
-                                            ...alunosDaTurma.map((al) {
-                                              return ListTile(
-                                                dense: true,
-                                                title: Text(al["nome"] ?? al["email"] ?? "—"),
-                                                subtitle: Text("RA: ${al["ra"] ?? '-'}"),
-                                                trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                                                  IconButton(icon: const Icon(Icons.edit_outlined, color: poliedroBlue), onPressed: () => editarAluno(al)),
-                                                  IconButton(icon: const Icon(Icons.delete_outline, color: Colors.redAccent), onPressed: () => removerAluno(al)),
-                                                ]),
-                                              );
-                                            }).toList()
-                                        ],
-                                      ),
-                                    );
-                                  }).toList(),
+                                      return Card(
+                                        margin: EdgeInsets.symmetric(horizontal: isMobile ? 0 : 12, vertical: 6),
+                                        elevation: 2,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        child: ExpansionTile(
+                                          tilePadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 16, vertical: 6),
+                                          leading: const Icon(Icons.class_, color: poliedroBlue, size: 28),
+                                          title: Text(turma["nome"], style: TextStyle(fontWeight: FontWeight.w600, fontSize: isMobile ? 13 : 14)),
+                                          childrenPadding: EdgeInsets.fromLTRB(isMobile ? 12 : 16, 8, isMobile ? 12 : 16, 10),
+                                          children: [
+                                            if(isMobile)
+                                              Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Padding(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                                    child: Text('Alunos (${alunosDaTurma.length})', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                                  ),
+                                                  Wrap(spacing: 4, runSpacing: 4, alignment: WrapAlignment.start, children: turmaActions)
+                                                ],
+                                              )
+                                            else
+                                              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                                                Text('Alunos (${alunosDaTurma.length})', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                                Row(children: turmaActions)
+                                              ]),
+                                            
+                                            const SizedBox(height: 6),
 
-                                const SizedBox(height: 8),
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: TextButton.icon(onPressed: () => adicionarTurma(presetSerieId: serieId), icon: const Icon(Icons.add, color: poliedroBlue), label: const Text('Adicionar Turma', style: TextStyle(color: poliedroBlue))),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
+                                            if (alunosDaTurma.isEmpty)
+                                              const Padding(padding: EdgeInsets.all(12), child: Text('Nenhum aluno nesta turma.', style: TextStyle(color: Colors.grey)))
+                                            else
+                                              ...alunosDaTurma.map((al) {
+                                                return ListTile(
+                                                  dense: true,
+                                                  title: Text(al["nome"] ?? al["email"] ?? "—"),
+                                                  subtitle: Text("RA: ${al["ra"] ?? '-'}"),
+                                                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                                                    IconButton(icon: const Icon(Icons.edit_outlined, color: poliedroBlue), onPressed: () => editarAluno(al)),
+                                                    IconButton(icon: const Icon(Icons.delete_outline, color: Colors.redAccent), onPressed: () => removerAluno(al)),
+                                                  ]),
+                                                );
+                                              }).toList()
+                                          ],
+                                        ),
+                                      );
+                                    }).toList(),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+
+                          if (turmasSemSerie.isNotEmpty)
+                            _buildTurmasSemSerieCard(isMobile, turmasSemSerie),
+
+                          if (alunosSemTurma.isNotEmpty)
+                            _buildAlunosSemTurmaCard(isMobile, alunosSemTurma),
+                        ],
                       ),
               ),
             ),
