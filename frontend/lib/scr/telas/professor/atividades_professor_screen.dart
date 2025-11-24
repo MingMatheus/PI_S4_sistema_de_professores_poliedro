@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../home/professor_home_screen.dart';
 import '../login/login_screen.dart';
+import '../../services/avaliacao_service.dart';
 
 class ProfessorAtividadesScreen extends StatefulWidget {
   const ProfessorAtividadesScreen({super.key});
@@ -12,34 +13,44 @@ class ProfessorAtividadesScreen extends StatefulWidget {
 }
 
 class _ProfessorAtividadesScreenState extends State<ProfessorAtividadesScreen> {
-  final List<Map<String, dynamic>> _atividades = [
-    {
-      'titulo': 'Lista 1 - Funções Afins',
-      'turma': '1º Ano A',
-      'tipo': 'Trabalho',
-      'dataEntrega': '20/03/2025',
-      'descricao': 'Resolver os exercícios 1 a 10 do capítulo 3.',
-      'status': 'Aberta',
-    },
-    {
-      'titulo': 'Prova - Revolução Francesa',
-      'turma': '2º Ano B',
-      'tipo': 'Prova',
-      'dataEntrega': '25/03/2025',
-      'descricao': 'Avaliação com 10 questões dissertativas.',
-      'status': 'Aberta',
-    },
-    {
-      'titulo': 'Atividade - Fotossíntese',
-      'turma': '1º Ano A',
-      'tipo': 'Atividade',
-      'dataEntrega': '18/03/2025',
-      'descricao': 'Responder questionário sobre o vídeo em sala.',
-      'status': 'Encerrada',
-    },
-  ];
+  final List<Map<String, dynamic>> _atividades = [];
 
   final List<String> _tipos = ['Atividade', 'Trabalho', 'Prova', 'Outro'];
+
+  bool _carregando = false;
+  String? _erro;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarAtividades();
+  }
+
+  Future<void> _carregarAtividades() async {
+    setState(() {
+      _carregando = true;
+      _erro = null;
+    });
+
+    try {
+      final lista = await AvaliacaoService.listar();
+      setState(() {
+        _atividades
+          ..clear()
+          ..addAll(lista);
+      });
+    } catch (e) {
+      setState(() {
+        _erro = 'Erro ao carregar atividades: $e';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _carregando = false;
+        });
+      }
+    }
+  }
 
   Future<void> _adicionarAtividade() async {
     final tituloController = TextEditingController();
@@ -55,36 +66,74 @@ class _ProfessorAtividadesScreenState extends State<ProfessorAtividadesScreen> {
         content: SingleChildScrollView(
           child: Column(
             children: [
-              TextField(controller: tituloController, decoration: const InputDecoration(labelText: 'Título')),
-              TextField(controller: turmaController, decoration: const InputDecoration(labelText: 'Turma')),
-              TextField(controller: dataController, decoration: const InputDecoration(labelText: 'Data de entrega')),
+              TextField(
+                controller: tituloController,
+                decoration: const InputDecoration(labelText: 'Título'),
+              ),
+              TextField(
+                controller: turmaController,
+                decoration: const InputDecoration(labelText: 'Turma'),
+              ),
+              TextField(
+                controller: dataController,
+                decoration:
+                    const InputDecoration(labelText: 'Data de entrega'),
+              ),
               DropdownButtonFormField<String>(
                 value: tipoSelecionado,
-                items: _tipos.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-                onChanged: (value) => tipoSelecionado = value ?? _tipos.first,
+                items: _tipos
+                    .map(
+                      (t) => DropdownMenuItem(
+                        value: t,
+                        child: Text(t),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) =>
+                    tipoSelecionado = value ?? _tipos.first,
                 decoration: const InputDecoration(labelText: 'Tipo'),
               ),
-              TextField(controller: descricaoController, maxLines: 3, decoration: const InputDecoration(labelText: 'Descrição')),
+              TextField(
+                controller: descricaoController,
+                maxLines: 3,
+                decoration:
+                    const InputDecoration(labelText: 'Descrição'),
+              ),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: poliedroBlue),
-            onPressed: () {
-              if (tituloController.text.isNotEmpty) {
+            onPressed: () async {
+              if (tituloController.text.isEmpty) return;
+
+              try {
+                final nova = await AvaliacaoService.criar(
+                  titulo: tituloController.text,
+                  tipo: tipoSelecionado,
+                  turma: turmaController.text,
+                  dataEntrega: dataController.text,
+                  descricao: descricaoController.text,
+                );
+
+                if (!mounted) return;
                 setState(() {
-                  _atividades.add({
-                    'titulo': tituloController.text,
-                    'turma': turmaController.text,
-                    'tipo': tipoSelecionado,
-                    'dataEntrega': dataController.text,
-                    'descricao': descricaoController.text,
-                    'status': 'Aberta',
-                  });
+                  _atividades.add(nova);
                 });
                 Navigator.pop(context);
+              } catch (e) {
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content:
+                        Text('Erro ao criar atividade: $e'),
+                  ),
+                );
               }
             },
             child: const Text('Criar'),
@@ -94,50 +143,94 @@ class _ProfessorAtividadesScreenState extends State<ProfessorAtividadesScreen> {
     );
   }
 
-  void _editarAtividade(int index) {
+  Future<void> _editarAtividade(int index) async {
     final atividade = _atividades[index];
-    final tituloController = TextEditingController(text: atividade['titulo']);
-    final turmaController = TextEditingController(text: atividade['turma']);
-    final dataController = TextEditingController(text: atividade['dataEntrega']);
-    final descricaoController = TextEditingController(text: atividade['descricao']);
+    final tituloController =
+        TextEditingController(text: atividade['titulo']);
+    final turmaController =
+        TextEditingController(text: atividade['turma']);
+    final dataController =
+        TextEditingController(text: atividade['dataEntrega']);
+    final descricaoController =
+        TextEditingController(text: atividade['descricao']);
     String tipoSelecionado = atividade['tipo'];
 
-    showDialog(
+    await showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Editar atividade'),
         content: SingleChildScrollView(
           child: Column(
             children: [
-              TextField(controller: tituloController, decoration: const InputDecoration(labelText: 'Título')),
-              TextField(controller: turmaController, decoration: const InputDecoration(labelText: 'Turma')),
-              TextField(controller: dataController, decoration: const InputDecoration(labelText: 'Data de entrega')),
+              TextField(
+                controller: tituloController,
+                decoration: const InputDecoration(labelText: 'Título'),
+              ),
+              TextField(
+                controller: turmaController,
+                decoration: const InputDecoration(labelText: 'Turma'),
+              ),
+              TextField(
+                controller: dataController,
+                decoration:
+                    const InputDecoration(labelText: 'Data de entrega'),
+              ),
               DropdownButtonFormField<String>(
                 value: tipoSelecionado,
-                items: _tipos.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-                onChanged: (value) => tipoSelecionado = value ?? _tipos.first,
+                items: _tipos
+                    .map(
+                      (t) => DropdownMenuItem(
+                        value: t,
+                        child: Text(t),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) =>
+                    tipoSelecionado = value ?? _tipos.first,
                 decoration: const InputDecoration(labelText: 'Tipo'),
               ),
-              TextField(controller: descricaoController, maxLines: 3, decoration: const InputDecoration(labelText: 'Descrição')),
+              TextField(
+                controller: descricaoController,
+                maxLines: 3,
+                decoration:
+                    const InputDecoration(labelText: 'Descrição'),
+              ),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: poliedroBlue),
-            onPressed: () {
-              setState(() {
-                _atividades[index] = {
-                  'titulo': tituloController.text,
-                  'turma': turmaController.text,
-                  'tipo': tipoSelecionado,
-                  'dataEntrega': dataController.text,
-                  'descricao': descricaoController.text,
-                  'status': atividade['status'],
-                };
-              });
-              Navigator.pop(context);
+            onPressed: () async {
+              try {
+                final atualizada = await AvaliacaoService.atualizar(
+                  id: atividade['id'],
+                  titulo: tituloController.text,
+                  tipo: tipoSelecionado,
+                  turma: turmaController.text,
+                  dataEntrega: dataController.text,
+                  descricao: descricaoController.text,
+                  status: atividade['status'],
+                );
+
+                if (!mounted) return;
+                setState(() {
+                  _atividades[index] = atualizada;
+                });
+                Navigator.pop(context);
+              } catch (e) {
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content:
+                        Text('Erro ao editar atividade: $e'),
+                  ),
+                );
+              }
             },
             child: const Text('Salvar'),
           ),
@@ -146,15 +239,44 @@ class _ProfessorAtividadesScreenState extends State<ProfessorAtividadesScreen> {
     );
   }
 
-  void _alternarStatus(int index) {
-    setState(() {
-      _atividades[index]['status'] =
-          _atividades[index]['status'] == 'Aberta' ? 'Encerrada' : 'Aberta';
-    });
+  Future<void> _alternarStatus(int index) async {
+    final atividade = _atividades[index];
+    final novoStatus =
+        atividade['status'] == 'Aberta' ? 'Encerrada' : 'Aberta';
+
+    try {
+      final atualizada = await AvaliacaoService.atualizar(
+        id: atividade['id'],
+        status: novoStatus,
+      );
+
+      setState(() {
+        _atividades[index] = atualizada;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao alterar status: $e'),
+        ),
+      );
+    }
   }
 
-  void _removerAtividade(int index) {
-    setState(() => _atividades.removeAt(index));
+  Future<void> _removerAtividade(int index) async {
+    final atividade = _atividades[index];
+
+    try {
+      await AvaliacaoService.deletar(atividade['id']);
+      setState(() => _atividades.removeAt(index));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao excluir atividade: $e'),
+        ),
+      );
+    }
   }
 
   Color _statusColor(String status) =>
@@ -169,12 +291,17 @@ class _ProfessorAtividadesScreenState extends State<ProfessorAtividadesScreen> {
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         backgroundColor: poliedroBlue,
-        title: const Text('Atividades', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Atividades',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
           onPressed: () => Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const ProfessorHomeScreen()),
+            MaterialPageRoute(
+              builder: (_) => const ProfessorHomeScreen(),
+            ),
           ),
         ),
         actions: [
@@ -198,84 +325,144 @@ class _ProfessorAtividadesScreenState extends State<ProfessorAtividadesScreen> {
           : FloatingActionButtonLocation.endFloat,
       body: Padding(
         padding: EdgeInsets.all(isMobile ? 10 : 16),
-        child: _atividades.isEmpty
-            ? const Center(
-                child: Text('Nenhuma atividade cadastrada.',
-                    style: TextStyle(color: Colors.grey)),
-              )
-            : ListView.builder(
-                itemCount: _atividades.length,
-                itemBuilder: (context, index) {
-                  final a = _atividades[index];
-                  return Card(
-                    margin: EdgeInsets.symmetric(vertical: isMobile ? 6 : 8),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    elevation: 3,
-                    child: ExpansionTile(
-                      title: Text(a['titulo'],
-                          style: TextStyle(
-                              fontSize: isMobile ? 13.5 : 15,
-                              fontWeight: FontWeight.w600)),
-                      subtitle: Row(
-                        children: [
-                          Text('${a['turma']} • ${a['tipo']} • ${a['dataEntrega']}',
-                              style: TextStyle(
-                                  fontSize: isMobile ? 10.5 : 11.5,
-                                  color: Colors.grey[700])),
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                                color:
-                                    _statusColor(a['status']).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8)),
-                            child: Text(a['status'],
-                                style: TextStyle(
-                                    fontSize: isMobile ? 9.5 : 10.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: _statusColor(a['status']))),
-                          ),
-                        ],
-                      ),
-                      childrenPadding:
-                          EdgeInsets.all(isMobile ? 10 : 16),
+        child: _carregando
+            ? const Center(child: CircularProgressIndicator())
+            : _erro != null
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(a['descricao'],
-                            style: TextStyle(
-                                fontSize: isMobile ? 11.5 : 12.5,
-                                color: Colors.grey[800])),
-                        const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 6,
-                          children: [
-                            TextButton.icon(
-                              onPressed: () => _alternarStatus(index),
-                              icon: const Icon(Icons.lock_open_outlined),
-                              label: Text(a['status'] == 'Aberta'
-                                  ? 'Encerrar'
-                                  : 'Reabrir'),
-                            ),
-                            TextButton.icon(
-                              onPressed: () => _editarAtividade(index),
-                              icon: const Icon(Icons.edit_outlined),
-                              label: const Text('Editar'),
-                            ),
-                            TextButton.icon(
-                              onPressed: () => _removerAtividade(index),
-                              icon: const Icon(Icons.delete_outline),
-                              label: const Text('Excluir'),
-                              style: TextButton.styleFrom(
-                                  foregroundColor: Colors.redAccent),
-                            ),
-                          ],
+                        Text(
+                          _erro!,
+                          style: const TextStyle(color: Colors.red),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: _carregarAtividades,
+                          child: const Text('Tentar novamente'),
                         ),
                       ],
                     ),
-                  );
-                },
-              ),
+                  )
+                : _atividades.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'Nenhuma atividade cadastrada.',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: _atividades.length,
+                        itemBuilder: (context, index) {
+                          final a = _atividades[index];
+                          return Card(
+                            margin: EdgeInsets.symmetric(
+                              vertical: isMobile ? 6 : 8,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 3,
+                            child: ExpansionTile(
+                              title: Text(
+                                a['titulo'],
+                                style: TextStyle(
+                                  fontSize: isMobile ? 13.5 : 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              subtitle: Row(
+                                children: [
+                                  Text(
+                                    '${a['turma']} • ${a['tipo']} • ${a['dataEntrega']}',
+                                    style: TextStyle(
+                                      fontSize:
+                                          isMobile ? 10.5 : 11.5,
+                                      color: Colors.grey[700],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding:
+                                        const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          _statusColor(a['status'])
+                                              .withOpacity(0.1),
+                                      borderRadius:
+                                          BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      a['status'],
+                                      style: TextStyle(
+                                        fontSize:
+                                            isMobile ? 9.5 : 10.5,
+                                        fontWeight: FontWeight.w600,
+                                        color:
+                                            _statusColor(a['status']),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              childrenPadding:
+                                  EdgeInsets.all(isMobile ? 10 : 16),
+                              children: [
+                                Text(
+                                  a['descricao'],
+                                  style: TextStyle(
+                                    fontSize:
+                                        isMobile ? 11.5 : 12.5,
+                                    color: Colors.grey[800],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Wrap(
+                                  spacing: 6,
+                                  children: [
+                                    TextButton.icon(
+                                      onPressed: () =>
+                                          _alternarStatus(index),
+                                      icon: const Icon(
+                                        Icons.lock_open_outlined,
+                                      ),
+                                      label: Text(
+                                        a['status'] == 'Aberta'
+                                            ? 'Encerrar'
+                                            : 'Reabrir',
+                                      ),
+                                    ),
+                                    TextButton.icon(
+                                      onPressed: () =>
+                                          _editarAtividade(index),
+                                      icon: const Icon(
+                                        Icons.edit_outlined,
+                                      ),
+                                      label: const Text('Editar'),
+                                    ),
+                                    TextButton.icon(
+                                      onPressed: () =>
+                                          _removerAtividade(index),
+                                      icon: const Icon(
+                                        Icons.delete_outline,
+                                      ),
+                                      label: const Text('Excluir'),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor:
+                                            Colors.redAccent,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
       ),
     );
   }
