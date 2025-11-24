@@ -1,5 +1,6 @@
 // lib/src/screens/professor/professor_notas_screen.dart
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 
 import '../../constants/app_colors.dart';
 import '../home/professor_home_screen.dart';
@@ -14,23 +15,46 @@ class ProfessorNotasScreen extends StatefulWidget {
 }
 
 class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
-  /// Estrutura:
-  /// turmas -> atividades -> notas (alunoId, nomeAluno, nota, notaId)
-  ///
-  /// Aqui já deixo DUAS turmas criadas, mas SEM atividades e SEM notas.
-  /// O professor cria as atividades na hora pelo botão "Nova atividade".
-  final List<Map<String, dynamic>> _turmas = [
-    {
-      'nome': '1º Ano A',
-      'atividades': <Map<String, dynamic>>[],
-    },
-    {
-      'nome': '2º Ano B',
-      'atividades': <Map<String, dynamic>>[],
-    },
-  ];
+  final NotaService _notaService = NotaService();
+  List<Map<String, dynamic>> _turmas = [];
+  bool _isLoading = true;
 
   final List<String> _tipos = ['Atividade', 'Trabalho', 'Prova', 'Outro'];
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarDados();
+  }
+
+  Future<void> _carregarDados() async {
+    try {
+      final turmasFetched = await _notaService.getTurmas();
+      setState(() {
+        _turmas = turmasFetched
+            .map((turma) => {
+                  'id': turma['_id'],
+                  'nome': turma['nome'],
+                  'atividades': <Map<String, dynamic>>[],
+                })
+            .toList();
+        _isLoading = false;
+      });
+    } catch (e) {
+      developer.log('Erro ao carregar turmas: $e', name: 'ProfessorNotasScreen');
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao carregar turmas: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   // ========== AÇÕES: ATIVIDADES ==========
 
@@ -256,8 +280,47 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
     final turma = _turmas[turmaIndex];
     final atividade =
         (turma['atividades'] as List)[atividadeIndex] as Map<String, dynamic>;
-    final List notas = atividade['notas'] as List? ?? <Map<String, dynamic>>[];
+    
+    final avaliacaoId = atividade['avaliacaoId'] as String?;
+    if (avaliacaoId == null || avaliacaoId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Atividade sem ID da Avaliação do backend.'),
+        backgroundColor: Colors.orange,
+      ));
+      return;
+    }
 
+    // Exibe o loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final notas = await _notaService.getNotasDaAvaliacao(avaliacaoId);
+      setState(() {
+        atividade['notas'] = notas;
+      });
+    } catch (e) {
+      developer.log('Erro ao buscar notas: $e', name: 'ProfessorNotasScreen');
+      if (mounted) {
+        Navigator.pop(context); // Fecha o loading
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Erro ao buscar alunos/notas: $e'),
+          backgroundColor: Colors.red,
+        ));
+      }
+      return;
+    }
+
+    if (mounted) {
+      Navigator.pop(context); // Fecha o loading
+    } else {
+      return; 
+    }
+
+    final List notas = atividade['notas'] as List? ?? <Map<String, dynamic>>[];
     final pesoInicial = (atividade['peso'] as num?)?.toString() ?? '1.0';
     final pesoController = TextEditingController(text: pesoInicial);
 
@@ -370,7 +433,7 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'ID da Avaliação: ${atividade['avaliacaoId'] ?? ''}',
+                      'ID da Avaliação: $avaliacaoId',
                       style: TextStyle(
                         fontSize: isMobile ? 10 : 11,
                         color: Colors.grey[700],
@@ -431,9 +494,7 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
                               Padding(
                                 padding: const EdgeInsets.all(16),
                                 child: Text(
-                                  'Nenhum aluno cadastrado para esta atividade.\n'
-                                  'No uso real, essa lista virá da turma/avaliação do backend\n'
-                                  'com alunoId, nome e nota atual.',
+                                  'Nenhum aluno encontrado para esta avaliação no backend.',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: isMobile ? 11 : 12,
@@ -505,7 +566,7 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
                                                 final v = double.tryParse(
                                                         value.replaceAll(
                                                             ',', '.')) ??
-                                                    0.0;
+                                                    null;
                                                 linha['nota'] = v;
                                               },
                                             ),
@@ -529,38 +590,39 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
                           backgroundColor: poliedroBlue,
                         ),
                         onPressed: () async {
-                          final avaliacaoId =
-                              (atividade['avaliacaoId'] as String?) ?? '';
-
-                          if (avaliacaoId.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Esta atividade está sem avaliacaoId.\n'
-                                  'Edite a atividade e preencha o ID da Avaliação.',
-                                ),
-                              ),
-                            );
-                            return;
-                          }
+                           // Mostra o loading
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (_) => const Center(child: CircularProgressIndicator()),
+                          );
 
                           try {
-                            final notaService = NotaService();
-                            await notaService.salvarNotasDaAtividade(
+                            await _notaService.salvarNotasDaAtividade(
                                 atividade);
-                            Navigator.pop(ctx);
-                            setState(() {});
+
+                            if(mounted) {
+                              Navigator.pop(context); // Fecha o loading
+                              Navigator.pop(ctx); // Fecha o BottomSheet
+                            }
+                            
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content:
-                                    Text('Notas salvas no servidor.'),
+                                    Text('Notas salvas com sucesso no servidor.'),
+                                backgroundColor: Colors.green,
                               ),
                             );
                           } catch (e) {
+                            developer.log('Erro ao salvar notas: $e', name: 'ProfessorNotasScreen');
+                             if(mounted) {
+                              Navigator.pop(context); // Fecha o loading
+                            }
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content:
                                     Text('Erro ao salvar notas: $e'),
+                                backgroundColor: Colors.red,
                               ),
                             );
                           }
@@ -628,209 +690,212 @@ class _ProfessorNotasScreenState extends State<ProfessorNotasScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: EdgeInsets.all(isMobile ? 10 : 16),
-        child: _turmas.isEmpty
-            ? const Center(
-                child: Text(
-                  'Nenhuma turma cadastrada para lançamento de notas.',
-                  style: TextStyle(color: Colors.grey),
-                ),
-              )
-            : ListView.builder(
-                itemCount: _turmas.length,
-                itemBuilder: (context, turmaIndex) {
-                  final turma = _turmas[turmaIndex];
-                  final atividades =
-                      (turma['atividades'] as List?) ??
-                          <Map<String, dynamic>>[];
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: EdgeInsets.all(isMobile ? 10 : 16),
+              child: _turmas.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'Nenhuma turma cadastrada para o professor.',
+                        style: TextStyle(color: Colors.grey),
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: _turmas.length,
+                      itemBuilder: (context, turmaIndex) {
+                        final turma = _turmas[turmaIndex];
+                        final atividades =
+                            (turma['atividades'] as List?) ??
+                                <Map<String, dynamic>>[];
 
-                  return Card(
-                    margin: EdgeInsets.symmetric(
-                      vertical: isMobile ? 5 : 6,
-                    ),
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ExpansionTile(
-                      tilePadding: EdgeInsets.symmetric(
-                        horizontal: isMobile ? 12 : 16,
-                        vertical: isMobile ? 2 : 4,
-                      ),
-                      leading: Icon(
-                        Icons.class_outlined,
-                        color: poliedroBlue,
-                        size: isMobile ? 22 : 24,
-                      ),
-                      title: Text(
-                        turma['nome'] as String? ?? '',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: isMobile ? 14 : 16,
-                        ),
-                      ),
-                      subtitle: Text(
-                        '${atividades.length} atividade(s) cadastrada(s)',
-                        style: TextStyle(
-                          fontSize: isMobile ? 11 : 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      childrenPadding: EdgeInsets.fromLTRB(
-                        isMobile ? 10 : 16,
-                        8,
-                        isMobile ? 10 : 16,
-                        10,
-                      ),
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Atividades e provas',
+                        return Card(
+                          margin: EdgeInsets.symmetric(
+                            vertical: isMobile ? 5 : 6,
+                          ),
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: ExpansionTile(
+                            tilePadding: EdgeInsets.symmetric(
+                              horizontal: isMobile ? 12 : 16,
+                              vertical: isMobile ? 2 : 4,
+                            ),
+                            leading: Icon(
+                              Icons.class_outlined,
+                              color: poliedroBlue,
+                              size: isMobile ? 22 : 24,
+                            ),
+                            title: Text(
+                              turma['nome'] as String? ?? '',
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
-                                fontSize: isMobile ? 13 : 14,
+                                fontSize: isMobile ? 14 : 16,
                               ),
                             ),
-                            TextButton.icon(
-                              onPressed: () =>
-                                  _adicionarAtividade(turmaIndex),
-                              icon: Icon(
-                                Icons.add,
-                                size: isMobile ? 16 : 18,
-                                color: poliedroBlue,
-                              ),
-                              label: Text(
-                                'Nova atividade',
-                                style: TextStyle(
-                                  color: poliedroBlue,
-                                  fontSize: isMobile ? 11 : 12.5,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        if (atividades.isEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 8.0),
-                            child: Text(
-                              'Nenhuma atividade cadastrada para esta turma.',
+                            subtitle: Text(
+                              '${atividades.length} atividade(s) cadastrada(s)',
                               style: TextStyle(
                                 fontSize: isMobile ? 11 : 12,
-                                color: Colors.grey[700],
+                                color: Colors.grey,
                               ),
                             ),
-                          )
-                        else
-                          Column(
-                            children: List.generate(
-                              atividades.length,
-                              (atividadeIndex) {
-                                final atividade =
-                                    atividades[atividadeIndex]
-                                        as Map<String, dynamic>;
-                                final titulo =
-                                    atividade['titulo'] as String? ??
-                                        'Atividade';
-                                final peso =
-                                    atividade['peso'] as num? ?? 1.0;
-                                final notas =
-                                    (atividade['notas'] as List?) ?? [];
-
-                                return Container(
-                                  margin: EdgeInsets.symmetric(
-                                    vertical: isMobile ? 3 : 4,
-                                  ),
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: isMobile ? 8 : 10,
-                                    vertical: isMobile ? 6 : 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade50,
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                      color: Colors.grey.shade300,
-                                      width: 0.6,
+                            childrenPadding: EdgeInsets.fromLTRB(
+                              isMobile ? 10 : 16,
+                              8,
+                              isMobile ? 10 : 16,
+                              10,
+                            ),
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Atividades e provas',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: isMobile ? 13 : 14,
                                     ),
                                   ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                  TextButton.icon(
+                                    onPressed: () =>
+                                        _adicionarAtividade(turmaIndex),
+                                    icon: Icon(
+                                      Icons.add,
+                                      size: isMobile ? 16 : 18,
+                                      color: poliedroBlue,
+                                    ),
+                                    label: Text(
+                                      'Nova atividade',
+                                      style: TextStyle(
+                                        color: poliedroBlue,
+                                        fontSize: isMobile ? 11 : 12.5,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              if (atividades.isEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 8.0),
+                                  child: Text(
+                                    'Nenhuma atividade cadastrada para esta turma.',
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 11 : 12,
+                                      color: Colors.grey[700],
+                                    ),
+                                  ),
+                                )
+                              else
+                                Column(
+                                  children: List.generate(
+                                    atividades.length,
+                                    (atividadeIndex) {
+                                      final atividade =
+                                          atividades[atividadeIndex]
+                                              as Map<String, dynamic>;
+                                      final titulo =
+                                          atividade['titulo'] as String? ??
+                                              'Atividade';
+                                      final peso =
+                                          atividade['peso'] as num? ?? 1.0;
+                                      final notas =
+                                          (atividade['notas'] as List?) ?? [];
+
+                                      return Container(
+                                        margin: EdgeInsets.symmetric(
+                                          vertical: isMobile ? 3 : 4,
+                                        ),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: isMobile ? 8 : 10,
+                                          vertical: isMobile ? 6 : 8,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey.shade50,
+                                          borderRadius: BorderRadius.circular(10),
+                                          border: Border.all(
+                                            color: Colors.grey.shade300,
+                                            width: 0.6,
+                                          ),
+                                        ),
+                                        child: Row(
                                           children: [
-                                            Text(
-                                              titulo,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                fontSize:
-                                                    isMobile ? 12.5 : 13.5,
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    titulo,
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.w600,
+                                                      fontSize:
+                                                          isMobile ? 12.5 : 13.5,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 2),
+                                                  Text(
+                                                    'Peso: ${peso.toString()} • ${notas.length} aluno(s)',
+                                                    style: TextStyle(
+                                                      fontSize:
+                                                          isMobile ? 10 : 11.5,
+                                                      color: Colors.grey[700],
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              'Peso: ${peso.toString()} • ${notas.length} aluno(s)',
-                                              style: TextStyle(
-                                                fontSize:
-                                                    isMobile ? 10 : 11.5,
-                                                color: Colors.grey[700],
+                                            SizedBox(width: isMobile ? 4 : 8),
+                                            TextButton(
+                                              onPressed: () =>
+                                                  _abrirLancamentoNotas(
+                                                    turmaIndex,
+                                                    atividadeIndex,
+                                                  ),
+                                              child: Text(
+                                                'Lançar / editar notas',
+                                                style: TextStyle(
+                                                  fontSize:
+                                                      isMobile ? 10.5 : 11.5,
+                                                  color: poliedroBlue,
+                                                ),
                                               ),
+                                            ),
+                                            IconButton(
+                                              tooltip: 'Editar atividade',
+                                              icon: Icon(
+                                                Icons.edit_outlined,
+                                                size: isMobile ? 16 : 18,
+                                                color: poliedroBlue,
+                                              ),
+                                              onPressed: () => _editarAtividade(
+                                                  turmaIndex, atividadeIndex),
+                                            ),
+                                            IconButton(
+                                              tooltip: 'Excluir atividade',
+                                              icon: Icon(
+                                                Icons.delete_outline,
+                                                size: isMobile ? 16 : 18,
+                                                color: Colors.redAccent,
+                                              ),
+                                              onPressed: () => _removerAtividade(
+                                                  turmaIndex, atividadeIndex),
                                             ),
                                           ],
                                         ),
-                                      ),
-                                      SizedBox(width: isMobile ? 4 : 8),
-                                      TextButton(
-                                        onPressed: () =>
-                                            _abrirLancamentoNotas(
-                                              turmaIndex,
-                                              atividadeIndex,
-                                            ),
-                                        child: Text(
-                                          'Lançar / editar notas',
-                                          style: TextStyle(
-                                            fontSize:
-                                                isMobile ? 10.5 : 11.5,
-                                            color: poliedroBlue,
-                                          ),
-                                        ),
-                                      ),
-                                      IconButton(
-                                        tooltip: 'Editar atividade',
-                                        icon: Icon(
-                                          Icons.edit_outlined,
-                                          size: isMobile ? 16 : 18,
-                                          color: poliedroBlue,
-                                        ),
-                                        onPressed: () => _editarAtividade(
-                                            turmaIndex, atividadeIndex),
-                                      ),
-                                      IconButton(
-                                        tooltip: 'Excluir atividade',
-                                        icon: Icon(
-                                          Icons.delete_outline,
-                                          size: isMobile ? 16 : 18,
-                                          color: Colors.redAccent,
-                                        ),
-                                        onPressed: () => _removerAtividade(
-                                            turmaIndex, atividadeIndex),
-                                      ),
-                                    ],
+                                      );
+                                    },
                                   ),
-                                );
-                              },
-                            ),
+                                ),
+                            ],
                           ),
-                      ],
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-      ),
+            ),
     );
   }
 }
