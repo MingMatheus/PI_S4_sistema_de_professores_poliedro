@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/custom_text_field.dart';
-import '../home/professor_home_screen.dart';
+import '../home/professor_home_screen.dart'; // ← import da nova tela a dos fessor
 import '../home/home_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -51,32 +51,36 @@ class _LoginScreenState extends State<LoginScreen> {
 
       setState(() => _isLoading = false);
 
-      if (response.statusCode == 200) {
+      if(response.statusCode == 200)
+      {
         final data = jsonDecode(response.body);
         final token = data['token'];
 
+        // Salva o token JWT
         final prefs = await SharedPreferences.getInstance();
-
-        // chave original
         await prefs.setString('jwt_token', token);
-        // chave extra para o ApiClient (caso algo ainda use 'token')
-        await prefs.setString('token', token);
 
+        // Redireciona para a tela do PROFESSOR (temporário)
         if (!mounted) return;
 
         Map<String, dynamic> tokenPayload = JwtDecoder.decode(token);
         String role = tokenPayload["role"];
 
-        if (role == "professor") {
+        if(role == "professor")
+        {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const ProfessorHomeScreen()),
           );
-        } else {
+        }
+        else
+        {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const HomeScreen()),
           );
         }
-      } else {
+      }
+      else
+      {
         final error = jsonDecode(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(error['mensagem'] ?? 'Falha no login')),
@@ -122,8 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Icon(Icons.account_circle_outlined,
-              size: 32, color: Colors.grey[600]),
+          Icon(Icons.account_circle_outlined, size: 32, color: Colors.grey[600]),
           const SizedBox(height: 4),
           Text(
             'Acesso ao Portal Poliedro',
@@ -161,9 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           const SizedBox(height: 4),
           _isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(color: poliedroPink),
-                )
+              ? const Center(child: CircularProgressIndicator(color: poliedroPink))
               : ElevatedButton(
                   onPressed: _handleLogin,
                   style: ElevatedButton.styleFrom(

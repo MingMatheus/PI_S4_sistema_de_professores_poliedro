@@ -1,7 +1,9 @@
 const mongoose = require("mongoose")
 
-// Tirei o TIPOS_DE_AVALIACAO daqui
-// porque vamos aceitar qualquer string em `tipo`
+const {
+  TIPOS_DE_AVALIACAO
+} = require("../constants/validation.constants")
+
 const {
   VALIDACAO
 } = require("../constants/responseMessages.constants")
@@ -19,39 +21,20 @@ const avaliacaoSchema = mongoose.Schema({
   tipo: {
     type: String,
     required: [true, VALIDACAO.AVALIACAO.TIPO_OBRIGATORIO],
-    trim: true
-    // sem enum aqui de propósito
+    enum: Object.values(TIPOS_DE_AVALIACAO)
   },
   materia: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Materia",
-    // continua opcional, pra não quebrar a tela de atividades agora
+    required: [true, VALIDACAO.AVALIACAO.MATERIA_OBRIGATORIA]
   },
   notaMaxima: {
     type: Number,
     default: 10
-  },
-  descricao: {
-    type: String,
-    trim: true
-  },
-  turma: {
-    type: String,
-    trim: true
-  },
-  dataEntrega: {
-    type: String, // ex: "20/03/2025"
-    trim: true
-  },
-  status: {
-    type: String,
-    enum: ["Aberta", "Encerrada"],
-    default: "Aberta"
   }
 })
 
-// mantém o índice como estava
-avaliacaoSchema.index({ nome: 1, materia: 1 }, { unique: true })
+avaliacaoSchema.index({nome: 1, materia: 1}, {unique: true})
 
 const Avaliacao = mongoose.model("Avaliacao", avaliacaoSchema)
 

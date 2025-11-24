@@ -9,7 +9,11 @@ const {
   ROLES
 } = require("../../constants/validation.constants")
 
-// Rotas restritas ao professor
+// Rotas públicas
+
+// Rotas protegidas
+
+// Rotas restritas
 router.post(
   "/",
   authMiddleware,
