@@ -31,7 +31,7 @@ class _AvisosScreenState extends State<AvisosScreen> {
     final bool isWide = w >= 1200;
     final bool isPhoneNarrow = w < 420;
     final double imgScale = isWide ? 1.32 : (isPhoneNarrow ? 1.42 : 1.12);
-    final double imgOffsetY = isWide ? 0 : (isPhoneNarrow ? 5 : -10);
+    //final double imgOffsetY = isWide ? 0 : (isPhoneNarrow ? 5 : -10);
     const bg = Color(0xFFF2F4F7);
 
     return Container(

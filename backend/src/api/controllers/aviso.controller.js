@@ -27,6 +27,13 @@ exports.createAviso = async (req, res) => {
 
     await novoAviso.save();
 
+    await novoAviso.populate([
+      { path: 'autor', select: 'nome' },
+      { path: 'seriesAlvo', select: 'nome' },
+      { path: 'turmasAlvo', select: 'nome' },
+      { path: 'alunosAlvo', select: 'nome ra' }
+    ]);
+
     res.status(201).json({
       mensagem: AVISO.CRIADO_COM_SUCESSO,
       aviso: novoAviso
@@ -131,6 +138,13 @@ exports.updateAvisoById = async (req, res) => {
     if(alunosAlvo) aviso.alunosAlvo = alunosAlvo
 
     await aviso.save()
+
+    await aviso.populate([
+      { path: 'autor', select: 'nome' },
+      { path: 'seriesAlvo', select: 'nome' },
+      { path: 'turmasAlvo', select: 'nome' },
+      { path: 'alunosAlvo', select: 'nome ra' }
+    ]);
 
     res.status(200).json({
       mensagem: AVISO.ATUALIZADO_COM_SUCESSO,

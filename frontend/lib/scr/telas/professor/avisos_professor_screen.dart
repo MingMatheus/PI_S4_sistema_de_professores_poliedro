@@ -1,5 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
 import '../../constants/app_colors.dart';
+import '../../models/aluno.dart';
+import '../../models/aviso.dart';
+import '../../models/serie.dart';
+import '../../models/turma.dart';
+import '../../services/aluno_service.dart';
+import '../../services/aviso_service.dart';
+import '../../services/serie_service.dart';
+import '../../services/turma_service.dart';
 import '../home/professor_home_screen.dart';
 import '../login/login_screen.dart';
 
@@ -11,436 +21,86 @@ class ProfessorAvisosScreen extends StatefulWidget {
 }
 
 class _ProfessorAvisosScreenState extends State<ProfessorAvisosScreen> {
-  // Turmas disponíveis
-  final List<String> _turmasDisponiveis = [
-    '1º Ano A',
-    '1º Ano B',
-    '2º Ano A',
-    '2º Ano B',
-    '3º Ano A',
-    '3º Ano B',
-    'Geral', // Geral = todos os alunos
-  ];
+  // Services
+  final AvisoService _avisoService = AvisoService();
+  final SerieService _serieService = SerieService();
+  final TurmaService _turmaService = TurmaService();
+  final AlunoService _alunoService = AlunoService();
 
-  // Lista de avisos (mock)
-  // Cada aviso tem: titulo, mensagem, turmas (List<String>), data, importante
-  final List<Map<String, dynamic>> _avisos = [
-    {
-      'titulo': 'Prova de Matemática',
-      'mensagem':
-          'Prova bimestral de Matemática será na próxima terça-feira. Estudem os capítulos 3 e 4.',
-      'turmas': ['1º Ano A'],
-      'data': '10/03/2025',
-      'importante': true,
-    },
-    {
-      'titulo': 'Entrega de Trabalho de História',
-      'mensagem':
-          'Prazo final para entrega do trabalho sobre Revolução Francesa é sexta-feira.',
-      'turmas': ['2º Ano B'],
-      'data': '08/03/2025',
-      'importante': false,
-    },
-    {
-      'titulo': 'Aviso Geral',
-      'mensagem':
-          'Lembramos que o uso do uniforme completo é obrigatório em todas as aulas.',
-      'turmas': ['Geral'],
-      'data': '05/03/2025',
-      'importante': false,
-    },
-  ];
+  // Futures
+  late Future<List<Aviso>> _avisosFuture;
+  late Future<void> _initialDataFuture;
 
-  // ---------- HELPERS ----------
+  // Data lists
+  List<Serie> _series = [];
+  List<Turma> _turmas = [];
+  List<Aluno> _alunos = [];
 
-  bool _isGeral(List<String> turmas) {
-    return turmas.isEmpty || turmas.contains('Geral');
+  @override
+  void initState() {
+    super.initState();
+    _fetchAvisos();
+    _initialDataFuture = _fetchInitialData();
   }
 
-  String _turmasLabel(List<String> turmas) {
-    if (_isGeral(turmas)) return 'Todos os alunos';
-    if (turmas.length == 1) return 'Turma: ${turmas.first}';
-    return 'Turmas: ${turmas.join(', ')}';
+  void _fetchAvisos() {
+    setState(() {
+      _avisosFuture = _avisoService.getMeusAvisos();
+    });
   }
-
-  // ---------- CRIAR AVISO ----------
-
-  Future<void> _adicionarAviso() async {
-    final tituloController = TextEditingController();
-    final mensagemController = TextEditingController();
-    List<String> turmasSelecionadas = [];
-    bool importante = false;
-
-    await showDialog(
-      context: context,
-      builder: (dialogContext) {
-        final largura = MediaQuery.of(dialogContext).size.width;
-        final bool isMobile = largura < 600;
-
-        return StatefulBuilder(
-          builder: (ctx, setStateDialog) {
-            void toggleTurma(String turma) {
-              setStateDialog(() {
-                if (turma == 'Geral') {
-                  // "Geral" é exclusivo
-                  if (turmasSelecionadas.contains('Geral')) {
-                    turmasSelecionadas.remove('Geral');
-                  } else {
-                    turmasSelecionadas
-                      ..clear()
-                      ..add('Geral');
-                  }
-                } else {
-                  if (turmasSelecionadas.contains(turma)) {
-                    turmasSelecionadas.remove(turma);
-                  } else {
-                    turmasSelecionadas.add(turma);
-                  }
-                  turmasSelecionadas.remove('Geral');
-                }
-              });
-            }
-
-            return AlertDialog(
-              title: const Text('Novo aviso'),
-              content: SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: isMobile ? largura * 0.9 : 520,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextField(
-                        controller: tituloController,
-                        decoration: const InputDecoration(
-                          labelText: 'Título',
-                          hintText:
-                              'Ex: Aviso de prova, trabalho, recado geral...',
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Turmas destino',
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 4,
-                        children: _turmasDisponiveis.map((turma) {
-                          final selected =
-                              turmasSelecionadas.contains(turma);
-
-                          return FilterChip(
-                            label: Text(
-                              turma == 'Geral' ? 'Todos os alunos' : turma,
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: selected
-                                    ? FontWeight.w600
-                                    : FontWeight.w400,
-                              ),
-                            ),
-                            selected: selected,
-                            selectedColor: poliedroBlue.withOpacity(0.16),
-                            checkmarkColor: poliedroBlue,
-                            onSelected: (_) => toggleTurma(turma),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: mensagemController,
-                        maxLines: 4,
-                        decoration: const InputDecoration(
-                          labelText: 'Mensagem',
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Checkbox(
-                            value: importante,
-                            activeColor: poliedroBlue,
-                            onChanged: (v) {
-                              setStateDialog(() {
-                                importante = v ?? false;
-                              });
-                            },
-                          ),
-                          const Flexible(
-                            child: Text(
-                              'Marcar como aviso importante',
-                              style: TextStyle(fontSize: 12.5),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Se nenhuma turma for selecionada, o aviso será marcado como geral (todos os alunos).',
-                        style: TextStyle(
-                          fontSize: 10.5,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text('Cancelar'),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: poliedroBlue,
-                  ),
-                  onPressed: () {
-                    final titulo = tituloController.text.trim();
-                    final mensagem = mensagemController.text.trim();
-
-                    if (titulo.isEmpty || mensagem.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Preencha pelo menos título e mensagem do aviso.',
-                          ),
-                        ),
-                      );
-                      return;
-                    }
-
-                    if (turmasSelecionadas.isEmpty) {
-                      turmasSelecionadas = ['Geral'];
-                    }
-
-                    final hoje = DateTime.now();
-                    final dataFormatada =
-                        '${hoje.day.toString().padLeft(2, '0')}/${hoje.month.toString().padLeft(2, '0')}/${hoje.year}';
-
-                    setState(() {
-                      _avisos.insert(0, {
-                        'titulo': titulo,
-                        'mensagem': mensagem,
-                        'turmas': List<String>.from(turmasSelecionadas),
-                        'data': dataFormatada,
-                        'importante': importante,
-                      });
-                    });
-
-                    Navigator.pop(dialogContext);
-                  },
-                  child: const Text('Publicar'),
-                ),
-              ],
-            );
-          },
+  Future<void> _fetchInitialData() async {
+    try {
+      final results = await Future.wait([
+        _serieService.getSeries(),
+        _turmaService.getTurmas(),
+        _alunoService.getAlunos(),
+      ]);
+      if (mounted) {
+        setState(() {
+          _series = results[0] as List<Serie>;
+          _turmas = results[1] as List<Turma>;
+          _alunos = results[2] as List<Aluno>;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao carregar dados de apoio: $e')),
         );
-      },
-    );
+      }
+    }
+  }
+  String _formatarAlvos(Aviso aviso) {
+    if (aviso.seriesAlvo.isEmpty &&
+        aviso.turmasAlvo.isEmpty &&
+        aviso.alunosAlvo.isEmpty) {
+      return 'Geral: Todos os alunos';
+    }
+    final parts = <String>[];
+    if (aviso.seriesAlvo.isNotEmpty) {
+      parts.add('Séries (${aviso.seriesAlvo.length})');
+    }
+    if (aviso.turmasAlvo.isNotEmpty) {
+      parts.add('Turmas (${aviso.turmasAlvo.length})');
+    }
+    if (aviso.alunosAlvo.isNotEmpty) {
+      parts.add('Alunos (${aviso.alunosAlvo.length})');
+    }
+    return parts.join(' • ');
   }
 
-  // ---------- EDITAR AVISO ----------
-
-  Future<void> _editarAviso(int index) async {
-    final aviso = _avisos[index];
-
-    final tituloController =
-        TextEditingController(text: aviso['titulo']?.toString() ?? '');
-    final mensagemController =
-        TextEditingController(text: aviso['mensagem']?.toString() ?? '');
-    List<String> turmasSelecionadas =
-        List<String>.from(aviso['turmas'] ?? <String>[]);
-    bool importante = aviso['importante'] == true;
-
-    await showDialog(
-      context: context,
-      builder: (dialogContext) {
-        final largura = MediaQuery.of(dialogContext).size.width;
-        final bool isMobile = largura < 600;
-
-        return StatefulBuilder(
-          builder: (ctx, setStateDialog) {
-            void toggleTurma(String turma) {
-              setStateDialog(() {
-                if (turma == 'Geral') {
-                  if (turmasSelecionadas.contains('Geral')) {
-                    turmasSelecionadas.remove('Geral');
-                  } else {
-                    turmasSelecionadas
-                      ..clear()
-                      ..add('Geral');
-                  }
-                } else {
-                  if (turmasSelecionadas.contains(turma)) {
-                    turmasSelecionadas.remove(turma);
-                  } else {
-                    turmasSelecionadas.add(turma);
-                  }
-                  turmasSelecionadas.remove('Geral');
-                }
-              });
-            }
-
-            return AlertDialog(
-              title: const Text('Editar aviso'),
-              content: SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: isMobile ? largura * 0.9 : 520,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextField(
-                        controller: tituloController,
-                        decoration: const InputDecoration(
-                          labelText: 'Título',
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Turmas destino',
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 4,
-                        children: _turmasDisponiveis.map((turma) {
-                          final selected =
-                              turmasSelecionadas.contains(turma);
-
-                          return FilterChip(
-                            label: Text(
-                              turma == 'Geral' ? 'Todos os alunos' : turma,
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: selected
-                                    ? FontWeight.w600
-                                    : FontWeight.w400,
-                              ),
-                            ),
-                            selected: selected,
-                            selectedColor: poliedroBlue.withOpacity(0.16),
-                            checkmarkColor: poliedroBlue,
-                            onSelected: (_) => toggleTurma(turma),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: mensagemController,
-                        maxLines: 4,
-                        decoration: const InputDecoration(
-                          labelText: 'Mensagem',
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Checkbox(
-                            value: importante,
-                            activeColor: poliedroBlue,
-                            onChanged: (v) {
-                              setStateDialog(() {
-                                importante = v ?? false;
-                              });
-                            },
-                          ),
-                          const Flexible(
-                            child: Text(
-                              'Marcar como aviso importante',
-                              style: TextStyle(fontSize: 12.5),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text('Cancelar'),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: poliedroBlue,
-                  ),
-                  onPressed: () {
-                    final titulo = tituloController.text.trim();
-                    final mensagem = mensagemController.text.trim();
-
-                    if (titulo.isEmpty || mensagem.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Preencha pelo menos título e mensagem do aviso.',
-                          ),
-                        ),
-                      );
-                      return;
-                    }
-
-                    if (turmasSelecionadas.isEmpty) {
-                      turmasSelecionadas = ['Geral'];
-                    }
-
-                    setState(() {
-                      _avisos[index] = {
-                        'titulo': titulo,
-                        'mensagem': mensagem,
-                        'turmas': List<String>.from(turmasSelecionadas),
-                        'data': aviso['data'],
-                        'importante': importante,
-                      };
-                    });
-
-                    Navigator.pop(dialogContext);
-                  },
-                  child: const Text('Salvar'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  // ---------- REMOVER AVISO ----------
-
-  Future<void> _removerAviso(int index) async {
-    final aviso = _avisos[index];
-    final titulo = aviso['titulo'] ?? '';
-
+  Future<void> _removerAviso(String avisoId, String titulo) async {
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Excluir aviso'),
-        content: Text(
-          'Tem certeza que deseja excluir o aviso "$titulo"?',
-        ),
+        content: Text('Tem certeza que deseja excluir o aviso "$titulo"?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar')),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Excluir'),
           ),
@@ -449,23 +109,261 @@ class _ProfessorAvisosScreenState extends State<ProfessorAvisosScreen> {
     );
 
     if (confirmar == true) {
-      setState(() {
-        _avisos.removeAt(index);
-      });
+      try {
+        await _avisoService.deleteAviso(avisoId);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Aviso excluído com sucesso!'),
+                backgroundColor: Colors.green),
+          );
+        }
+        _fetchAvisos();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text('Erro ao excluir aviso: $e'),
+                backgroundColor: Colors.red),
+          );
+        }
+      }
     }
   }
 
-  // ---------- BUILD ----------
+  Future<void> _adicionarOuEditarAviso({Aviso? aviso}) async {
+    final bool isEditing = aviso != null;
+    final tituloController =
+        TextEditingController(text: isEditing ? aviso.titulo : '');
+    final conteudoController =
+        TextEditingController(text: isEditing ? aviso.conteudo : '');
+
+    Set<String> selectedSeries = {};
+    Set<String> selectedTurmas = {};
+    Set<String> selectedAlunos = {};
+
+    if (isEditing) {
+      // Robust mapping to handle both String IDs and and Maps from the Aviso model
+      selectedSeries = (aviso!.seriesAlvo.map((e) {
+        return e is String ? e : e['_id'] as String;
+      }).toSet() as Set<String>);
+      selectedTurmas = (aviso!.turmasAlvo.map((e) {
+        return e is String ? e : e['_id'] as String;
+      }).toSet() as Set<String>);
+      selectedAlunos = (aviso!.alunosAlvo.map((e) {
+        return e is String ? e : e['_id'] as String;
+      }).toSet() as Set<String>);
+    }
+
+    final formKey = GlobalKey<FormState>();
+    bool _showRecipientError = false;
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            Future<void> showMultiSelect<T>({
+              required String title,
+              required List<T> allItems,
+              required Set<String> selectedIds,
+              required String Function(T) display,
+              required String Function(T) id,
+              String? Function(T)? subtitle,
+            }) async {
+              final result = await showDialog<Set<String>>(
+                context: context,
+                builder: (ctx) => _MultiSelectDialog<T>(
+                  title: title,
+                  allItems: allItems,
+                  selectedIds: selectedIds,
+                  display: display,
+                  id: id,
+                  subtitle: subtitle,
+                ),
+              );
+              if (result != null) {
+                setStateDialog(() {
+                  if (T == Serie) selectedSeries = result;
+                  if (T == Turma) selectedTurmas = result;
+                  if (T == Aluno) selectedAlunos = result;
+                  // Hide error message once a selection is made
+                  if (result.isNotEmpty) {
+                    _showRecipientError = false;
+                  }
+                });
+              }
+            }
+
+            return AlertDialog(
+              title: Text(isEditing ? 'Editar Aviso' : 'Novo Aviso'),
+              content: Form(
+                key: formKey,
+                child: SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 500),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextFormField(
+                          controller: tituloController,
+                          decoration:
+                              const InputDecoration(labelText: 'Título'),
+                          validator: (v) =>
+                              v!.trim().isEmpty ? 'Título é obrigatório' : null,
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: conteudoController,
+                          maxLines: 5,
+                          decoration: const InputDecoration(
+                              labelText: 'Conteúdo do aviso',
+                              border: OutlineInputBorder()),
+                          validator: (v) => v!.trim().isEmpty
+                              ? 'Conteúdo é obrigatório'
+                              : null,
+                        ),
+                        const SizedBox(height: 16),
+                        const Divider(),
+                        const Text('Selecione os Destinatários',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 8),
+                        ListTile(
+                          leading: const Icon(Icons.school_outlined),
+                          title: const Text('Séries'),
+                          subtitle: Text(selectedSeries.isEmpty
+                              ? 'Nenhuma selecionada'
+                              : '${selectedSeries.length} selecionada(s)'),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => showMultiSelect<Serie>(
+                              title: 'Selecionar Séries',
+                              allItems: _series,
+                              selectedIds: selectedSeries,
+                              display: (s) => s.nome,
+                              id: (s) => s.id),
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.class_outlined),
+                          title: const Text('Turmas'),
+                          subtitle: Text(selectedTurmas.isEmpty
+                              ? 'Nenhuma selecionada'
+                              : '${selectedTurmas.length} selecionada(s)'),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => showMultiSelect<Turma>(
+                              title: 'Selecionar Turmas',
+                              allItems: _turmas,
+                              selectedIds: selectedTurmas,
+                              display: (t) => t.nome,
+                              id: (t) => t.id),
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.person_outline),
+                          title: const Text('Alunos Específicos'),
+                          subtitle: Text(selectedAlunos.isEmpty
+                              ? 'Nenhum selecionado'
+                              : '${selectedAlunos.length} selecionado(s)'),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => showMultiSelect<Aluno>(
+                              title: 'Selecionar Alunos',
+                              allItems: _alunos,
+                              selectedIds: selectedAlunos,
+                              display: (a) => a.nome,
+                              id: (a) => a.id,
+                              subtitle: (a) => 'RA: ${a.ra}'),
+                        ),
+                        if (_showRecipientError)
+                          Padding(
+                            padding:
+                                const EdgeInsets.only(top: 8.0, left: 16.0),
+                            child: Text(
+                              'Selecione ao menos um destinatário (série, turma ou aluno).',
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                  fontSize: 12),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(dialogContext),
+                    child: const Text('Cancelar')),
+                TextButton(
+                  style: TextButton.styleFrom(foregroundColor: poliedroBlue),
+                  onPressed: () async {
+                    final formIsValid = formKey.currentState!.validate();
+                    final recipientsAreValid = selectedSeries.isNotEmpty ||
+                        selectedTurmas.isNotEmpty ||
+                        selectedAlunos.isNotEmpty;
+
+                    if (!recipientsAreValid) {
+                      setStateDialog(() {
+                        _showRecipientError = true;
+                      });
+                    } else {
+                      setStateDialog(() {
+                        _showRecipientError = false;
+                      });
+                    }
+
+                    if (!formIsValid || !recipientsAreValid) {
+                      return;
+                    }
+
+                    final payload = {
+                      'titulo': tituloController.text.trim(),
+                      'conteudo': conteudoController.text.trim(),
+                      'seriesAlvo': selectedSeries.toList(),
+                      'turmasAlvo': selectedTurmas.toList(),
+                      'alunosAlvo': selectedAlunos.toList(),
+                    };
+
+                    try {
+                      if (isEditing) {
+                        await _avisoService.updateAviso(aviso.id, payload);
+                      } else {
+                        await _avisoService.createAviso(payload);
+                      }
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(
+                                  'Aviso ${isEditing ? 'atualizado' : 'publicado'} com sucesso!'),
+                              backgroundColor: Colors.green),
+                        );
+                      }
+                      _fetchAvisos();
+                      Navigator.pop(dialogContext);
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text('Erro: $e'),
+                              backgroundColor: Colors.red),
+                        );
+                      }
+                    }
+                  },
+                  child: Text(isEditing ? 'Salvar' : 'Publicar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final largura = MediaQuery.of(context).size.width;
     final bool isMobile = largura < 800;
-
-    final EdgeInsets pagePadding = EdgeInsets.symmetric(
-      horizontal: isMobile ? 12 : 24,
-      vertical: 16,
-    );
+    final EdgeInsets pagePadding =
+        EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -474,194 +372,178 @@ class _ProfessorAvisosScreenState extends State<ProfessorAvisosScreen> {
         elevation: 2,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const ProfessorHomeScreen(),
-              ),
-            );
-          },
+          onPressed: () => Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (_) => const ProfessorHomeScreen())),
         ),
-        title: const Text(
-          'Avisos e Comunicados',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: const Text('Gerenciar Avisos',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
-            onPressed: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (_) => const LoginScreen(),
-                ),
-              );
-            },
+            onPressed: () => Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const LoginScreen())),
             icon: const Icon(Icons.logout_outlined, color: Colors.white),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _adicionarAviso,
-        backgroundColor: poliedroBlue,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Novo aviso'),
+      floatingActionButton: FutureBuilder<void>(
+        future: _initialDataFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done &&
+              snapshot.error == null) {
+            return FloatingActionButton.extended(
+              onPressed: () => _adicionarOuEditarAviso(),
+              backgroundColor: poliedroBlue,
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.add),
+              label: const Text('Novo aviso'),
+            );
+          }
+          return FloatingActionButton.extended(
+            onPressed: null,
+            backgroundColor: Colors.grey,
+            icon: const Icon(Icons.add),
+            label: const Text('Novo aviso'),
+          );
+        },
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      body: Container(
-        color: const Color(0xFFF5F7FA),
-        child: Padding(
-          padding: pagePadding,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1100),
-              child: _avisos.isEmpty
-                  ? const Center(
+      body: Padding(
+        padding: pagePadding,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1100),
+            child: FutureBuilder<void>(
+              future: _initialDataFuture,
+              builder: (context, initialDataSnapshot) {
+                if (initialDataSnapshot.connectionState ==
+                    ConnectionState.waiting) {
+                  return const Center(
+                      child: Text('Carregando dados de apoio...'));
+                }
+                if (initialDataSnapshot.hasError) {
+                  return Center(
                       child: Text(
-                        'Nenhum aviso publicado até o momento.',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: _avisos.length,
-                      itemBuilder: (context, index) {
-                        final aviso = _avisos[index];
-                        final importante = aviso['importante'] == true;
-                        final turmas =
-                            List<String>.from(aviso['turmas'] ?? <String>[]);
+                          'Erro ao carregar dados de apoio: ${initialDataSnapshot.error}'));
+                }
 
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 6),
-                          elevation: 3,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                            leading: CircleAvatar(
-                              radius: 18,
-                              backgroundColor: importante
-                                  ? Colors.redAccent.withOpacity(0.12)
-                                  : poliedroBlue.withOpacity(0.10),
-                              child: Icon(
-                                importante
-                                    ? Icons.notification_important_outlined
-                                    : Icons.campaign_outlined,
-                                color:
-                                    importante ? Colors.redAccent : poliedroBlue,
-                                size: 22,
-                              ),
-                            ),
-                            title: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    aviso['titulo'] ?? '',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 15,
+                return FutureBuilder<List<Aviso>>(
+                  future: _avisosFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return Center(
+                          child: Text(
+                              'Erro ao carregar avisos: ${snapshot.error}'));
+                    }
+                    final avisos = snapshot.data ?? [];
+
+                    return RefreshIndicator(
+                      onRefresh: () async => _fetchAvisos(),
+                      child: avisos.isEmpty
+                          ? const Center(
+                              child: Text('Nenhum aviso publicado por você.',
+                                  style: TextStyle(color: Colors.grey)))
+                          : ListView.builder(
+                              itemCount: avisos.length,
+                              itemBuilder: (context, index) {
+                                final aviso = avisos[index];
+                                final dataFormatada =
+                                    DateFormat('dd/MM/yy \'às\' HH:mm', 'pt_BR')
+                                        .format(aviso.createdAt.toLocal());
+
+                                return Card(
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 6),
+                                  elevation: 3,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                  child: ListTile(
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 12),
+                                    leading: const CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: poliedroBlue,
+                                      child: Icon(Icons.notifications,
+                                          color: Colors.white, size: 22),
+                                    ),
+                                    title: Row(
+                                      children: [
+                                        Expanded(
+                                            child: Text(aviso.titulo,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 15))),
+                                        const SizedBox(width: 8),
+                                        Text(dataFormatada,
+                                            style: TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.grey[600])),
+                                      ],
+                                    ),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          aviso.conteudo,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                              fontSize: 13,
+                                              color: Colors.black87),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          children: [
+                                            Icon(Icons.group_outlined,
+                                                size: 15,
+                                                color: Colors.grey[700]),
+                                            const SizedBox(width: 4),
+                                            Expanded(
+                                              child: Text(
+                                                _formatarAlvos(aviso),
+                                                style: TextStyle(
+                                                    fontSize: 11.5,
+                                                    color: Colors.grey[700]),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    trailing: Wrap(
+                                      spacing: -8,
+                                      children: [
+                                        IconButton(
+                                          tooltip: 'Editar aviso',
+                                          icon: const Icon(Icons.edit_outlined,
+                                              color: poliedroBlue, size: 20),
+                                          onPressed: () =>
+                                              _adicionarOuEditarAviso(
+                                                  aviso: aviso),
+                                        ),
+                                        IconButton(
+                                          tooltip: 'Excluir aviso',
+                                          icon: const Icon(
+                                              Icons.delete_outline,
+                                              color: Colors.redAccent,
+                                              size: 20),
+                                          onPressed: () => _removerAviso(
+                                              aviso.id, aviso.titulo),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  aviso['data'] ?? '',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ],
+                                );
+                              },
                             ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 4),
-                                Text(
-                                  aviso['mensagem'] ?? '',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.group_outlined,
-                                      size: 15,
-                                      color: Colors.grey[700],
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: Text(
-                                        _turmasLabel(turmas),
-                                        style: TextStyle(
-                                          fontSize: 11.5,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
-                                    ),
-                                    if (importante) ...[
-                                      const SizedBox(width: 10),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 6,
-                                          vertical: 2,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.redAccent
-                                              .withOpacity(0.12),
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                        child: const Text(
-                                          'IMPORTANTE',
-                                          style: TextStyle(
-                                            fontSize: 9.5,
-                                            fontWeight: FontWeight.w700,
-                                            color: Colors.redAccent,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ],
-                            ),
-                            trailing: Wrap(
-                              spacing: 4,
-                              children: [
-                                IconButton(
-                                  tooltip: 'Editar aviso',
-                                  icon: const Icon(
-                                    Icons.edit_outlined,
-                                    color: poliedroBlue,
-                                    size: 20,
-                                  ),
-                                  onPressed: () => _editarAviso(index),
-                                ),
-                                IconButton(
-                                  tooltip: 'Excluir aviso',
-                                  icon: const Icon(
-                                    Icons.delete_outline,
-                                    color: Colors.redAccent,
-                                    size: 20,
-                                  ),
-                                  onPressed: () => _removerAviso(index),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                    );
+                  },
+                );
+              },
             ),
           ),
         ),
@@ -669,3 +551,114 @@ class _ProfessorAvisosScreenState extends State<ProfessorAvisosScreen> {
     );
   }
 }
+
+  class _MultiSelectDialog<T> extends StatefulWidget {
+    final String title;
+    final List<T> allItems;
+    final Set<String> selectedIds;
+    final String Function(T) display;
+    final String Function(T) id;
+    final String? Function(T)? subtitle;
+
+    const _MultiSelectDialog({
+      required this.title,
+      required this.allItems,
+      required this.selectedIds,
+      required this.display,
+      required this.id,
+      this.subtitle,
+    });
+
+    @override
+    State<_MultiSelectDialog<T>> createState() => _MultiSelectDialogState<T>();
+  }
+
+  class _MultiSelectDialogState<T> extends State<_MultiSelectDialog<T>> {
+    late final Set<String> _currentSelectedIds;
+    late List<T> _filteredItems;
+    final _searchController = TextEditingController();
+
+    @override
+    void initState() {
+      super.initState();
+      _currentSelectedIds = {...widget.selectedIds};
+      _filteredItems = widget.allItems;
+      _searchController.addListener(_filterItems);
+    }
+
+    @override
+    void dispose() {
+      _searchController.dispose();
+      super.dispose();
+    }
+
+    void _filterItems() {
+      final query = _searchController.text.toLowerCase();
+      setState(() {
+        _filteredItems = widget.allItems.where((item) {
+          return widget.display(item).toLowerCase().contains(query);
+        }).toList();
+      });
+    }
+
+    void _onItemTapped(String itemId) {
+      setState(() {
+        if (_currentSelectedIds.contains(itemId)) {
+          _currentSelectedIds.remove(itemId);
+        } else {
+          _currentSelectedIds.add(itemId);
+        }
+      });
+    }
+
+    @override
+    Widget build(BuildContext context) {
+      return AlertDialog(
+        title: Text(widget.title),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _searchController,
+                decoration: const InputDecoration(
+                  labelText: 'Buscar...',
+                  prefixIcon: Icon(Icons.search),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: _filteredItems.length,
+                  itemBuilder: (context, index) {
+                    final item = _filteredItems[index];
+                    final itemId = widget.id(item);
+                    return CheckboxListTile(
+                      title: Text(widget.display(item)),
+                      subtitle: widget.subtitle != null
+                          ? Text(widget.subtitle!(item) ?? '')
+                          : null,
+                      value: _currentSelectedIds.contains(itemId),
+                      onChanged: (_) => _onItemTapped(itemId),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar')),
+          TextButton(
+              style: TextButton.styleFrom(foregroundColor: poliedroBlue),
+              onPressed: () => Navigator.pop(context, _currentSelectedIds),
+              child: const Text('Confirmar')),
+        ],
+      );
+    }
+  }
