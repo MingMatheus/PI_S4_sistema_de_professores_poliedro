@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'dart:developer' as developer;
+
 import '../../constants/app_colors.dart';
+import '../../services/avaliacao_service.dart';
+import '../../services/materia_service.dart';
 import '../home/professor_home_screen.dart';
 import '../login/login_screen.dart';
 
@@ -12,153 +17,106 @@ class ProfessorAtividadesScreen extends StatefulWidget {
 }
 
 class _ProfessorAtividadesScreenState extends State<ProfessorAtividadesScreen> {
-  final List<Map<String, dynamic>> _atividades = [
-    {
-      'titulo': 'Lista 1 - Funções Afins',
-      'turma': '1º Ano A',
-      'tipo': 'Trabalho',
-      'dataEntrega': '20/03/2025',
-      'descricao': 'Resolver os exercícios 1 a 10 do capítulo 3.',
-      'status': 'Aberta',
-    },
-    {
-      'titulo': 'Prova - Revolução Francesa',
-      'turma': '2º Ano B',
-      'tipo': 'Prova',
-      'dataEntrega': '25/03/2025',
-      'descricao': 'Avaliação com 10 questões dissertativas.',
-      'status': 'Aberta',
-    },
-    {
-      'titulo': 'Atividade - Fotossíntese',
-      'turma': '1º Ano A',
-      'tipo': 'Atividade',
-      'dataEntrega': '18/03/2025',
-      'descricao': 'Responder questionário sobre o vídeo em sala.',
-      'status': 'Encerrada',
-    },
-  ];
+  final AvaliacaoService _avaliacaoService = AvaliacaoService();
+  List<Map<String, dynamic>> _avaliacoes = [];
+  bool _isLoading = true;
 
-  final List<String> _tipos = ['Atividade', 'Trabalho', 'Prova', 'Outro'];
+  // Cache para os nomes das matérias
+  Map<String, String> _mapaNomesMaterias = {};
 
-  Future<void> _adicionarAtividade() async {
-    final tituloController = TextEditingController();
-    final turmaController = TextEditingController();
-    final dataController = TextEditingController();
-    final descricaoController = TextEditingController();
-    String tipoSelecionado = _tipos.first;
+  @override
+  void initState() {
+    super.initState();
+    _carregarDados();
+  }
 
-    await showDialog(
+  Future<void> _carregarDados() async {
+    setState(() => _isLoading = true);
+    try {
+      // Carrega matérias primeiro para ter os nomes
+      final materias = await MateriaService().getMaterias();
+      _mapaNomesMaterias = { for (var m in materias) m['_id']: m['nome'] };
+      
+      final avaliacoesFetched = await _avaliacaoService.getAvaliacoes();
+
+      if (mounted) {
+        setState(() {
+          _avaliacoes = avaliacoesFetched;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      developer.log('Erro ao carregar dados: $e', name: 'ProfessorAtividadesScreen');
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao carregar dados da página: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _mostrarFormulario([int? index]) async {
+    final bool? sucesso = await showDialog<bool>(
+      context: context,
+      builder: (_) => _AvaliacaoFormDialog(
+        avaliacao: index != null ? _avaliacoes[index] : null,
+      ),
+    );
+
+    if (sucesso == true) {
+      _carregarDados();
+    }
+  }
+  
+  Future<void> _removerAvaliacao(int index) async {
+     final avaliacao = _avaliacoes[index];
+     final id = avaliacao['_id'] as String;
+     final nome = avaliacao['nome'] as String;
+
+     final confirmar = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Nova atividade'),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(controller: tituloController, decoration: const InputDecoration(labelText: 'Título')),
-              TextField(controller: turmaController, decoration: const InputDecoration(labelText: 'Turma')),
-              TextField(controller: dataController, decoration: const InputDecoration(labelText: 'Data de entrega')),
-              DropdownButtonFormField<String>(
-                value: tipoSelecionado,
-                items: _tipos.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-                onChanged: (value) => tipoSelecionado = value ?? _tipos.first,
-                decoration: const InputDecoration(labelText: 'Tipo'),
-              ),
-              TextField(controller: descricaoController, maxLines: 3, decoration: const InputDecoration(labelText: 'Descrição')),
-            ],
-          ),
-        ),
+        title: const Text('Excluir Avaliação'),
+        content: Text('Deseja realmente excluir a avaliação "$nome"?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: poliedroBlue),
-            onPressed: () {
-              if (tituloController.text.isNotEmpty) {
-                setState(() {
-                  _atividades.add({
-                    'titulo': tituloController.text,
-                    'turma': turmaController.text,
-                    'tipo': tipoSelecionado,
-                    'dataEntrega': dataController.text,
-                    'descricao': descricaoController.text,
-                    'status': 'Aberta',
-                  });
-                });
-                Navigator.pop(context);
-              }
-            },
-            child: const Text('Criar'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Excluir'),
           ),
         ],
       ),
     );
+
+    if (confirmar == true) {
+      try {
+        await _avaliacaoService.deleteAvaliacao(id);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Avaliação excluída com sucesso!'),
+            backgroundColor: Colors.green,
+          ));
+        }
+        _carregarDados();
+      } catch (e) {
+        developer.log('Erro ao excluir: $e', name: 'ProfessorAtividadesScreen');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Erro ao excluir avaliação: $e'),
+            backgroundColor: Colors.red,
+          ));
+        }
+      }
+    }
   }
-
-  void _editarAtividade(int index) {
-    final atividade = _atividades[index];
-    final tituloController = TextEditingController(text: atividade['titulo']);
-    final turmaController = TextEditingController(text: atividade['turma']);
-    final dataController = TextEditingController(text: atividade['dataEntrega']);
-    final descricaoController = TextEditingController(text: atividade['descricao']);
-    String tipoSelecionado = atividade['tipo'];
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Editar atividade'),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(controller: tituloController, decoration: const InputDecoration(labelText: 'Título')),
-              TextField(controller: turmaController, decoration: const InputDecoration(labelText: 'Turma')),
-              TextField(controller: dataController, decoration: const InputDecoration(labelText: 'Data de entrega')),
-              DropdownButtonFormField<String>(
-                value: tipoSelecionado,
-                items: _tipos.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-                onChanged: (value) => tipoSelecionado = value ?? _tipos.first,
-                decoration: const InputDecoration(labelText: 'Tipo'),
-              ),
-              TextField(controller: descricaoController, maxLines: 3, decoration: const InputDecoration(labelText: 'Descrição')),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: poliedroBlue),
-            onPressed: () {
-              setState(() {
-                _atividades[index] = {
-                  'titulo': tituloController.text,
-                  'turma': turmaController.text,
-                  'tipo': tipoSelecionado,
-                  'dataEntrega': dataController.text,
-                  'descricao': descricaoController.text,
-                  'status': atividade['status'],
-                };
-              });
-              Navigator.pop(context);
-            },
-            child: const Text('Salvar'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _alternarStatus(int index) {
-    setState(() {
-      _atividades[index]['status'] =
-          _atividades[index]['status'] == 'Aberta' ? 'Encerrada' : 'Aberta';
-    });
-  }
-
-  void _removerAtividade(int index) {
-    setState(() => _atividades.removeAt(index));
-  }
-
-  Color _statusColor(String status) =>
-      status == 'Encerrada' ? Colors.redAccent : Colors.green;
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +127,7 @@ class _ProfessorAtividadesScreenState extends State<ProfessorAtividadesScreen> {
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         backgroundColor: poliedroBlue,
-        title: const Text('Atividades', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Gerenciar Avaliações', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
           onPressed: () => Navigator.pushReplacement(
@@ -188,95 +146,268 @@ class _ProfessorAtividadesScreenState extends State<ProfessorAtividadesScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _adicionarAtividade,
+        onPressed: () => _mostrarFormulario(),
         backgroundColor: poliedroBlue,
         icon: const Icon(Icons.add),
-        label: const Text('Nova atividade'),
+        label: const Text('Nova avaliação'),
       ),
       floatingActionButtonLocation: isMobile
           ? FloatingActionButtonLocation.centerFloat
           : FloatingActionButtonLocation.endFloat,
-      body: Padding(
-        padding: EdgeInsets.all(isMobile ? 10 : 16),
-        child: _atividades.isEmpty
-            ? const Center(
-                child: Text('Nenhuma atividade cadastrada.',
-                    style: TextStyle(color: Colors.grey)),
-              )
-            : ListView.builder(
-                itemCount: _atividades.length,
-                itemBuilder: (context, index) {
-                  final a = _atividades[index];
-                  return Card(
-                    margin: EdgeInsets.symmetric(vertical: isMobile ? 6 : 8),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    elevation: 3,
-                    child: ExpansionTile(
-                      title: Text(a['titulo'],
-                          style: TextStyle(
-                              fontSize: isMobile ? 13.5 : 15,
-                              fontWeight: FontWeight.w600)),
-                      subtitle: Row(
-                        children: [
-                          Text('${a['turma']} • ${a['tipo']} • ${a['dataEntrega']}',
-                              style: TextStyle(
-                                  fontSize: isMobile ? 10.5 : 11.5,
-                                  color: Colors.grey[700])),
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                                color:
-                                    _statusColor(a['status']).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8)),
-                            child: Text(a['status'],
+      body: _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : RefreshIndicator(
+            onRefresh: _carregarDados,
+            child: Padding(
+              padding: EdgeInsets.all(isMobile ? 10 : 16),
+              child: _avaliacoes.isEmpty
+                  ? const Center(
+                      child: Text('Nenhuma avaliação cadastrada.',
+                          style: TextStyle(color: Colors.grey)),
+                    )
+                  : ListView.builder(
+                      itemCount: _avaliacoes.length,
+                      itemBuilder: (context, index) {
+                        final a = _avaliacoes[index];
+                        final nome = a['nome']?.toString() ?? 'Sem nome';
+                        final tipo = a['tipo']?.toString() ?? '-';
+                        final materiaId = a['materia']?.toString() ?? '';
+                        final nomeMateria = _mapaNomesMaterias[materiaId] ?? 'Matéria não encontrada';
+
+                        return Card(
+                          margin: EdgeInsets.symmetric(vertical: isMobile ? 6 : 8),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          elevation: 3,
+                          child: ExpansionTile(
+                            title: Text(nome,
                                 style: TextStyle(
-                                    fontSize: isMobile ? 9.5 : 10.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: _statusColor(a['status']))),
+                                    fontSize: isMobile ? 13.5 : 15,
+                                    fontWeight: FontWeight.w600)),
+                            subtitle: Text('Tipo: $tipo • Matéria: $nomeMateria',
+                                style: TextStyle(
+                                    fontSize: isMobile ? 10.5 : 11.5,
+                                    color: Colors.grey[700])),
+                            childrenPadding:
+                                EdgeInsets.all(isMobile ? 10 : 16),
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('Peso: ${a['peso']?.toString() ?? 'N/A'}',
+                                    style: TextStyle(
+                                        fontSize: isMobile ? 11.5 : 12.5,
+                                        color: Colors.grey[800])),
+                                  Expanded(
+                                    child: Text('ID: ${a['_id']?.toString() ?? 'N/A'}',
+                                      textAlign: TextAlign.right,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: isMobile ? 11.5 : 12.5,
+                                          color: Colors.grey[800])),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 4,
+                                alignment: WrapAlignment.center,
+                                children: [
+                                  TextButton.icon(
+                                    onPressed: () => _mostrarFormulario(index),
+                                    icon: const Icon(Icons.edit_outlined),
+                                    label: const Text('Editar'),
+                                  ),
+                                  TextButton.icon(
+                                    onPressed: () => _removerAvaliacao(index),
+                                    icon: const Icon(Icons.delete_outline),
+                                    label: const Text('Excluir'),
+                                    style: TextButton.styleFrom(
+                                        foregroundColor: Colors.redAccent),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      childrenPadding:
-                          EdgeInsets.all(isMobile ? 10 : 16),
-                      children: [
-                        Text(a['descricao'],
-                            style: TextStyle(
-                                fontSize: isMobile ? 11.5 : 12.5,
-                                color: Colors.grey[800])),
-                        const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 6,
-                          children: [
-                            TextButton.icon(
-                              onPressed: () => _alternarStatus(index),
-                              icon: const Icon(Icons.lock_open_outlined),
-                              label: Text(a['status'] == 'Aberta'
-                                  ? 'Encerrar'
-                                  : 'Reabrir'),
-                            ),
-                            TextButton.icon(
-                              onPressed: () => _editarAtividade(index),
-                              icon: const Icon(Icons.edit_outlined),
-                              label: const Text('Editar'),
-                            ),
-                            TextButton.icon(
-                              onPressed: () => _removerAtividade(index),
-                              icon: const Icon(Icons.delete_outline),
-                              label: const Text('Excluir'),
-                              style: TextButton.styleFrom(
-                                  foregroundColor: Colors.redAccent),
-                            ),
-                          ],
-                        ),
-                      ],
+                        );
+                      },
                     ),
-                  );
+            ),
+        ),
+    );
+  }
+}
+
+
+// Widget separado para o formulário, para gerenciar seu próprio estado
+class _AvaliacaoFormDialog extends StatefulWidget {
+  final Map<String, dynamic>? avaliacao;
+  const _AvaliacaoFormDialog({this.avaliacao});
+
+  @override
+  State<_AvaliacaoFormDialog> createState() => _AvaliacaoFormDialogState();
+}
+
+class _AvaliacaoFormDialogState extends State<_AvaliacaoFormDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _avaliacaoService = AvaliacaoService();
+
+  late final TextEditingController _nomeController;
+  late final TextEditingController _pesoController;
+
+  final List<String> _tipos = ['prova', 'trabalho'];
+  late String _tipoSelecionado;
+  
+  List<Map<String, dynamic>> _materias = [];
+  String? _materiaSelecionadaId;
+  bool _isLoadingMaterias = true;
+
+  @override
+  void initState() {
+    super.initState();
+    final a = widget.avaliacao;
+    _nomeController = TextEditingController(text: a?['nome']);
+    _pesoController = TextEditingController(text: a?['peso']?.toString() ?? '1.0');
+    _tipoSelecionado = a?['tipo'] ?? _tipos.first;
+    _materiaSelecionadaId = a?['materia'];
+    
+    _carregarMaterias();
+  }
+
+  Future<void> _carregarMaterias() async {
+    try {
+      final materiasFetched = await MateriaService().getMaterias();
+      if (mounted) {
+        setState(() {
+          _materias = materiasFetched;
+          _isLoadingMaterias = false;
+        });
+      }
+    } catch (e) {
+       developer.log('Erro ao carregar matérias no form: $e', name: 'AvaliacaoForm');
+       if (mounted) {
+        setState(() => _isLoadingMaterias = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao carregar matérias: $e'), backgroundColor: Colors.red),
+        );
+       }
+    }
+  }
+
+  Future<void> _salvar() async {
+    if (_formKey.currentState?.validate() != true) return;
+
+    final data = {
+      'nome': _nomeController.text,
+      'tipo': _tipoSelecionado,
+      'peso': double.tryParse(_pesoController.text.replaceAll(',', '.')) ?? 1.0,
+      'materia': _materiaSelecionadaId,
+    };
+
+    try {
+      if (widget.avaliacao != null) {
+        await _avaliacaoService.updateAvaliacao(widget.avaliacao!['_id'], data);
+      } else {
+        await _avaliacaoService.createAvaliacao(data);
+      }
+      
+      if (mounted) {
+        Navigator.pop(context, true); // Retorna 'true' para indicar sucesso
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Avaliação ${widget.avaliacao != null ? 'atualizada' : 'criada'} com sucesso!'),
+          backgroundColor: Colors.green,
+        ));
+      }
+    } catch (e) {
+      developer.log('Erro ao salvar: $e', name: 'AvaliacaoForm');
+      if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Erro ao salvar avaliação: $e'),
+          backgroundColor: Colors.red,
+        ));
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _nomeController.dispose();
+    _pesoController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.avaliacao != null ? 'Editar avaliação' : 'Nova avaliação'),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _nomeController,
+                decoration: const InputDecoration(labelText: 'Nome da avaliação'),
+                validator: (v) => (v == null || v.isEmpty) ? 'Campo obrigatório' : null,
+              ),
+              const SizedBox(height: 10),
+              
+              // Dropdown de Matérias
+              _isLoadingMaterias
+                ? const Center(child: Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ))
+                : DropdownButtonFormField<String>(
+                    value: _materiaSelecionadaId,
+                    isExpanded: true,
+                    items: _materias.map((m) {
+                      return DropdownMenuItem(
+                        value: m['_id'] as String,
+                        child: Text(m['nome'] as String),
+                      );
+                    }).toList(),
+                    onChanged: (v) => setState(() => _materiaSelecionadaId = v),
+                    decoration: InputDecoration(
+                      labelText: 'Matéria',
+                      hintText: _materias.isEmpty ? 'Nenhuma matéria encontrada' : 'Selecione uma matéria',
+                    ),
+                    validator: (v) => (v == null) ? 'Selecione uma matéria' : null,
+                  ),
+
+              const SizedBox(height: 10),
+              DropdownButtonFormField<String>(
+                value: _tipoSelecionado,
+                items: _tipos.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                onChanged: (value) => setState(() => _tipoSelecionado = value ?? _tipos.first),
+                decoration: const InputDecoration(labelText: 'Tipo'),
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: _pesoController,
+                decoration: const InputDecoration(labelText: 'Peso'),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))],
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Campo obrigatório';
+                  if (double.tryParse(v.replaceAll(',', '.')) == null) return 'Número inválido';
+                  return null;
                 },
               ),
+            ],
+          ),
+        ),
       ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: poliedroBlue),
+          onPressed: _salvar,
+          child: Text(widget.avaliacao != null ? 'Salvar' : 'Criar'),
+        ),
+      ],
     );
   }
 }

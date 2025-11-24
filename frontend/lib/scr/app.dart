@@ -11,6 +11,7 @@ import 'telas/professor/materiais_professor_screen.dart';
 import 'telas/professor/atividades_professor_screen.dart';
 import 'telas/professor/notas_professor_screen.dart';
 import 'telas/professor/avisos_professor_screen.dart';
+import 'telas/materia/criar_materia_screen.dart';
 
 class App extends StatefulWidget {
   @override
@@ -38,6 +39,7 @@ class AppState extends State<App> {
         '/professor/atividades': (context) => ProfessorAtividadesScreen(),
         '/professor/notas': (context) => ProfessorNotasScreen(),
         '/professor/avisos': (context) => ProfessorAvisosScreen(),
+        '/professor/criar-materia': (context) => const CriarMateriaScreen(),
       },
     );
   }
