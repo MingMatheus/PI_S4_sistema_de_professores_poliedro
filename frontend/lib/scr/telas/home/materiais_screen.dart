@@ -11,6 +11,7 @@ import '../../constants/app_colors.dart';
 import '../../models/arquivo.dart';
 import '../../models/pasta.dart';
 import '../../services/materiais_service.dart';
+import 'imagem_viewer_screen.dart';
 
 class MateriaisScreen extends StatefulWidget {
   const MateriaisScreen({super.key});
@@ -204,9 +205,6 @@ class _ArquivoCardState extends State<_ArquivoCard> {
   double _progress = 0.0;
   
   Future<void> _downloadFile() async {
-    // Em versões modernas do Android, permissão não é necessária para salvar na pasta Downloads.
-    // A lógica de permissão foi removida.
-    
     final Directory? downloadsDir = await getDownloadsDirectory();
     if (downloadsDir == null) {
       if (mounted) {
@@ -217,7 +215,6 @@ class _ArquivoCardState extends State<_ArquivoCard> {
       return;
     }
     final savePath = '${downloadsDir.path}/${widget.arquivo.nomeOriginal}';
-    print('Arquivo salvo em: $savePath');
     
     setState(() {
       _isDownloading = true;
@@ -251,7 +248,6 @@ class _ArquivoCardState extends State<_ArquivoCard> {
           ),
         );
       }
-
     } catch (e) {
       setState(() { _isDownloading = false; });
       if (mounted) {
@@ -260,31 +256,6 @@ class _ArquivoCardState extends State<_ArquivoCard> {
         );
       }
     }
-  }
-
-  void _showImagePreview() {
-     showDialog(
-      context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(10),
-        child: Stack(
-          alignment: Alignment.topRight,
-          children: [
-            InteractiveViewer(
-              panEnabled: true,
-              minScale: 0.5,
-              maxScale: 4,
-              child: Image.network(widget.arquivo.url),
-            ),
-            IconButton(
-              icon: const Icon(Icons.close, color: Colors.white, size: 30),
-              onPressed: () => Navigator.of(ctx).pop(),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   IconData _getIconForMimeType(String mime) {
@@ -309,65 +280,52 @@ class _ArquivoCardState extends State<_ArquivoCard> {
       margin: const EdgeInsets.symmetric(vertical: 4.0),
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(_getIconForMimeType(widget.arquivo.tipo), color: Colors.grey[700], size: 32),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(widget.arquivo.nomeOriginal, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${_formatBytes(widget.arquivo.tamanho)} • ${DateFormat('dd/MM/yy \'às\' HH:mm', 'pt_BR').format(widget.arquivo.createdAt)}',
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                      ),
-                       Text('Enviado por: ${widget.arquivo.nomeProfessor}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: _isDownloading
-                    ? CircularProgressIndicator(value: _progress > 0 ? _progress : null, strokeWidth: 3)
-                    : IconButton(
-                        padding: EdgeInsets.zero,
-                        tooltip: 'Baixar arquivo',
-                        icon: const Icon(Icons.download_rounded, color: poliedroBlue, size: 28),
-                        onPressed: _downloadFile,
-                      ),
-                ),
-              ],
-            ),
-            if (isImage)
-              Padding(
-                padding: const EdgeInsets.only(top: 12.0),
-                child: GestureDetector(
-                  onTap: _showImagePreview,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      widget.arquivo.url,
-                      height: 150,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (ctx, child, progress) => progress == null ? child : const SizedBox(height: 150, child: Center(child: CircularProgressIndicator())),
-                      errorBuilder: (ctx, err, stack) => const SizedBox(height: 150, child: Center(child: Text('Não foi possível carregar a imagem.'))),
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: isImage ? () {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => ImagemViewerScreen(arquivo: widget.arquivo),
+          ));
+        } : null,
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(_getIconForMimeType(widget.arquivo.tipo), color: Colors.grey[700], size: 32),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(widget.arquivo.nomeOriginal, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 4),
+                                           Text(
+                                            '${_formatBytes(widget.arquivo.tamanho)} • ${DateFormat('dd/MM/yyyy \'às\' HH:mm', 'pt_BR').format(widget.arquivo.createdAt.subtract(const Duration(hours: 3)))}',
+                                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                          ),
+                                           Text('Enviado por: ${widget.arquivo.nomeProfessor}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 40,
+                                      height: 40,
+                                      child: _isDownloading
+                                        ? CircularProgressIndicator(value: _progress > 0 ? _progress : null, strokeWidth: 3)
+                                        : !isImage
+                                          ? IconButton(
+                                              padding: EdgeInsets.zero,
+                                              tooltip: 'Baixar arquivo',
+                                              icon: const Icon(Icons.download_rounded, color: poliedroBlue, size: 28),
+                                              onPressed: _downloadFile,
+                                            )
+                                          : const SizedBox.shrink(), // Não mostra nada se for imagem e não estiver baixando
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                    }
