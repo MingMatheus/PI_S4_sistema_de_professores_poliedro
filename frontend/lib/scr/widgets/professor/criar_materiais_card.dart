@@ -11,7 +11,7 @@ class ProfessorCriarMateriaisCard extends StatelessWidget {
       title: 'Criar Matérias',
       subtitle: 'Crie e gerencie as matérias que você leciona.',
       onTap: () {
-        // TODO: Implementar navegação para a tela de criar matérias
+        Navigator.pushNamed(context, '/professor/criar-materia');
       },
     );
   }
