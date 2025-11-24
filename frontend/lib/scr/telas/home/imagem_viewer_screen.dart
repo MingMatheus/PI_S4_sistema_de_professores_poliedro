@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/arquivo.dart';
 import '../../widgets/app_bar_comum.dart';
@@ -22,7 +23,15 @@ class _ImagemViewerScreenState extends State<ImagemViewerScreen> {
   double _progress = 0.0;
 
   Future<void> _downloadFile() async {
-    // A lógica de download é a mesma da tela de materiais
+    // Lógica para Web
+    if (kIsWeb) {
+      final uri = Uri.parse(widget.arquivo.url);
+      await launchUrl(uri);
+      return;
+    }
+
+    // Lógica para Mobile (Android/iOS)
+    // Em versões modernas do Android, a permissão não é mais necessária para salvar na pasta de Downloads.
     final Directory? downloadsDir = await getDownloadsDirectory();
     if (downloadsDir == null) {
       if (mounted) {

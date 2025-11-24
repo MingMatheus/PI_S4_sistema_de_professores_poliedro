@@ -1,11 +1,12 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../constants/app_colors.dart';
 import '../../models/arquivo.dart';
@@ -203,8 +204,17 @@ class _ArquivoCard extends StatefulWidget {
 class _ArquivoCardState extends State<_ArquivoCard> {
   bool _isDownloading = false;
   double _progress = 0.0;
-  
+
   Future<void> _downloadFile() async {
+    // Lógica para Web
+    if (kIsWeb) {
+      final uri = Uri.parse(widget.arquivo.url);
+      await launchUrl(uri);
+      return;
+    }
+
+    // Lógica para Mobile (Android/iOS)
+    // Em versões modernas do Android, a permissão não é mais necessária para salvar na pasta de Downloads.
     final Directory? downloadsDir = await getDownloadsDirectory();
     if (downloadsDir == null) {
       if (mounted) {
