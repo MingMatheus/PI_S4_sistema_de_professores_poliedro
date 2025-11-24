@@ -56,12 +56,39 @@ class _MateriaisScreenState extends State<MateriaisScreen> {
   @override
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
+
+    // Fundo diagonal
+    final bool isWide = w >= 1200;
+    final bool isPhoneNarrow = w < 420;
+    final double imgScale = isWide ? 1.32 : (isPhoneNarrow ? 1.42 : 1.12);
+    //final double imgOffsetY = isWide ? 0 : (isPhoneNarrow ? 5 : -10);
     const bg = Color(0xFFF2F4F7);
 
     return Container(
       color: bg,
       child: Stack(
         children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Align(
+                alignment: Alignment.bottomRight,
+                child: OverflowBox(
+                  minWidth: 0, minHeight: 0,
+                  maxWidth: double.infinity, maxHeight: double.infinity,
+                  alignment: Alignment.bottomRight,
+                  child: Transform.scale(
+                    scale: imgScale,
+                    alignment: Alignment.bottomRight,
+                    child: Image.asset(
+                      'assets/images/poliedro_diagonal.png',
+                      filterQuality: FilterQuality.medium,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          
           SafeArea(
             bottom: false,
             child: LayoutBuilder(
